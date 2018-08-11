@@ -18,7 +18,7 @@ public:
 	/**   Default constructor   **/
 	ParticleFit() ;
     
-    const TF1& GetFunction(float p)
+    TF1& GetFunction(float p)
     {
         const uint npar = function_.GetNpar();
         
@@ -41,6 +41,7 @@ public:
     
     void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
     
+    uint GetNpar() const {return function_.GetNpar();}
     
 private:
 

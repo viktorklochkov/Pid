@@ -1,6 +1,8 @@
 #include <iostream>
 #include "Fitter.h"
 
+#include "TGraphErrors.h"
+
 // ClassImp(Pid::Fitter);
 
 namespace Pid
@@ -8,55 +10,84 @@ namespace Pid
 
 void Fitter::Fit()
 {
-    std::cout << histo2D_->GetNbinsX() << std::endl;
-
-    const uint hnbinsX = histo2D_->GetNbinsX() ;
-    const float hminX = histo2D_->GetXaxis()->GetXmin() ;
-    const float hmaxX = histo2D_->GetXaxis()->GetXmax() ;
-
-    const uint firstbin = (minx_-hminX)/(hmaxX-hminX)*hnbinsX ;
-    const uint lastbin = (maxx_-hminX)/(hmaxX-hminX)*hnbinsX ;
+    const uint firstbin = histo2D_->GetXaxis()->FindBin(minx_);
+    const uint lastbin = histo2D_->GetXaxis()->FindBin(maxx_);
+    
+    std::vector <std::vector <double>> params;
+    std::vector <std::vector <double>> params_errors;
     
     for (uint ibin=firstbin; ibin<lastbin; ++ibin)
     {
-        std::cout << ibin << std::endl;
         std::unique_ptr <TH1D> h1fit { histo2D_->ProjectionY( Form("py_%d", ibin), ibin, ibin) };
+//         const std::vector <double> &par = Fit1D(h1fit);
         
-        const std::vector <double> &par = Fit1D(h1fit);
+        std::vector <double> par;
+        std::vector <double> par_err;
         
-        std::cout << par.size() << " " << par.at(0) << " " << par.at(1) << " " << par.at(2) << std::endl;
+        Fit1D(h1fit, par, par_err);
         
+        params.push_back(par);
+        params_errors.push_back(par_err);
+
+        //         std::cout << params.back().size() << " " << params.back().at(0) << " " << params.back().at(1) << " " << params.back().at(2) << std::endl;
     }
+    Parametrize2D(params, params_errors);
 }
     
-const std::vector <double> Fitter::Fit1D( std::unique_ptr <TH1D>& h )
+void Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::vector <double>& par_err  )
 {
-//     auto f = particles_.at(0).GetFunction(0.);
     auto f = ConstructFit1DFunction(); //particles_.at(0).GetFunction(0.);
-    
-    h->Fit( f, "" );
-    
-//     const double* params = f.GetParameters();
-    const std::vector <double> ret (f->GetParameters(), f->GetParameters() + f->GetNpar() );
-    return ret;
+    h->Fit( f, "Q" );
+
+    par = std::vector<double> (f->GetParameters(), f->GetParameters() + f->GetNpar() );
+    par_err = std::vector<double>  (f->GetParErrors(), f->GetParErrors() + f->GetNpar() );    
+//     return ret;
 }
 
-TF1* Fitter::ConstructFit1DFunction()
+TF1* Fitter::ConstructFit1DFunction(  )
 {
-//     const TF1 *FitFunc1DHisto  = &(particles_.at(0).GetFunction(0.));
-    TF1 *temp = new TF1(particles_.at(0).GetFunction(0.).GetName(), particles_.at(0).GetFunction(0.).GetExpFormula());
-    TString SFitFunc = Form("%s", temp->GetName() );
+    TString name = particles_.at(0).GetFunction(0.).GetName();
+    TF1 *temp = (TF1*)particles_.at(0).GetFunction(0.).Clone(name); 
     
-    for (uint i=1; i<particles_.size(); ++i)
+    TString sumname = Form("%s", temp->GetName() );
+    
+    for (auto particle : particles_)
     {
-        temp = new TF1(particles_.at(i).GetFunction(0.).GetName(), particles_.at(i).GetFunction(0.).GetExpFormula());
-        SFitFunc += Form( "+%s", temp->GetName() );
+        name = particle.GetFunction(0.).GetName();
+        temp = (TF1*)particle.GetFunction(0.).Clone(name); 
+        sumname += "+" + name;
     }
+    TF1* f = new TF1("fit1D", sumname, minx_, maxx_ );    
+    f->SetParameters(1000.,0.,1.);
+//     std::cout << f->GetName() << " " << f->GetExpFormula() << std::endl;
     
-    TF1* ret = new TF1("fit1D", SFitFunc, minx_, maxx_ );
-    return ret;
-    
+    return f;
 }
+
+void Fitter::Parametrize2D( std::vector <std::vector <double>> &params, 
+                            std::vector <std::vector <double>> &params_errors )
+{
+    std::vector <TGraphErrors> graphs;
+    
+    for (uint ipart=0; ipart<particles_.size(); ++ipart)
+    {
+        const uint nvar = particles_.at(ipart).GetNpar();
+        for (uint ivar=0; ivar<nvar; ++ivar)
+        {                
+            for (uint ibin=0; ibin<params.size(); ++ibin)
+            {
+                std::cout << params.at(ibin).at( nvar*ipart + ivar ) << " " ;
+                std::cout << params_errors.at(ibin).at( nvar*ipart + ivar ) << " " ;
+                std::cout << std::endl;
+
+            }
+        }
+    }
+        
+}
+
+
+
 
 
 }
