@@ -3,6 +3,9 @@
 
 #include "TGraphErrors.h"
 
+#include "Parameters.h"
+
+
 // ClassImp(Pid::Fitter);
 
 namespace Pid
@@ -15,6 +18,7 @@ void Fitter::Fit()
     
     std::vector <std::vector <double>> params;
     std::vector <std::vector <double>> params_errors;
+    std::vector <double> x;
     
     for (uint ibin=firstbin; ibin<lastbin; ++ibin)
     {
@@ -28,10 +32,18 @@ void Fitter::Fit()
         
         params.push_back(par);
         params_errors.push_back(par_err);
+        x.push_back(ibin);
 
         //         std::cout << params.back().size() << " " << params.back().at(0) << " " << params.back().at(1) << " " << params.back().at(2) << std::endl;
     }
-    Parametrize2D(params, params_errors);
+    
+    Parameters p;
+    p.SetParams( std::move(x), std::move(params), std::move(params_errors) );
+    p.SetParticles (particles_);
+    p.Parametrize();
+    
+    
+//     Parametrize2D(params, params_errors);
 }
     
 void Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::vector <double>& par_err  )

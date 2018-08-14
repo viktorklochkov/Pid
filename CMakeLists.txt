@@ -7,6 +7,7 @@ set(CMAKE_BUILD_TYPE debug)
 set(SOURCES 
     src/Fitter.cpp
     src/ParticleFit.cpp
+    src/Parameters.cpp
     )
 
 string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")
