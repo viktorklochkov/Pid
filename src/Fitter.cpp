@@ -2,6 +2,8 @@
 #include "Fitter.h"
 
 #include "TGraphErrors.h"
+#include "TFile.h"
+#include "TMath.h"
 
 #include "Parameters.h"
 
@@ -19,83 +21,97 @@ void Fitter::Fit()
     std::vector <std::vector <double>> params;
     std::vector <std::vector <double>> params_errors;
     std::vector <double> x;
-    
+
+    std::unique_ptr <TFile> f{ TFile::Open( outfilename_, "recreate") };
+
     for (uint ibin=firstbin; ibin<lastbin; ++ibin)
     {
         std::unique_ptr <TH1D> h1fit { histo2D_->ProjectionY( Form("py_%d", ibin), ibin, ibin) };
-//         const std::vector <double> &par = Fit1D(h1fit);
         
         std::vector <double> par;
         std::vector <double> par_err;
         
-        Fit1D(h1fit, par, par_err);
+        const float mom = histo2D_->GetXaxis()->GetBinCenter(ibin);
+
+        const float chi2 = Fit1D(h1fit, par, par_err, mom);
+        
+        std::cout << mom << "  " << chi2 << std::endl;
+        
+        if (chi2 > chi2_max_) continue;
         
         params.push_back(par);
         params_errors.push_back(par_err);
-        x.push_back(ibin);
-
-        //         std::cout << params.back().size() << " " << params.back().at(0) << " " << params.back().at(1) << " " << params.back().at(2) << std::endl;
+        x.push_back( mom );
     }
     
     Parameters p;
     p.SetParams( std::move(x), std::move(params), std::move(params_errors) );
-    p.SetParticles (particles_);
-    p.Parametrize();
+//     p.SetParticles();
+    p.Parametrize(particles_);
     
-    
-//     Parametrize2D(params, params_errors);
+    f->Close();
+
 }
     
-void Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::vector <double>& par_err  )
+float Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::vector <double>& par_err, float p)
 {
-    auto f = ConstructFit1DFunction(); //particles_.at(0).GetFunction(0.);
-    h->Fit( f, "Q" );
+    auto f = ConstructFit1DFunction(p); //particles_.at(0).GetFunction(0.);
+        
+    h->Fit( f, "L", "", miny_, maxy_ );
 
     par = std::vector<double> (f->GetParameters(), f->GetParameters() + f->GetNpar() );
     par_err = std::vector<double>  (f->GetParErrors(), f->GetParErrors() + f->GetNpar() );    
-//     return ret;
+    
+    h->Write( Form("h_%f", p) );
+    
+    return f->GetChisquare()/f->GetNDF();
 }
 
-TF1* Fitter::ConstructFit1DFunction(  )
+TF1* Fitter::ConstructFit1DFunction(float p)
 {
-    TString name = particles_.at(0).GetFunction(0.).GetName();
-    TF1 *temp = (TF1*)particles_.at(0).GetFunction(0.).Clone(name); 
+    TF1 *temp{nullptr}; 
+    TString sumname{""};
+    std::vector <double> par;
     
-    TString sumname = Form("%s", temp->GetName() );
-    
-    for (auto particle : particles_)
+    uint iparticle{0};
+    for (auto const& particle : particles_)
     {
-        name = particle.GetFunction(0.).GetName();
-        temp = (TF1*)particle.GetFunction(0.).Clone(name); 
-        sumname += "+" + name;
+        const TString name = particle.GetFunction().GetName();
+        
+        temp = (TF1*)particle.GetFunction().Clone(name); 
+        iparticle == 0 ? sumname=name : sumname += "+" + name;        
+        std::vector <double> par_i = particle.GetFunctionParams(p);
+        
+        par.insert(par.end(), par_i.begin(), par_i.end());
+        iparticle++;
     }
-    TF1* f = new TF1("fit1D", sumname, minx_, maxx_ );    
-    f->SetParameters(1000.,0.,1.);
+
+    TF1* f = new TF1("fit1D", sumname, miny_, maxy_ );   
+    f->SetParameters( &(par[0]) );
+
+    uint iparam_all{0};
+    for (auto const& particle : particles_)
+    {
+        for (int iparam=0; iparam<particle.GetNpar(); ++iparam, ++iparam_all)
+        {
+            double parmin{-1.};
+            double parmax{-1.};
+            particle.GetFunction().GetParLimits(iparam, parmin, parmax);
+            f->SetParLimits( iparam_all, parmin, parmax );
+            
+            if ( particle.GetIsFixed(iparam) )
+                f->FixParameter( iparam_all, par.at(iparam_all) );
+        }
+        
+    }
+    for (auto ipar : par)
+        std::cout << ipar << " ";
+    std::cout << std::endl;
 //     std::cout << f->GetName() << " " << f->GetExpFormula() << std::endl;
     
-    return f;
-}
-
-void Fitter::Parametrize2D( std::vector <std::vector <double>> &params, 
-                            std::vector <std::vector <double>> &params_errors )
-{
-    std::vector <TGraphErrors> graphs;
+    delete temp;
     
-    for (uint ipart=0; ipart<particles_.size(); ++ipart)
-    {
-        const uint nvar = particles_.at(ipart).GetNpar();
-        for (uint ivar=0; ivar<nvar; ++ivar)
-        {                
-            for (uint ibin=0; ibin<params.size(); ++ibin)
-            {
-                std::cout << params.at(ibin).at( nvar*ipart + ivar ) << " " ;
-                std::cout << params_errors.at(ibin).at( nvar*ipart + ivar ) << " " ;
-                std::cout << std::endl;
-
-            }
-        }
-    }
-        
+    return f;
 }
 
 

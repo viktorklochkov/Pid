@@ -17,24 +17,28 @@ public:
     
 	/**   Default constructor   **/
 	ParticleFit() ;
+	ParticleFit(int type) : particle_type_(type) {} ;
     
-    TF1& GetFunction(float p)
+    const TF1& GetFunction() const { return function_; }
+    
+    std::vector <double> GetFunctionParams(float p) const
     {
-        const uint npar = function_.GetNpar();
-        
-        if ( parametrization_.size() != npar )
-            exit(0);
-        if (!isfitted_)
-            return function_;
-        
         std::vector <double> params;
+        const uint npar = function_.GetNpar();        
+
+        if ( parametrization_.size() != npar )
+            exit(0);        
+
+        if (!isfitted_)
+            return params;
+
         for ( uint i=0; i<npar; ++i )
         {
             params.push_back( parametrization_.at(i).Eval(p) );
         }
-        function_.SetParameters(&(params[0]));
-        return function_;
+        return params;
     }
+    
     
     void SetParametrization(const std::vector <TF1> &parametrization) { parametrization_ = parametrization; }
     void SetFitFunction(const TF1 &function) { function_ = function; }
@@ -43,15 +47,30 @@ public:
     
     uint GetNpar() const {return function_.GetNpar();}
     
+    TF1& GetParametrizationFunction(int ipar) { return parametrization_.at(ipar); }
+    
+    void SetIsFitted(bool is=true) { isfitted_=is; }
+    void SetIsFixed( const std::vector <bool>& is ) { isfixed_=is; }
+    
+    bool GetIsFixed(uint ipar) const 
+    { 
+        if (ipar>=isfixed_.size()) 
+            return false;
+        return isfixed_.at(ipar); 
+    }
+    
+    
 private:
 
     TF1 function_;
     std::vector <TF1> parametrization_;
+    std::vector <bool> isfixed_;
     
     float minx_{-1.};
     float maxx_{-1.};
     
     int npoints_{-1};
+    int particle_type_{-1};
     
     bool isfitted_{false};
         

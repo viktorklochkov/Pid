@@ -16,7 +16,7 @@ public:
 	/**   Default constructor   **/
 	Parameters() ;
     
-    void Parametrize();
+    void Parametrize(std::vector <ParticleFit> &particles);
     
     void SetParams( std::vector <double> &&x, 
                     std::vector <std::vector <double>> &&params,  
@@ -27,7 +27,7 @@ public:
         x_ = x;
     }
     
-    void SetParticles( const std::vector <ParticleFit> &particles ) { particles_ = particles; }
+//     void SetParticles( const std::vector <ParticleFit> &particles ) { particles_ = particles; }
     
     
 private:
@@ -35,10 +35,6 @@ private:
     std::vector <std::vector <double>> params_;    
     std::vector <std::vector <double>> params_errors_;    
     std::vector <double> x_;    
-
-    std::vector <ParticleFit> particles_;
-    
-    
     
 // 	ClassDef(Parameters,2);
 
