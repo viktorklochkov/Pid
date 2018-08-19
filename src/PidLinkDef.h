@@ -6,8 +6,8 @@
 
 #pragma link C++ class Pid::Fitter+;
 #pragma link C++ class Pid::ParticleFit+;
+#pragma link C++ class Pid::Getter+;
 
-// #pragma link C++ class HistoFitter+;
 // #pragma link C++ class InputGetter+;
 
 // #pragma link C++ class PidAnalyser+;

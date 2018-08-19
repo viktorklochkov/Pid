@@ -1,3 +1,11 @@
+/** @file   Fitter.h
+    @class  Pid::Fitter
+    @author Viktor Klochkov (klochkov44@gmail.com)
+    @date   August 2018
+    @brief  Class to fit 2D histograms
+*/
+
+
 #ifndef PidFitter_H
 #define PidFitter_H 1
 
@@ -24,7 +32,6 @@ public:
     void AddParticle (ParticleFit& particle, uint id) { particles_.push_back(particle); particles_id_.push_back(id); }
 
     void SetHisto2D(std::unique_ptr <TH2D> histo2D) { histo2D_ = std::move(histo2D);}
-    
     void SetRangeX(float min, float max) { minx_ = min, maxx_ = max; }
     void SetRangeY(float min, float max) { miny_ = min, maxy_ = max; }
 
@@ -38,8 +45,10 @@ public:
         particles_.clear();
         particles_id_.clear();
         histo2D_.reset();
-        minx_=-1;
-        maxx_=-1;
+        minx_=-1.;
+        maxx_=-1.;
+        miny_=-1.;
+        maxy_=-1.;
         chi2_max_=100.;
         outfilename_="out.root";
     }

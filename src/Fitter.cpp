@@ -32,7 +32,6 @@ void Fitter::Fit()
         std::vector <double> par_err;
         
         const float mom = histo2D_->GetXaxis()->GetBinCenter(ibin);
-
         const float chi2 = Fit1D(h1fit, par, par_err, mom);
         
         std::cout << mom << "  " << chi2 << std::endl;
@@ -67,6 +66,12 @@ float Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::
     return f->GetChisquare()/f->GetNDF();
 }
 
+
+/**
+* Constructs fit function as a sum of individual particle species. Parameters are also propagated
+* @param p track momentum
+* @return pointer to TF1 function
+*/
 TF1* Fitter::ConstructFit1DFunction(float p)
 {
     TF1 *temp{nullptr}; 
@@ -92,7 +97,7 @@ TF1* Fitter::ConstructFit1DFunction(float p)
     uint iparam_all{0};
     for (auto const& particle : particles_)
     {
-        for (int iparam=0; iparam<particle.GetNpar(); ++iparam, ++iparam_all)
+        for (uint iparam=0; iparam<particle.GetNpar(); ++iparam, ++iparam_all)
         {
             double parmin{-1.};
             double parmax{-1.};

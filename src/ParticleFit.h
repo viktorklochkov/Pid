@@ -1,3 +1,8 @@
+/** @file   ParticleFit.h
+    @author Viktor Klochkov (klochkov44@gmail.com)
+    @date   August 2018
+    @brief  Class to store fit resuls for particle specie
+*/
 
 #ifndef PidParticleFit_H
 #define PidParticleFit_H 1
@@ -63,8 +68,8 @@ public:
 private:
 
     TF1 function_;
-    std::vector <TF1> parametrization_;
-    std::vector <bool> isfixed_;
+    std::vector <TF1> parametrization_{};
+    std::vector <bool> isfixed_{};
     
     float minx_{-1.};
     float maxx_{-1.};

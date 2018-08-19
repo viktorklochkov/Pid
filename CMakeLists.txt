@@ -8,6 +8,7 @@ set(SOURCES
     src/Fitter.cpp
     src/ParticleFit.cpp
     src/Parameters.cpp
+    src/Getter.cpp
     )
 
 string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")

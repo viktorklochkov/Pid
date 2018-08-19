@@ -6,8 +6,6 @@
 
 // ClassImp(Pid::Parameters)
 
-
-
 namespace Pid
 {
 
@@ -15,7 +13,6 @@ namespace Pid
 Parameters::Parameters() 
 {
 }
-
 
 void Parameters::Parametrize( std::vector <ParticleFit> &particles)
 {

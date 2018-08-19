@@ -1,9 +1,13 @@
+/** @file   Parameters.h
+    @author Viktor Klochkov (klochkov44@gmail.com)
+    @date   August 2018
+    @brief  Class for fit result parametrizing
+*/
 
 #ifndef PidParameters_H
 #define PidParameters_H 1
 
 #include <vector>
-
 #include "ParticleFit.h"
 
 namespace Pid
@@ -26,9 +30,6 @@ public:
         params_errors_ = params_errors;
         x_ = x;
     }
-    
-//     void SetParticles( const std::vector <ParticleFit> &particles ) { particles_ = particles; }
-    
     
 private:
 
