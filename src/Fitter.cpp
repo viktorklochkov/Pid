@@ -56,7 +56,7 @@ float Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::
 {
     auto f = ConstructFit1DFunction(p); //particles_.at(0).GetFunction(0.);
         
-    h->Fit( f, "L", "", miny_, maxy_ );
+    h->Fit( f, "Q,L", "", miny_, maxy_ );
 
     par = std::vector<double> (f->GetParameters(), f->GetParameters() + f->GetNpar() );
     par_err = std::vector<double>  (f->GetParErrors(), f->GetParErrors() + f->GetNpar() );    

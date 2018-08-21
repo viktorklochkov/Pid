@@ -13,6 +13,7 @@
 
 #include "ParticleFit.h"
 #include "Fitter.h"
+#include "Getter.h"
 #include "Constants.h"
 
 
@@ -31,7 +32,6 @@ int main(int argc, char **argv) {
   hkaon->Rebin2D(10,1);
   hproton->Rebin2D(10,1);
   hpos->Rebin2D(10,1);
-
 
   TF1 fit ("fit", "[0]*exp(-0.5*((x-[1])/[2])**2)", -0.5, 1.5);   fit.SetParLimits(0, 0., 1e10);  fit.SetParLimits(2, 0., 1.);
   Pid::Fitter tof;
@@ -167,7 +167,21 @@ int main(int argc, char **argv) {
   tof.SetOutputFileName("all1.root");
   tof.Fit();
   
+  proton = tof.GetParticleSpecie(PidParticles::kProton);
+  pion = tof.GetParticleSpecie(PidParticles::kPion);
+  kaon = tof.GetParticleSpecie(PidParticles::kKaon);
+  bg = tof.GetParticleSpecie(PidParticles::kBg);
+    
+  Pid::Getter getter;
+  getter.AddParticle(proton, PidParticles::kProton);
+  getter.AddParticle(pion, PidParticles::kPion);
+  getter.AddParticle(kaon, PidParticles::kKaon);
+  getter.AddParticle(bg, PidParticles::kBg);
 
+  std::unique_ptr <TFile> outfile{TFile::Open("pid_getter.root", "recreate")};
+  getter.Write("pid_getter");
+  outfile->Close();
+  
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end - start;
   std::cout << "elapsed time: " << elapsed_seconds.count() << " s\n";

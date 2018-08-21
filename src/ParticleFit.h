@@ -44,6 +44,17 @@ public:
         return params;
     }
     
+    float Eval(float p, float m2)
+    {
+        if (p>maxx_ || p<minx_) return 0.;
+        
+        const uint npar = function_.GetNpar();        
+        if ( parametrization_.size() != npar )
+            exit(0);        
+        
+        function_.SetParameters( &(GetFunctionParams(p)[0]) );
+        return function_.Eval(m2);
+    }
     
     void SetParametrization(const std::vector <TF1> &parametrization) { parametrization_ = parametrization; }
     void SetFitFunction(const TF1 &function) { function_ = function; }
