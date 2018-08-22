@@ -1,4 +1,5 @@
 /** @file   Parameters.h
+    @class  Pid::Parameters
     @author Viktor Klochkov (klochkov44@gmail.com)
     @date   August 2018
     @brief  Class for fit result parametrizing
@@ -33,7 +34,7 @@ public:
     
 private:
 
-    std::vector <std::vector <double>> params_;    
+    std::vector <std::vector <double>> params_;         
     std::vector <std::vector <double>> params_errors_;    
     std::vector <double> x_;    
     

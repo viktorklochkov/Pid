@@ -1,3 +1,10 @@
+/** @file   Constants.h
+    @author Viktor Klochkov (klochkov44@gmail.com)
+    @date   August 2018
+    @brief  Some constants and enumerators
+*/
+
+
 #ifndef PidConstants_H
 #define PidConstants_H 1
 
@@ -15,9 +22,6 @@ namespace PidParticles{
     const float masses[nParticles] = { 0.938, 0.140, 0.5, 0.0 };
     
 }
-
-
-
 
 #endif
 

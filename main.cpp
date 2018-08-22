@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   tof.SetOutputFileName("pion.root");
   tof.Fit();
   
-  pion = tof.GetParticle(0);
+  pion = tof.GetParticleSpecie(PidParticles::kPion);
   tof.Clear();
 // // // // // // // // // // // // // // // // // // 
 
@@ -79,14 +79,14 @@ int main(int argc, char **argv) {
   tof.SetOutputFileName("kaon.root");
   tof.Fit();
   
-  kaon = tof.GetParticle(0);
+  kaon = tof.GetParticleSpecie(PidParticles::kKaon);
   tof.Clear();
 // // // // // // // // // // // // // // // // // // 
 
 // // // // // // // // // // // // // // // // //   
   Pid::ParticleFit proton( PidParticles::kProton );  
   
-  TF1 proton0 ("proton0", "exp([0]+[1]*x)", 0.1, 10);   proton0.SetParameters(15., -1.);
+  TF1 proton0 ("proton0", "exp([0]+[1]*x+[2]*x*x)", 0.1, 10);   proton0.SetParameters(15., -1., 0);
   TF1 proton1 ("proton1", "pol2", 0.1, 10);             proton1.SetParameters( TMath::Power(PidParticles::masses[PidParticles::kProton],2), 0, 0);
   TF1 proton2 ("proton2", "pol2", 0.1, 10);             proton2.SetParameters(0.1, 0.0, 0);
   
@@ -121,11 +121,6 @@ int main(int argc, char **argv) {
   bg.SetIsFitted();
 // // // // // // // // // // // // // // // // //   
   
-
-
-
-
-
 
   proton.SetIsFixed( {false, true, true} );
   pion.SetIsFixed( {false, true, true} );

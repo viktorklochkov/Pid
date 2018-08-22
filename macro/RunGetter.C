@@ -1,8 +1,6 @@
 void RunGetter(TString InputFile="../build/pid_getter.root")
 {
 
-    gStyle->SetOptStat(0000);
-    
     std::unique_ptr <TFile> f2{TFile::Open(InputFile)};        
     std::unique_ptr <Pid::Getter> getter {(Pid::Getter*) f2->Get("pid_getter")}; 
     

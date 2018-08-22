@@ -12,7 +12,9 @@
 
 namespace Pid
 {
-
+/**
+* Main function. Fitting TH2D bin-by-bin
+*/
 void Fitter::Fit()
 {
     const uint firstbin = histo2D_->GetXaxis()->FindBin(minx_);
@@ -51,7 +53,15 @@ void Fitter::Fit()
     f->Close();
 
 }
-    
+
+/**
+* Constructs fit function as a sum of individual particle species. Parameters are also propagated
+* @param h pointer to input histo
+* @param par output: fit parameters 
+* @param par_err output: fit parameters erorrs
+* @param p track momentum
+* @return chi2/NDF of the fit
+*/
 float Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::vector <double>& par_err, float p)
 {
     auto f = ConstructFit1DFunction(p); //particles_.at(0).GetFunction(0.);
@@ -118,9 +128,21 @@ TF1* Fitter::ConstructFit1DFunction(float p)
     
     return f;
 }
-
-
-
+/**
+* Clear everything
+*/
+void Fitter::Clear()
+{
+    particles_.clear();
+    particles_id_.clear();
+    histo2D_.reset();
+    minx_=-1.;
+    maxx_=-1.;
+    miny_=-1.;
+    maxy_=-1.;
+    chi2_max_=100.;
+    outfilename_="out.root";
+}
 
 
 }

@@ -1,4 +1,5 @@
 /** @file   Getter.h
+    @class  Pid::Getter
     @author Viktor Klochkov (klochkov44@gmail.com)
     @date   August 2018
     @brief  Class to calculate PID probabilities
@@ -25,13 +26,11 @@ public:
     void AddParticles (std::map<uint, ParticleFit> &&species) { species_ = species; }
     
     std::map<uint, float>&& GetBayesianProbability(float p, float m2);
-    
     void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
     
 private:
     
     std::map<uint, ParticleFit> species_{};
-    
     float minx_{-100000.};
     float maxx_{100000.};
     

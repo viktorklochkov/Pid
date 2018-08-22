@@ -1,4 +1,5 @@
 /** @file   ParticleFit.h
+    @class  Pid::ParticleFit
     @author Viktor Klochkov (klochkov44@gmail.com)
     @date   August 2018
     @brief  Class to store fit resuls for particle specie
@@ -24,50 +25,18 @@ public:
 	ParticleFit() ;
 	ParticleFit(int type) : particle_type_(type) {} ;
     
-    const TF1& GetFunction() const { return function_; }
-    
-    std::vector <double> GetFunctionParams(float p) const
-    {
-        std::vector <double> params;
-        const uint npar = function_.GetNpar();        
-
-        if ( parametrization_.size() != npar )
-            exit(0);        
-
-        if (!isfitted_)
-            return params;
-
-        for ( uint i=0; i<npar; ++i )
-        {
-            params.push_back( parametrization_.at(i).Eval(p) );
-        }
-        return params;
-    }
-    
-    float Eval(float p, float m2)
-    {
-        if (p>maxx_ || p<minx_) return 0.;
-        
-        const uint npar = function_.GetNpar();        
-        if ( parametrization_.size() != npar )
-            exit(0);        
-        
-        function_.SetParameters( &(GetFunctionParams(p)[0]) );
-        return function_.Eval(m2);
-    }
+    std::vector <double> &&GetFunctionParams(float p) const;
+    float Eval(float p, float m2);
     
     void SetParametrization(const std::vector <TF1> &parametrization) { parametrization_ = parametrization; }
     void SetFitFunction(const TF1 &function) { function_ = function; }
-    
     void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
-    
-    uint GetNpar() const {return function_.GetNpar();}
-    
-    TF1& GetParametrizationFunction(int ipar) { return parametrization_.at(ipar); }
-    
     void SetIsFitted(bool is=true) { isfitted_=is; }
     void SetIsFixed( const std::vector <bool>& is ) { isfixed_=is; }
-    
+
+    const TF1& GetFunction() const { return function_; }
+    uint GetNpar() const {return function_.GetNpar();}
+    TF1& GetParametrizationFunction(int ipar) { return parametrization_.at(ipar); }
     bool GetIsFixed(uint ipar) const 
     { 
         if (ipar>=isfixed_.size()) 

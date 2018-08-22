@@ -14,6 +14,10 @@ Parameters::Parameters()
 {
 }
 
+/**
+* Parametrize fit results for all particles
+* @param particles vector of particles
+*/
 void Parameters::Parametrize( std::vector <ParticleFit> &particles)
 {
     std::vector <TGraphErrors> graphs;
