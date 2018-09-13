@@ -19,7 +19,7 @@ set(HEADERS
     )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra ")
 
 # Telling CMake where to find the ROOT installation.
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
@@ -42,3 +42,6 @@ target_link_libraries(Pid ${ROOT_LIBRARIES})
 add_executable(main main.cpp)
 target_link_libraries(main Pid ${ROOT_LIBRARIES})
 target_include_directories(main PUBLIC src)
+
+install(FILES ${HEADERS} DESTINATION include)
+install(TARGETS Pid DESTINATION lib)
