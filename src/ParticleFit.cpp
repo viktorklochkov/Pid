@@ -16,7 +16,7 @@ ParticleFit::ParticleFit()
 * @param p track momentum
 * @return vector of parameters
 */
-std::vector <double>&& ParticleFit::GetFunctionParams(float p) const
+std::vector <double> ParticleFit::GetFunctionParams(float p) const
 {
     std::vector <double> params;
     const uint npar = function_.GetNpar();        
@@ -26,12 +26,13 @@ std::vector <double>&& ParticleFit::GetFunctionParams(float p) const
 
     if (!isfitted_)
         return std::move(params);
-
+    
     for ( uint i=0; i<npar; ++i )
     {
         params.push_back( parametrization_.at(i).Eval(p) );
     }
-    return std::move(params);
+
+    return params;
 }
 
 /**

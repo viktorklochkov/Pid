@@ -8,11 +8,4 @@
 #pragma link C++ class Pid::ParticleFit+;
 #pragma link C++ class Pid::Getter+;
 
-// #pragma link C++ class InputGetter+;
-
-// #pragma link C++ class PidAnalyser+;
-// #pragma link C++ class PidParticle+;
-// #pragma link C++ class PidPeakParams+;
-// #pragma link C++ class TofPidGetter+;
-
 #endif

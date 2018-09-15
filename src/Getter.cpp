@@ -20,8 +20,6 @@ std::map<uint, float>&& Getter::GetBayesianProbability(float p, float m2)
 {
     std::map<uint, float> prob{};
 
-    std::cout << maxx_ << "  " << minx_ << std::endl;
-
     if (p>maxx_ || p<minx_) 
         return std::move(prob);
     

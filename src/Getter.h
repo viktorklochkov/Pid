@@ -1,7 +1,7 @@
 /** @file   Getter.h
     @class  Pid::Getter
     @author Viktor Klochkov (klochkov44@gmail.com)
-    @date   August 2018
+    @author Ilya Selyuzhenkov (ilya.selyuzhenkov@gmail.com)
     @brief  Class to calculate PID probabilities
 */
 
@@ -27,6 +27,20 @@ public:
     
     std::map<uint, float>&& GetBayesianProbability(float p, float m2);
     void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
+    
+    std::map<uint, float>&& GetSigma(float p, float m2)
+    {
+        std::map<uint, float> sigma{};
+
+        if (p>maxx_ || p<minx_) 
+            return std::move(sigma);
+        
+        for (auto &specie : species_)
+        {
+            sigma[specie.first] = abs(m2 - specie.second.GetMean(p)) / specie.second.GetSigma(p);
+        }
+        return std::move(sigma);
+    }
     
 private:
     

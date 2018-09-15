@@ -1,6 +1,6 @@
 /** @file   Constants.h
     @author Viktor Klochkov (klochkov44@gmail.com)
-    @date   August 2018
+    @author Ilya Selyuzhenkov (ilya.selyuzhenkov@gmail.com)
     @brief  Some constants and enumerators
 */
 
@@ -22,5 +22,15 @@ namespace PidParticles{
     const float masses[nParticles] = { 0.938, 0.140, 0.5, 0.0 };
     
 }
+
+namespace PidFunction{
+    enum eNames{
+        kA = 0,
+        kMean,
+        kSigma,
+        nParams
+    };    
+}
+
 
 #endif

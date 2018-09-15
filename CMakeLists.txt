@@ -9,6 +9,7 @@ set(SOURCES
     src/ParticleFit.cpp
     src/Parameters.cpp
     src/Getter.cpp
+    src/Container.cpp
     )
 
 string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")
@@ -19,7 +20,7 @@ set(HEADERS
     )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
 
 # Telling CMake where to find the ROOT installation.
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})

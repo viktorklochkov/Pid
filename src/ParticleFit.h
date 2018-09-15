@@ -1,7 +1,7 @@
 /** @file   ParticleFit.h
     @class  Pid::ParticleFit
     @author Viktor Klochkov (klochkov44@gmail.com)
-    @date   August 2018
+    @author Ilya Selyuzhenkov (ilya.selyuzhenkov@gmail.com)
     @brief  Class to store fit resuls for particle specie
 */
 
@@ -13,6 +13,7 @@
 
 #include "TF1.h"
 
+#include "Constants.h"
 
 namespace Pid
 {
@@ -25,7 +26,7 @@ public:
 	ParticleFit() ;
 	ParticleFit(int type) : particle_type_(type) {} ;
     
-    std::vector <double> &&GetFunctionParams(float p) const;
+    std::vector <double> GetFunctionParams(float p) const;
     float Eval(float p, float m2);
     
     void SetParametrization(const std::vector <TF1> &parametrization) { parametrization_ = parametrization; }
@@ -44,6 +45,8 @@ public:
         return isfixed_.at(ipar); 
     }
     
+    float GetSigma(float p) { return parametrization_.at(PidFunction::kSigma).Eval(p); }
+    float GetMean(float p) { return parametrization_.at(PidFunction::kMean).Eval(p); }
     
 private:
 
@@ -58,7 +61,6 @@ private:
     int particle_type_{-1};
     
     bool isfitted_{false};
-        
         
 // 	ClassDef(ParticleFit,2);
 

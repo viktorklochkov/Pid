@@ -86,7 +86,7 @@ TF1* Fitter::ConstructFit1DFunction(float p)
 {
     TF1 *temp{nullptr}; 
     TString sumname{""};
-    std::vector <double> par;
+    std::vector <double> par{};
     
     uint iparticle{0};
     for (auto const& particle : particles_)
@@ -98,6 +98,7 @@ TF1* Fitter::ConstructFit1DFunction(float p)
         std::vector <double> par_i = particle.GetFunctionParams(p);
         
         par.insert(par.end(), par_i.begin(), par_i.end());
+        
         iparticle++;
     }
 
