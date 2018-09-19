@@ -1,0 +1,13 @@
+include("${CMAKE_CURRENT_LIST_DIR}/PidTargets.cmake")
+
+@PACKAGE_INIT@
+
+message ("-- Found Pid...")
+
+set(Pid_INCLUDE_DIR	"@PACKAGE_Pid_INCLUDE_DIR@")
+message ("Pid_INCLUDE_DIR = ${Pid_INCLUDE_DIR}")
+
+
+set(Pid_LIBRARY_DIR	"@PACKAGE_Pid_LIBRARY_DIR@")
+message ("Pid_LIBRARY_DIR = ${Pid_LIBRARY_DIR}")
+

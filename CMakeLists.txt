@@ -3,6 +3,7 @@ project(pid)
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_cpp_STANDARD 14)
 set(CMAKE_BUILD_TYPE debug)
+set(PROJECT_VERSION 1.0)
 
 set(SOURCES 
     src/Fitter.cpp
@@ -44,5 +45,80 @@ add_executable(main main.cpp)
 target_link_libraries(main Pid ${ROOT_LIBRARIES})
 target_include_directories(main PUBLIC src)
 
-install(FILES ${HEADERS} DESTINATION include)
-install(TARGETS Pid DESTINATION lib)
+# Packaging routine
+# For complete explanation
+# @see https://cmake.org/cmake/help/git-master/manual/cmake-packages.7.html#creating-packages
+include(GenerateExportHeader)
+
+
+generate_export_header(Pid)
+set_property(TARGET Pid PROPERTY VERSION ${PROJECT_VERSION})
+set_property(TARGET Pid PROPERTY SOVERSION ${PROJECT_VERSION})
+set_property(TARGET Pid PROPERTY INTERFACE_Pid_MAJOR_VERSION 1)
+set_property(TARGET Pid APPEND PROPERTY COMPATIBLE_INTERFACE_STRING INTERFACE_Pid_MAJOR_VERSION)
+
+install(TARGETS Pid EXPORT PidTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
+        )
+
+install(
+        FILES
+        ${HEADERS}
+        "${CMAKE_CURRENT_BINARY_DIR}/pid_export.h"
+        DESTINATION
+        include
+        COMPONENT
+        Devel
+)
+
+install(
+        FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/${PCM_FILE_NAME}_rdict.pcm"
+        DESTINATION
+        lib
+        OPTIONAL
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/Pid/PidConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+)
+
+export(EXPORT PidTargets
+        FILE "${CMAKE_CURRENT_BINARY_DIR}/Pid/PidTargets.cmake")
+
+set(ConfigPackageLocation lib/cmake/Pid)
+
+set(Pid_INCLUDE_DIR "include")
+set(Pid_LIBRARY_DIR "lib")
+
+configure_package_config_file(
+        PidConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/Pid/PidConfig.cmake
+        INSTALL_DESTINATION ${ConfigPackageLocation}
+        PATH_VARS Pid_INCLUDE_DIR Pid_LIBRARY_DIR
+        #  [NO_SET_AND_CHECK_MACRO]
+        #  [NO_CHECK_REQUIRED_COMPONENTS_MACRO]
+        #  [INSTALL_PREFIX <path>]
+)
+
+install(EXPORT PidTargets
+        FILE
+        PidTargets.cmake
+        DESTINATION
+        ${ConfigPackageLocation}
+        )
+
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/Pid/PidConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/Pid/PidConfigVersion.cmake"
+        DESTINATION
+        ${ConfigPackageLocation}
+        COMPONENT
+        Devel
+        )
+
