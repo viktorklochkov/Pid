@@ -69,7 +69,7 @@ install(
         ${HEADERS}
         "${CMAKE_CURRENT_BINARY_DIR}/pid_export.h"
         DESTINATION
-        include
+        include/pid
         COMPONENT
         Devel
 )

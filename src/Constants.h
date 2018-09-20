@@ -8,8 +8,6 @@
 #ifndef PidConstants_H
 #define PidConstants_H 1
 
-const double SpeedOfLight = 29.9792458;
-
 namespace PidParticles{
     enum eParticle{
         kProton = 0,
