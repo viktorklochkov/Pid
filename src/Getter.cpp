@@ -16,7 +16,7 @@ Getter::Getter()
 * @param m2 square mass for TOF (or y-axis value, in general)
 * @return map with probabilities for all particle species
 */
-std::map<uint, float>&& Getter::GetBayesianProbability(float p, float m2)
+std::map<uint, float> Getter::GetBayesianProbability(float p, float m2)
 {
     std::map<uint, float> prob{};
 
@@ -30,9 +30,7 @@ std::map<uint, float>&& Getter::GetBayesianProbability(float p, float m2)
         sum += iprob;
         prob[specie.first] = iprob;
     }
-    
-    std::cout << sum << std::endl;
-    
+//     std::cout << sum << std::endl;
     if (sum < 1.) return std::move(prob); // no particles in this (p, m2) piont
     
     for (auto &iprob : prob)
@@ -40,7 +38,7 @@ std::map<uint, float>&& Getter::GetBayesianProbability(float p, float m2)
         iprob.second /= sum;
     }
 
-    return std::move(prob);
+    return prob;
 }
 
 }
