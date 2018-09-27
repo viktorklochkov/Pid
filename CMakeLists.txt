@@ -36,8 +36,12 @@ add_definitions(${ROOT_CXX_FLAGS})
 
 include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS})
 
-ROOT_GENERATE_DICTIONARY(G__Pid ${HEADERS} LINKDEF src/PidLinkDef.h)
-add_library(Pid SHARED ${SOURCES} G__Pid)
+set(DICT_FILE_NAME G__${PROJECT_NAME})
+set(PCM_FILE_NAME lib${PROJECT_NAME})
+
+
+ROOT_GENERATE_DICTIONARY(${DICT_FILE_NAME} ${HEADERS} LINKDEF src/PidLinkDef.h)
+add_library(Pid SHARED ${SOURCES} ${DICT_FILE_NAME})
 target_link_libraries(Pid ${ROOT_LIBRARIES})
 
 # Create a main program using the library
