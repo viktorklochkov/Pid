@@ -47,7 +47,7 @@ public:
         auto prob = GetBayesianProbability(p, m2);
         if (prob[PidParticles::kPion] > purity) return 211;
         if (prob[PidParticles::kProton] > purity) return 2212;
-        if (prob[PidParticles::kKaon] > purity) return 311;
+        if (prob[PidParticles::kKaon] > purity) return 321;
         return -1;
     }
     
