@@ -23,39 +23,42 @@ int main(int argc, char **argv) {
 
   std::unique_ptr <TFile> fIn { TFile::Open("../input/test_input.root", "read")};
   
+// some test histograms  
   std::unique_ptr <TH2D> hpion {(TH2D*) (fIn->Get("hTof_piplus_M2"))};
   std::unique_ptr <TH2D> hkaon {(TH2D*) (fIn->Get("hTof_kplus_M2"))};
   std::unique_ptr <TH2D> hproton {(TH2D*) (fIn->Get("hTof_p_M2"))};
   std::unique_ptr <TH2D> hpos {(TH2D*) (fIn->Get("hTofM2Pos"))};
-  
+// make reasonable bin size in momentum   
   hpion->Rebin2D(10,1);
   hkaon->Rebin2D(10,1);
   hproton->Rebin2D(10,1);
   hpos->Rebin2D(10,1);
-
+// set a function which will be used for peak fitting (here, for example, Gaussian)
   TF1 fit ("fit", "[0]*exp(-0.5*((x-[1])/[2])**2)", -0.5, 1.5);   fit.SetParLimits(0, 0., 1e10);  fit.SetParLimits(2, 0., 1.);
-  Pid::Fitter tof;
+  Pid::Fitter tof;  // main object
+
 // // // // // // // // // // // // // // // // //   
   Pid::ParticleFit pion( PidParticles::kPion );  
-  
-  TF1 pion0 ("pion0", "exp([0]+[1]*x)", 0.1, 10);   pion0.SetParameters(20., -2.);
-  TF1 pion1 ("pion1", "pol2", 0.1, 10);             pion1.SetParameters( TMath::Power(PidParticles::masses[PidParticles::kPion],2), 0, 0);
-  TF1 pion2 ("pion2", "pol2", 0.1, 10);             pion2.SetParameters(0.01, 0.0, 0);
+
+// set functions for parametrization of momentum dependance and some dummy starting values
+  TF1 pion0 ("pion_A", "exp([0]+[1]*x)", 0.1, 10);       pion0.SetParameters(20., -2.);
+  TF1 pion1 ("pion_mean", "pol2", 0.1, 10);              pion1.SetParameters( TMath::Power(PidParticles::masses[PidParticles::kPion],2), 0, 0);
+  TF1 pion2 ("pion_sigma", "pol2", 0.1, 10);             pion2.SetParameters(0.01, 0.0, 0);
   
   const std::vector <TF1> pion_par = { pion0, pion1, pion2 };
   pion.SetParametrization(pion_par);
   pion.SetFitFunction(fit);
-  pion.SetRange( 1., 5. );
-  pion.SetIsFitted();
+  pion.SetRange( 1., 5. ); // fitting range from 1 to 5 GeV/c
+  pion.SetIsFitted();   
   
-  tof.AddParticle(pion, PidParticles::kPion);
-  tof.SetHisto2D( std::move(hpion) );
-  tof.SetRangeX( 1., 5. );
-  tof.SetRangeY( -0.1, 0.1 );
+  tof.AddParticle(pion, PidParticles::kPion);  // add one particle to fitting procedure
+  tof.SetHisto2D( std::move(hpion) );          // set input histogram
+  tof.SetRangeX( 1., 5. );                     // set fitting range in X
+  tof.SetRangeY( -0.1, 0.1 );                  // set fitting range in Y
   tof.SetOutputFileName("pion.root");
   tof.Fit();
   
-  pion = tof.GetParticleSpecie(PidParticles::kPion);
+  pion = tof.GetParticleSpecie(PidParticles::kPion);   // move ParticleFit back to our object. That is done to avoid pointers usage -> move semantics
   tof.Clear();
 // // // // // // // // // // // // // // // // // // 
 
@@ -121,11 +124,11 @@ int main(int argc, char **argv) {
   bg.SetIsFitted();
 // // // // // // // // // // // // // // // // //   
   
-
+  // fix mean and sigma and fit only integral
   proton.SetIsFixed( {false, true, true} );
   pion.SetIsFixed( {false, true, true} );
   kaon.SetIsFixed( {false, true, true} );
-  
+  // add all particles + background into the fit object
   tof.AddParticle(proton, PidParticles::kProton);
   tof.AddParticle(pion, PidParticles::kPion);
   tof.AddParticle(kaon, PidParticles::kKaon);
@@ -136,8 +139,7 @@ int main(int argc, char **argv) {
   tof.SetRangeY( -0.3, 1.3 );
   tof.SetOutputFileName("all.root");
   tof.Fit();
-  
-  
+    
   proton = tof.GetParticleSpecie(PidParticles::kProton);
   pion = tof.GetParticleSpecie(PidParticles::kPion);
   kaon = tof.GetParticleSpecie(PidParticles::kKaon);
@@ -147,6 +149,7 @@ int main(int argc, char **argv) {
 
   std::unique_ptr <TH2D> hpos1 {(TH2D*) (fIn->Get("hTofM2Pos"))};
   hpos1->Rebin2D(10,1);
+// release all parameters
   proton.SetIsFixed( {false, false, false} );
   pion.SetIsFixed( {false, false, false} );
   kaon.SetIsFixed( {false, false, false} );
