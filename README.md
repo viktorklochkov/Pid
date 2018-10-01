@@ -3,16 +3,16 @@
 ## Installation
 
     cd pid
-    mkdir build
+    mkdir build install
     cd build
     source /path-to-root/thisroot.sh
-    cmake ../
-    make
+    cmake -DCMAKE_INSTALL_PREFIX=../install ../
+    make -j install
 
 ## Examples and short description 
 
 ### Fitting
-To modify fitting algorithm and function change file main.cpp
+To modify fitting algorithm, functions, etc change file main.cpp (follow documentation inside)
 
     cd build
     make
