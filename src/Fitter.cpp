@@ -120,9 +120,9 @@ TF1* Fitter::ConstructFit1DFunction(float p)
         }
         
     }
-    for (auto ipar : par)
-        std::cout << ipar << " ";
-    std::cout << std::endl;
+//     for (auto ipar : par)
+//         std::cout << ipar << " ";
+//     std::cout << std::endl;
 //     std::cout << f->GetName() << " " << f->GetExpFormula() << std::endl;
     
     delete temp;

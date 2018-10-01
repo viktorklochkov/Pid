@@ -35,8 +35,12 @@ int main(int argc, char **argv) {
   hpos->Rebin2D(10,1);
 // set a function which will be used for peak fitting (here, for example, Gaussian)
   TF1 fit ("fit", "[0]*exp(-0.5*((x-[1])/[2])**2)", -0.5, 1.5);   fit.SetParLimits(0, 0., 1e10);  fit.SetParLimits(2, 0., 1.);
-  Pid::Fitter tof;  // main object
 
+  Pid::Fitter tof; // main object
+  
+  const float xmin=0.5;
+  const float xmax=5;
+  
 // // // // // // // // // // // // // // // // //   
   Pid::ParticleFit pion( PidParticles::kPion );  
 
@@ -48,13 +52,15 @@ int main(int argc, char **argv) {
   const std::vector <TF1> pion_par = { pion0, pion1, pion2 };
   pion.SetParametrization(pion_par);
   pion.SetFitFunction(fit);
-  pion.SetRange( 1., 5. ); // fitting range from 1 to 5 GeV/c
-  pion.SetIsFitted();   
+
+  pion.SetRange( xmin, xmax );  // fitting range from xmin to xmax GeV/c
+  pion.SetIsFitted();
   
-  tof.AddParticle(pion, PidParticles::kPion);  // add one particle to fitting procedure
-  tof.SetHisto2D( std::move(hpion) );          // set input histogram
-  tof.SetRangeX( 1., 5. );                     // set fitting range in X
-  tof.SetRangeY( -0.1, 0.1 );                  // set fitting range in Y
+  tof.AddParticle(pion, PidParticles::kPion); // add one particle to fitting procedure
+  tof.SetHisto2D( std::move(hpion) );         // set input histogram
+  tof.SetRangeX( xmin, xmax );                // set fitting range in X
+  tof.SetRangeY( -0.1, 0.1 );                 // set fitting range in Y
+
   tof.SetOutputFileName("pion.root");
   tof.Fit();
   
@@ -72,12 +78,12 @@ int main(int argc, char **argv) {
   const std::vector <TF1> kaon_par = { kaon0, kaon1, kaon2 };
   kaon.SetParametrization(kaon_par);
   kaon.SetFitFunction(fit);
-  kaon.SetRange( 1., 5. );
+  kaon.SetRange( xmin, xmax );
   kaon.SetIsFitted();
   
   tof.AddParticle(kaon, PidParticles::kKaon);
   tof.SetHisto2D( std::move(hkaon) );
-  tof.SetRangeX( 1., 5. );
+  tof.SetRangeX( xmin, xmax );
   tof.SetRangeY( 0.1, 0.4 );
   tof.SetOutputFileName("kaon.root");
   tof.Fit();
@@ -96,12 +102,12 @@ int main(int argc, char **argv) {
   const std::vector <TF1> proton_par = { proton0, proton1, proton2 };
   proton.SetParametrization(proton_par);
   proton.SetFitFunction(fit);
-  proton.SetRange( 1., 5. );
+  proton.SetRange( xmin, xmax );
   proton.SetIsFitted();
   
   tof.AddParticle(proton, PidParticles::kProton);
   tof.SetHisto2D( std::move(hproton) );
-  tof.SetRangeX( 1., 5. );
+  tof.SetRangeX( xmin, xmax );
   tof.SetRangeY( 0.6, 1.1 );
   tof.SetOutputFileName("proton.root");
   tof.Fit();
@@ -120,7 +126,7 @@ int main(int argc, char **argv) {
   const std::vector <TF1> bg_par = { bg0, bg1, bg2 };
   bg.SetParametrization(bg_par);
   bg.SetFitFunction( TF1("bg", "pol2", 0., 10) );
-  bg.SetRange( 1., 5. );
+  bg.SetRange( xmin, xmax );
   bg.SetIsFitted();
 // // // // // // // // // // // // // // // // //   
   
@@ -135,7 +141,7 @@ int main(int argc, char **argv) {
   tof.AddParticle(bg, PidParticles::kBg);
   
   tof.SetHisto2D( std::move(hpos) );
-  tof.SetRangeX( 1., 5. );
+  tof.SetRangeX( xmin, xmax );
   tof.SetRangeY( -0.3, 1.3 );
   tof.SetOutputFileName("all.root");
   tof.Fit();
@@ -160,9 +166,9 @@ int main(int argc, char **argv) {
   tof.AddParticle(bg, PidParticles::kBg);
 
   tof.SetHisto2D( std::move(hpos1) );
-  tof.SetRangeX( 1., 5. );
+  tof.SetRangeX( xmin, xmax );
   tof.SetRangeY( -0.3, 1.3 );
-  tof.SetOutputFileName("all1.root");
+  tof.SetOutputFileName("all_final.root");
   tof.Fit();
   
   proton = tof.GetParticleSpecie(PidParticles::kProton);
