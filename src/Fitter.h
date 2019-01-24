@@ -45,6 +45,8 @@ public:
     { 
         return particles_.at( std::find(particles_id_.begin(), particles_id_.end(), i) - particles_id_.begin() ); 
     };
+    
+    void SetChi2Max (float chi2) { chi2_max_ = chi2; }
         
 private:
 

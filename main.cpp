@@ -16,7 +16,6 @@
 #include "Getter.h"
 #include "Constants.h"
 
-
 int main(int argc, char **argv) {
   auto start = std::chrono::system_clock::now();
   ROOT::EnableImplicitMT(2);    

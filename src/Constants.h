@@ -18,7 +18,6 @@ namespace PidParticles{
     };
     
     const float masses[nParticles] = { 0.938, 0.140, 0.5, 0.0 };
-    
 }
 
 namespace PidFunction{

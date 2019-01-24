@@ -12,7 +12,6 @@
 #include <array>
 
 #include "TF1.h"
-
 #include "Constants.h"
 
 namespace Pid
