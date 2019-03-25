@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-project(pid)
+project(Pid)
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_cpp_STANDARD 14)
 set(CMAKE_BUILD_TYPE debug)
@@ -81,6 +81,7 @@ install(
 install(
         FILES
         "${CMAKE_CURRENT_BINARY_DIR}/${PCM_FILE_NAME}_rdict.pcm"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PCM_FILE_NAME}.rootmap"
         DESTINATION
         lib
         OPTIONAL
