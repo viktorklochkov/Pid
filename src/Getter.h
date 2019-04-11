@@ -11,6 +11,7 @@
 #include <vector>
 #include <TCutG.h>
 #include <TText.h>
+#include <TMultiGraph.h>
 #include "ParticleFit.h"
 #include "TObject.h"
 
@@ -71,7 +72,10 @@ class CutGGetter : public TObject, public BaseGetter {
  public:
   void AddParticle(TCutG *cut, int pdgId) {
     if (cut) {
-      species_.insert({pdgId, cut});
+      auto insert_result = species_.insert({pdgId, {cut}});
+      if (!insert_result.second) {
+        (*insert_result.first).second.push_back(cut);
+      }
       return;
     }
 
@@ -82,10 +86,12 @@ class CutGGetter : public TObject, public BaseGetter {
 
     for (const auto &specie : species_) {
       int pdgId = specie.first;
-      auto cut = specie.second;
+      auto specieCuts = specie.second;
 
-      if (cut->IsInside(var1, var2)) {
-        return pdgId;
+      for (auto cut : specieCuts) {
+        if (cut->IsInside(var1, var2)) {
+          return pdgId;
+        }
       }
     }
 
@@ -95,22 +101,30 @@ class CutGGetter : public TObject, public BaseGetter {
   void Draw(Option_t *option = "") override {
     TObject::Draw(option);
 
+    TMultiGraph mg("mg","");
     TText pdgLabel;
+
     for (const auto &specie : species_) {
-      int pdgId = specie.first;
-      auto cut = specie.second;
-      cut->Draw(option);
-
-      double xc, yc;
-      cut->Center(xc, yc);
-      pdgLabel.DrawText(xc, yc, Form("%d", pdgId));
-
+      auto specieCuts = specie.second;
+      for (auto cut : specieCuts) mg.Add(cut);
     }
 
+    mg.DrawClone("AL");
+
+    for (const auto &specie : species_) {
+      int pdgId = specie.first;
+      auto specieCuts = specie.second;
+
+      double xc, yc;
+      for (auto cut : specieCuts) {
+        cut->Center(xc, yc);
+        pdgLabel.DrawText(xc, yc, Form("%d", pdgId));
+      }
+    }
   }
 
  protected:
-  std::map<int, TCutG *> species_{};
+  std::map<int, std::vector<TCutG *>> species_{};
 
  ClassDef(Pid::CutGGetter, 1)
 };
