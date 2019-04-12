@@ -17,21 +17,35 @@
 
 namespace Pid {
 
+/**
+ * @brief interface class for Pid getters
+ */
 class BaseGetter {
 
  public:
+
+  virtual ~BaseGetter() = default;
+
+  virtual double GetWeight(float var1, float  var2, int pid)  = 0;
+
+  virtual std::map <int, float > GetWeights(float var1, float var2) = 0;
+
   virtual int GetPid(float var1, float var2, float purity) = 0;
 
   virtual void Streamer(TBuffer &) {};
 };
 
+
+/**
+ * @brief Bayesian Pid getter
+ */
 class Getter : public TObject, public BaseGetter {
  public:
 
   void AddParticle(const ParticleFit &particle, uint id) { species_[id] = particle; }
-  void AddParticles(std::map<uint, ParticleFit> &&species) { species_ = species; }
+  void AddParticles(std::map<int, ParticleFit> &&species) { species_ = species; }
 
-  std::map<uint, float> GetBayesianProbability(float p, float m2);
+  std::map<int, float> GetBayesianProbability(float p, float m2);
   void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
 
   std::map<uint, float> GetSigma(float p, float m2) {
@@ -54,13 +68,21 @@ class Getter : public TObject, public BaseGetter {
     return -1;
   }
 
+  double GetWeight(float var1, float var2, int pid) override {
+    // not yet implemented
+    return 1.0;
+  }
+  std::map<int, float> GetWeights(float var1, float var2) override {
+    return GetBayesianProbability(var1, var2);
+  }
+
  private:
 
-  std::map<uint, ParticleFit> species_{};
+  std::map<int, ParticleFit> species_{};
   float minx_{-100000.};
   float maxx_{100000.};
 
- ClassDef(Getter, 1);
+ ClassDefOverride(Getter, 1);
 
 };
 
@@ -98,6 +120,20 @@ class CutGGetter : public TObject, public BaseGetter {
     return -1;
   }
 
+  double GetWeight(float var1, float var2, int pid) override {
+    return 1.0*(GetPid(var1, var2, 1) == pid);
+  }
+
+  std::map<int, float> GetWeights(float var1, float var2) override {
+    std::map<int, float> result;
+
+    for (const auto &specie : species_) {
+      result.insert({specie.first, GetWeight(var1, var2, specie.first)});
+    }
+
+    return std::map<int, float>();
+  }
+
   void Draw(Option_t *option = "") override {
     TObject::Draw(option);
 
@@ -109,7 +145,7 @@ class CutGGetter : public TObject, public BaseGetter {
       for (auto cut : specieCuts) mg.Add(cut);
     }
 
-    mg.DrawClone("AL");
+    mg.DrawClone(option);
 
     for (const auto &specie : species_) {
       int pdgId = specie.first;
@@ -126,7 +162,7 @@ class CutGGetter : public TObject, public BaseGetter {
  protected:
   std::map<int, std::vector<TCutG *>> species_{};
 
- ClassDef(Pid::CutGGetter, 1)
+ ClassDefOverride(Pid::CutGGetter, 1)
 };
 
 }
