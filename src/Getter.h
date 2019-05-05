@@ -62,9 +62,8 @@ class Getter : public TObject, public BaseGetter {
 
   int GetPid(float p, float m2, float purity) override {
     auto prob = GetBayesianProbability(p, m2);
-    if (prob[PidParticles::kPion] > purity) return 211;
-    if (prob[PidParticles::kProton] > purity) return 2212;
-    if (prob[PidParticles::kKaon] > purity) return 321;
+    for (auto &pid_prob : prob)
+      if (pid_prob.second >= purity) return pid_prob.first;
     return -1;
   }
 
