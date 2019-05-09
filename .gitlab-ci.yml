@@ -14,9 +14,9 @@
     # command fails, but environment setup scripts typically expect errexit off.
     # Temporarily disable errexit when sourcing the setup script.
     - set +e && source ${ROOT_BASE}/bin/thisroot.sh; set -e
-#    - set +e && source ${GCC_BASE}/setup.sh; set -e
-#    - export CC=`which gcc`
-#    - export CXX=`which g++`
+    - set +e && source ${GCC_BASE}/setup.sh; set -e
+    - export CC=$(which gcc)
+    - export CXX=$(which g++)
     - mkdir build && mkdir install && cd ./build
     - /cvmfs/sft.cern.ch/lcg/contrib/CMake/3.13.4/Linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=../install ..
     - make && make install
