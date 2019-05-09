@@ -18,7 +18,7 @@
 #    - export CC=`which gcc`
 #    - export CXX=`which g++`
     - mkdir build && mkdir install && cd ./build
-    - cmake -DCMAKE_INSTALL_PREFIX=../install ..
+    - /cvmfs/sft.cern.ch/lcg/contrib/CMake/3.13.4/Linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=../install ..
     - make && make install
 
 stages:
