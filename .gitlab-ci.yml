@@ -3,6 +3,7 @@
     # Make you job be executed in a shared runner that has CVMFS mounted
     - cvmfs
   stage: build
+  image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
   script:
     # access sft.cern.ch
     - ls /cvmfs/sft.cern.ch/
