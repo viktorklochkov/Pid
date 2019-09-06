@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
   auto start = std::chrono::system_clock::now();
   ROOT::EnableImplicitMT(2);    
 
-  std::unique_ptr <TFile> fIn { TFile::Open("/home/ogolosov/desktop/analysis/pid/input/cbm_input_botvina_12agev.root", "read")};
+  std::unique_ptr <TFile> fIn { TFile::Open("../input/cbm_input_botvina_12agev.root", "read")};
   
 // some test histograms  
   std::unique_ptr <TH2D> hpos {(TH2D*) fIn->Get("hTofM2")};
