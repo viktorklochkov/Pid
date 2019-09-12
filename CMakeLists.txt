@@ -5,20 +5,20 @@ set(CMAKE_cpp_STANDARD 14)
 set(CMAKE_BUILD_TYPE debug)
 set(PROJECT_VERSION 1.0)
 
-set(SOURCES 
-    src/Fitter.cpp
-    src/ParticleFit.cpp
-    src/Parameters.cpp
-    src/Getter.cpp
-    src/Container.cpp
-    )
+set(SOURCES
+        src/Fitter.cpp
+        src/ParticleFit.cpp
+        src/Parameters.cpp
+        src/Getter.cpp
+        src/Container.cpp
+        )
 
 string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")
 
-set(HEADERS 
-    ${HEADERS}
-    src/Constants.h
-    )
+set(HEADERS
+        ${HEADERS}
+        src/Constants.h
+        )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")

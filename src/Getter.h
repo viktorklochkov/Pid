@@ -12,52 +12,47 @@
 #include "ParticleFit.h"
 #include "TObject.h"
 
-namespace Pid
-{
+namespace Pid {
 
-class Getter : public TObject
-{
-public:
-    
-	/**   Default constructor   **/
-	Getter() ;
-    
-    void AddParticle (const ParticleFit& particle, uint id) { species_[id] = particle; }
-    void AddParticles (std::map<uint, ParticleFit> &&species) { species_ = species; }
-    
-    std::map<uint, float> GetBayesianProbability(float p, float m2);
-    void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
-    
-    std::map<uint, float> GetSigma(float p, float m2)
-    {
-        std::map<uint, float> sigma{};
+class Getter : public TObject {
+ public:
 
-        if (p>maxx_ || p<minx_) 
-            return sigma;
-        
-        for (auto &specie : species_)
-        {
-            sigma[specie.first] = abs(m2 - specie.second.GetMean(p)) / specie.second.GetSigma(p);
-        }
-        return sigma;
+  /**   Default constructor   **/
+  Getter();
+
+  void AddParticle(const ParticleFit &particle, uint id) { species_[id] = particle; }
+  void AddParticles(std::map<uint, ParticleFit> &&species) { species_ = species; }
+
+  std::map<uint, double> GetBayesianProbability(double p, double m2);
+  void SetRange(double min, double max) { minx_ = min, maxx_ = max; }
+
+  std::map<uint, double> GetSigma(double p, double m2) {
+    std::map<uint, double> sigma{};
+
+    if (p > maxx_ || p < minx_)
+      return sigma;
+
+    for (auto &specie : species_) {
+      sigma[specie.first] = abs(m2 - specie.second.GetMean(p)) / specie.second.GetSigma(p);
     }
-    
-    int GetPid(float p, float m2, float purity)
-    {
-        auto prob = GetBayesianProbability(p, m2);
-        if (prob[PidParticles::kPion] > purity) return 211;
-        if (prob[PidParticles::kProton] > purity) return 2212;
-        if (prob[PidParticles::kKaon] > purity) return 321;
-        return -1;
-    }
-    
-private:
-    
-    std::map<uint, ParticleFit> species_{};
-    float minx_{-100000.};
-    float maxx_{100000.};
-    
-ClassDef(Getter,1);
+    return sigma;
+  }
+
+  int GetPid(double p, double m2, double purity) {
+    auto prob = GetBayesianProbability(p, m2);
+    if (prob[PidParticles::kPion] > purity) return 211;
+    if (prob[PidParticles::kProton] > purity) return 2212;
+    if (prob[PidParticles::kKaon] > purity) return 321;
+    return -1;
+  }
+
+ private:
+
+  std::map<uint, ParticleFit> species_{};
+  double minx_{-100000.};
+  double maxx_{100000.};
+
+ ClassDef(Getter, 1);
 
 };
 
