@@ -2,7 +2,6 @@
 #include <vector>
 #include <array>
 
-
 /**
  *
  * Pid for PbPb @ 30A GeV obtained using TShine framework
@@ -172,135 +171,140 @@ const std::vector<std::array<float, 9> > neg =
         {0.725, 1.185, 0.621268, -1, -1, 0, -1, -1, 0}
     };
 
-
 int pid_pbpb30_TShine() {
 
-    vector<float> rvmom{};
-    rvmom.insert(rvmom.begin(), vmom.rbegin(), vmom.rend());
+  vector<float> rvmom{};
+  rvmom.insert(rvmom.begin(), vmom.rbegin(), vmom.rend());
 
-    assert(vmom.size() == pos.size());
+  assert(vmom.size() == pos.size());
 
-    auto pid_getter = new Pid::CutGGetter;
-    {
-        // positive pions
-        vector <double> vxLo; vector <double> vyLo;
-        vector <double> vxHi; vector <double> vyHi;
+  auto pid_getter = new Pid::CutGGetter;
+  {
+    // positive pions
+    vector<double> vxLo;
+    vector<double> vyLo;
+    vector<double> vxHi;
+    vector<double> vyHi;
 
-        int ip = 0;
-        for (auto p : rvmom) {
-            auto dedxLo = pos[ip][0];
-            auto dedxHi = pos[ip][1];
-            ++ip;
+    int ip = 0;
+    for (auto p : rvmom) {
+      auto dedxLo = pos[ip][0];
+      auto dedxHi = pos[ip][1];
+      ++ip;
 
-            if (dedxHi <= dedxLo) {
-                // skip this point
-                cout << "Skip!" << endl;
-                continue;
-            }
+      if (dedxHi <= dedxLo) {
+        // skip this point
+        cout << "Skip!" << endl;
+        continue;
+      }
 
-            if (dedxLo < 0 || dedxHi < 0) {
-                // skip this point
-                cout << "Skip!" << endl;
-                continue;
-            }
-            cout << p << " " << dedxLo << " " << dedxHi << endl;
-            vxLo.push_back(p);
-            vyLo.push_back(dedxLo);
-            vxHi.push_back(p);
-            vyHi.push_back(dedxHi);
-        }
-
-        vxLo.insert(vxLo.end(), vxHi.rbegin(), vxHi.rend());
-        vyLo.insert(vyLo.end(), vyHi.rbegin(), vyHi.rend());
-
-        auto cutg = new TCutG("dEdx_pion", vxLo.size(), vxLo.data(), vyLo.data());
-        cutg->SetLineWidth(3);
-        cutg->SetLineColor(kRed);
-
-        pid_getter->AddParticle(cutg, 211);
+      if (dedxLo < 0 || dedxHi < 0) {
+        // skip this point
+        cout << "Skip!" << endl;
+        continue;
+      }
+      cout << p << " " << dedxLo << " " << dedxHi << endl;
+      vxLo.push_back(p);
+      vyLo.push_back(dedxLo);
+      vxHi.push_back(p);
+      vyHi.push_back(dedxHi);
     }
 
-    {
-        // negative pions
-        vector <double> vxLo; vector <double> vyLo;
-        vector <double> vxHi; vector <double> vyHi;
+    vxLo.insert(vxLo.end(), vxHi.rbegin(), vxHi.rend());
+    vyLo.insert(vyLo.end(), vyHi.rbegin(), vyHi.rend());
 
-        int ip = 0;
-        for (auto p : rvmom) {
-            p = -p;
-            auto dedxLo = neg[ip][0];
-            auto dedxHi = neg[ip][1];
-            ++ip;
+    auto cutg = new TCutG("dEdx_pion", vxLo.size(), vxLo.data(), vyLo.data());
+    cutg->SetLineWidth(3);
+    cutg->SetLineColor(kRed);
 
-            if (dedxHi <= dedxLo) {
-                // skip this point
-                cout << "Skip!" << endl;
-                continue;
-            }
+    pid_getter->AddParticle(cutg, 211);
+  }
 
-            if (dedxLo < 0 || dedxHi < 0) {
-                // skip this point
-                cout << "Skip!" << endl;
-                continue;
-            }
-            cout << p << " " << dedxLo << " " << dedxHi << endl;
-            vxLo.push_back(p);
-            vyLo.push_back(dedxLo);
-            vxHi.push_back(p);
-            vyHi.push_back(dedxHi);
-        }
+  {
+    // negative pions
+    vector<double> vxLo;
+    vector<double> vyLo;
+    vector<double> vxHi;
+    vector<double> vyHi;
 
-        vxLo.insert(vxLo.end(), vxHi.rbegin(), vxHi.rend());
-        vyLo.insert(vyLo.end(), vyHi.rbegin(), vyHi.rend());
+    int ip = 0;
+    for (auto p : rvmom) {
+      p = -p;
+      auto dedxLo = neg[ip][0];
+      auto dedxHi = neg[ip][1];
+      ++ip;
 
-        auto cutg = new TCutG("dEdx_pion_neg", vxLo.size(), vxLo.data(), vyLo.data());
-        cutg->SetLineWidth(3);
-        cutg->SetLineColor(kRed);
+      if (dedxHi <= dedxLo) {
+        // skip this point
+        cout << "Skip!" << endl;
+        continue;
+      }
 
-        pid_getter->AddParticle(cutg, -211);
+      if (dedxLo < 0 || dedxHi < 0) {
+        // skip this point
+        cout << "Skip!" << endl;
+        continue;
+      }
+      cout << p << " " << dedxLo << " " << dedxHi << endl;
+      vxLo.push_back(p);
+      vyLo.push_back(dedxLo);
+      vxHi.push_back(p);
+      vyHi.push_back(dedxHi);
     }
 
-    {
-        // protons
-        vector <double> vxLo; vector <double> vyLo;
-        vector <double> vxHi; vector <double> vyHi;
+    vxLo.insert(vxLo.end(), vxHi.rbegin(), vxHi.rend());
+    vyLo.insert(vyLo.end(), vyHi.rbegin(), vyHi.rend());
 
-        int ip = 0;
-        for (auto p : rvmom) {
-            double dedxLo = pos[ip][3];
-            double dedxHi = pos[ip][4];
-            ++ip;
+    auto cutg = new TCutG("dEdx_pion_neg", vxLo.size(), vxLo.data(), vyLo.data());
+    cutg->SetLineWidth(3);
+    cutg->SetLineColor(kRed);
 
-            if (dedxHi <= dedxLo) {
-                // skip this point
-                cout << "Skip!" << endl;
-                continue;
-            }
+    pid_getter->AddParticle(cutg, -211);
+  }
 
-            if (dedxLo < 0 || dedxHi < 0) {
-                // skip this point
-                cout << "Skip!" << endl;
-                continue;
-            }
+  {
+    // protons
+    vector<double> vxLo;
+    vector<double> vyLo;
+    vector<double> vxHi;
+    vector<double> vyHi;
 
-            cout << p << " " << dedxLo << " " << dedxHi << endl;
-            vxLo.push_back(p);
-            vyLo.push_back(dedxLo);
-            vxHi.push_back(p);
-            vyHi.push_back(dedxHi);
-        }
+    int ip = 0;
+    for (auto p : rvmom) {
+      double dedxLo = pos[ip][3];
+      double dedxHi = pos[ip][4];
+      ++ip;
 
-        vxLo.insert(vxLo.end(), vxHi.rbegin()+1, vxHi.rend());
-        vyLo.insert(vyLo.end(), vyHi.rbegin()+1, vyHi.rend());
+      if (dedxHi <= dedxLo) {
+        // skip this point
+        cout << "Skip!" << endl;
+        continue;
+      }
 
-        auto cutg = new TCutG("dEdx_proton", vxLo.size(), vxLo.data(), vyLo.data());
-        cutg->SetLineWidth(3);
-        cutg->SetLineColor(kBlack);
+      if (dedxLo < 0 || dedxHi < 0) {
+        // skip this point
+        cout << "Skip!" << endl;
+        continue;
+      }
 
-        pid_getter->AddParticle(cutg, 2212);
+      cout << p << " " << dedxLo << " " << dedxHi << endl;
+      vxLo.push_back(p);
+      vyLo.push_back(dedxLo);
+      vxHi.push_back(p);
+      vyHi.push_back(dedxHi);
     }
-    
-    pid_getter->Draw();
 
-    return 0;
+    vxLo.insert(vxLo.end(), vxHi.rbegin() + 1, vxHi.rend());
+    vyLo.insert(vyLo.end(), vyHi.rbegin() + 1, vyHi.rend());
+
+    auto cutg = new TCutG("dEdx_proton", vxLo.size(), vxLo.data(), vyLo.data());
+    cutg->SetLineWidth(3);
+    cutg->SetLineColor(kBlack);
+
+    pid_getter->AddParticle(cutg, 2212);
+  }
+
+  pid_getter->Draw();
+
+  return 0;
 }

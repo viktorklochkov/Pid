@@ -26,15 +26,14 @@ class BaseGetter {
 
   virtual ~BaseGetter() = default;
 
-  virtual double GetWeight(double var1, double  var2, int pid)  = 0;
+  virtual double GetWeight(double var1, double var2, int pid) = 0;
 
-  virtual std::map <int, double > GetWeights(double var1, double var2) = 0;
+  virtual std::map<int, double> GetWeights(double var1, double var2) = 0;
 
   virtual int GetPid(double var1, double var2, double purity) = 0;
 
   virtual void Streamer(TBuffer &) {};
 };
-
 
 /**
  * @brief Bayesian Pid getter
@@ -120,7 +119,7 @@ class CutGGetter : public TObject, public BaseGetter {
   }
 
   double GetWeight(double var1, double var2, int pid) override {
-    return 1.0*(GetPid(var1, var2, 1) == pid);
+    return 1.0 * (GetPid(var1, var2, 1) == pid);
   }
 
   std::map<int, double> GetWeights(double var1, double var2) override {
@@ -136,7 +135,7 @@ class CutGGetter : public TObject, public BaseGetter {
   void Draw(Option_t *option = "") override {
     TObject::Draw(option);
 
-    TMultiGraph mg("mg","");
+    TMultiGraph mg("mg", "");
     TText pdgLabel;
 
     for (const auto &specie : species_) {

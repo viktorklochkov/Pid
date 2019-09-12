@@ -9,43 +9,42 @@
 
 #include <unordered_map>
 
-namespace PidParticles{
-    enum eParticle{
-        kBgPos = 1,
-        kBgNeg = -1,
-        kProton = 2212,
-        kAntiProton = -2212,
-        kPionPos = 211,
-        kPionNeg = -211,
-        kKaonPos = 321,
-        kKaonNeg = -321,
-        kDeutron = 1000010020,
-        kHelium = 1000020040
-    };
-    
-    const std::unordered_map <int, float> masses = 
+namespace PidParticles {
+enum eParticle {
+  kBgPos = 1,
+  kBgNeg = -1,
+  kProton = 2212,
+  kAntiProton = -2212,
+  kPionPos = 211,
+  kPionNeg = -211,
+  kKaonPos = 321,
+  kKaonNeg = -321,
+  kDeutron = 1000010020,
+  kHelium = 1000020040
+};
+
+const std::unordered_map<int, float> masses =
     {
-      { kBgPos, 0. },
-      { kBgNeg, 0. },
-      { kProton, 0.938 },
-      { kAntiProton, 0.938 },
-      { kPionPos, 0.140 },
-      { kPionNeg, 0.140 },
-      { kKaonPos, 0.498 },
-      { kKaonNeg, 0.498 },
-      { kDeutron, 1.862 },
-      { kHelium, 3.724 },
+        {kBgPos, 0.},
+        {kBgNeg, 0.},
+        {kProton, 0.938},
+        {kAntiProton, 0.938},
+        {kPionPos, 0.140},
+        {kPionNeg, 0.140},
+        {kKaonPos, 0.498},
+        {kKaonNeg, 0.498},
+        {kDeutron, 1.862},
+        {kHelium, 3.724},
     };
 }
 
-namespace PidFunction{
-    enum eNames{
-        kA = 0,
-        kMean,
-        kSigma,
-        nParams
-    };    
+namespace PidFunction {
+enum eNames {
+  kA = 0,
+  kMean,
+  kSigma,
+  nParams
+};
 }
-
 
 #endif
