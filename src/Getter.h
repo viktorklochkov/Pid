@@ -26,11 +26,11 @@ class BaseGetter {
 
   virtual ~BaseGetter() = default;
 
-  virtual double GetWeight(float var1, float  var2, int pid)  = 0;
+  virtual double GetWeight(double var1, double  var2, int pid)  = 0;
 
-  virtual std::map <int, float > GetWeights(float var1, float var2) = 0;
+  virtual std::map <int, double > GetWeights(double var1, double var2) = 0;
 
-  virtual int GetPid(float var1, float var2, float purity) = 0;
+  virtual int GetPid(double var1, double var2, double purity) = 0;
 
   virtual void Streamer(TBuffer &) {};
 };
@@ -45,11 +45,11 @@ class Getter : public TObject, public BaseGetter {
   void AddParticle(const ParticleFit &particle, uint id) { species_[id] = particle; }
   void AddParticles(std::map<int, ParticleFit> &&species) { species_ = species; }
 
-  std::map<int, float> GetBayesianProbability(float p, float m2);
-  void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
+  std::map<int, double> GetBayesianProbability(double p, double m2);
+  void SetRange(double min, double max) { minx_ = min, maxx_ = max; }
 
-  std::map<uint, float> GetSigma(float p, float m2) {
-    std::map<uint, float> sigma{};
+  std::map<uint, double> GetSigma(double p, double m2) {
+    std::map<uint, double> sigma{};
 
     if (p > maxx_ || p < minx_)
       return sigma;
@@ -60,26 +60,26 @@ class Getter : public TObject, public BaseGetter {
     return sigma;
   }
 
-  int GetPid(float p, float m2, float purity) override {
+  int GetPid(double p, double m2, double purity) override {
     auto prob = GetBayesianProbability(p, m2);
     for (auto &pid_prob : prob)
       if (pid_prob.second >= purity) return pid_prob.first;
     return -1;
   }
 
-  double GetWeight(float var1, float var2, int pid) override {
+  double GetWeight(double var1, double var2, int pid) override {
     // not yet implemented
     return 1.0;
   }
-  std::map<int, float> GetWeights(float var1, float var2) override {
+  std::map<int, double> GetWeights(double var1, double var2) override {
     return GetBayesianProbability(var1, var2);
   }
 
  private:
 
   std::map<int, ParticleFit> species_{};
-  float minx_{-100000.};
-  float maxx_{100000.};
+  double minx_{-100000.};
+  double maxx_{100000.};
 
  ClassDefOverride(Getter, 1);
 
@@ -103,7 +103,7 @@ class CutGGetter : public TObject, public BaseGetter {
     throw std::logic_error("empty TCutG object");
   }
 
-  int GetPid(float var1, float var2, float) override {
+  int GetPid(double var1, double var2, double) override {
 
     for (const auto &specie : species_) {
       int pdgId = specie.first;
@@ -119,18 +119,18 @@ class CutGGetter : public TObject, public BaseGetter {
     return -1;
   }
 
-  double GetWeight(float var1, float var2, int pid) override {
+  double GetWeight(double var1, double var2, int pid) override {
     return 1.0*(GetPid(var1, var2, 1) == pid);
   }
 
-  std::map<int, float> GetWeights(float var1, float var2) override {
-    std::map<int, float> result;
+  std::map<int, double> GetWeights(double var1, double var2) override {
+    std::map<int, double> result;
 
     for (const auto &specie : species_) {
       result.insert({specie.first, GetWeight(var1, var2, specie.first)});
     }
 
-    return std::map<int, float>();
+    return std::map<int, double>();
   }
 
   void Draw(Option_t *option = "") override {

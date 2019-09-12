@@ -13,22 +13,22 @@ namespace Pid
 * @param m2 square mass for TOF (or y-axis value, in general)
 * @return map with probabilities for all particle species
 */
-std::map<int, float> Getter::GetBayesianProbability(float p, float m2)
+std::map<int, double> Getter::GetBayesianProbability(double p, double m2)
 {
-    std::map<int, float> prob{};
+    std::map<int, double> prob{};
 
     if (p>maxx_ || p<minx_) 
-        return std::move(prob);
+        return prob;
     
-    float sum{0.};
+    double sum{0.};
     for (auto &specie : species_)
     {
-        const float iprob = specie.second.Eval(p, m2);
+        const double iprob = specie.second.Eval(p, m2);
         sum += iprob;
         prob[specie.first] = iprob;
     }
 //     std::cout << sum << std::endl;
-    if (sum < 1.) return std::move(prob); // no particles in (p, m2) point
+    if (sum < 1.) return prob; // no particles in (p, m2) point
     
     for (auto &iprob : prob)
     {
