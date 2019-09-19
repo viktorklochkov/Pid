@@ -1,6 +1,6 @@
 #include "ParticleFit.h"
 
-// ClassImp(Pid::ParticleFit)
+ClassImp(Pid::ParticleFit)
 
 namespace Pid {
 

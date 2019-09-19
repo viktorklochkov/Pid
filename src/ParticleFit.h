@@ -58,7 +58,7 @@ class ParticleFit {
 
   bool isfitted_{false};
 
-// 	ClassDef(ParticleFit,2);
+ 	ClassDef(ParticleFit,2);
 
 };
 
