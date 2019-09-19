@@ -24,7 +24,7 @@ class ParticleFit {
   explicit ParticleFit(int type) : particle_type_(type) {};
 
   std::vector<double> GetFunctionParams(double p) const;
-  double Eval(double p, double m2);
+  double Eval(double p, double m2) const;
 
   void SetParametrization(const std::vector<TF1> &parametrization) { parametrization_ = parametrization; }
   void SetFitFunction(const TF1 &function) { function_ = function; }
@@ -41,8 +41,8 @@ class ParticleFit {
     return isfixed_.at(ipar);
   }
 
-  double GetSigma(double p) { return parametrization_.at(PidFunction::kSigma).Eval(p); }
-  double GetMean(double p) { return parametrization_.at(PidFunction::kMean).Eval(p); }
+  double GetSigma(double p) const { return parametrization_.at(PidFunction::kSigma).Eval(p); }
+  double GetMean(double p) const { return parametrization_.at(PidFunction::kMean).Eval(p); }
 
  private:
 

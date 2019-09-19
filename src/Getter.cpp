@@ -11,7 +11,7 @@ namespace Pid {
 * @param m2 square mass for TOF (or y-axis value, in general)
 * @return map with probabilities for all particle species
 */
-std::map<int, double> Getter::GetBayesianProbability(double p, double m2) {
+std::map<int, double> Getter::GetBayesianProbability(double p, double m2) const {
   std::map<int, double> prob{};
 
   if (p > maxx_ || p < minx_)

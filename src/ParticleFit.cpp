@@ -35,15 +35,18 @@ std::vector<double> ParticleFit::GetFunctionParams(double p) const {
 * @param m2 track mass square
 * @return vector of parameters
 */
-double ParticleFit::Eval(double p, double m2) {
+double ParticleFit::Eval(double p, double m2) const {
   if (p > maxx_ || p < minx_) return 0.;
 
   const uint npar = function_.GetNpar();
   if (parametrization_.size() != npar)
     exit(1);
 
-  function_.SetParameters(&(GetFunctionParams(p)[0]));
-  return function_.Eval(m2);
+  TF1* f2 = (TF1*) function_.Clone();
+  f2->SetParameters(&(GetFunctionParams(p)[0]));
+  double ret = f2->Eval(m2);
+  delete f2;
+  return ret;
 }
 
 }

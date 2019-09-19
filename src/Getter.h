@@ -26,11 +26,11 @@ class BaseGetter {
 
   virtual ~BaseGetter() = default;
 
-  virtual double GetWeight(double var1, double var2, int pid) = 0;
+  virtual double GetWeight(double var1, double var2, int pid) const = 0;
 
-  virtual std::map<int, double> GetWeights(double var1, double var2) = 0;
+  virtual std::map<int, double> GetWeights(double var1, double var2) const = 0;
 
-  virtual int GetPid(double var1, double var2, double purity) = 0;
+  virtual int GetPid(double var1, double var2, double purity) const = 0;
 
   virtual void Streamer(TBuffer &) {};
 };
@@ -44,33 +44,33 @@ class Getter : public TObject, public BaseGetter {
   void AddParticle(const ParticleFit &particle, uint id) { species_[id] = particle; }
   void AddParticles(std::map<int, ParticleFit> &&species) { species_ = species; }
 
-  std::map<int, double> GetBayesianProbability(double p, double m2);
+  std::map<int, double> GetBayesianProbability(double p, double m2) const;
   void SetRange(double min, double max) { minx_ = min, maxx_ = max; }
 
-  std::map<uint, double> GetSigma(double p, double m2) {
+  std::map<uint, double> GetSigma(double p, double m2) const {
     std::map<uint, double> sigma{};
 
     if (p > maxx_ || p < minx_)
       return sigma;
 
-    for (auto &specie : species_) {
+    for (const auto &specie : species_) {
       sigma[specie.first] = abs(m2 - specie.second.GetMean(p)) / specie.second.GetSigma(p);
     }
     return sigma;
   }
 
-  int GetPid(double p, double m2, double purity) override {
+  int GetPid(double p, double m2, double purity) const override {
     auto prob = GetBayesianProbability(p, m2);
     for (auto &pid_prob : prob)
       if (pid_prob.second >= purity) return pid_prob.first;
     return -1;
   }
 
-  double GetWeight(double var1, double var2, int pid) override {
+  double GetWeight(double var1, double var2, int pid) const override {
     // not yet implemented
     return 1.0;
   }
-  std::map<int, double> GetWeights(double var1, double var2) override {
+  std::map<int, double> GetWeights(double var1, double var2) const override {
     return GetBayesianProbability(var1, var2);
   }
 
@@ -102,7 +102,7 @@ class CutGGetter : public TObject, public BaseGetter {
     throw std::logic_error("empty TCutG object");
   }
 
-  int GetPid(double var1, double var2, double) override {
+  int GetPid(double var1, double var2, double) const override {
 
     for (const auto &specie : species_) {
       int pdgId = specie.first;
@@ -118,11 +118,11 @@ class CutGGetter : public TObject, public BaseGetter {
     return -1;
   }
 
-  double GetWeight(double var1, double var2, int pid) override {
+  double GetWeight(double var1, double var2, int pid) const override {
     return 1.0 * (GetPid(var1, var2, 1) == pid);
   }
 
-  std::map<int, double> GetWeights(double var1, double var2) override {
+  std::map<int, double> GetWeights(double var1, double var2) const override {
     std::map<int, double> result;
 
     for (const auto &specie : species_) {
