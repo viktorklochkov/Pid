@@ -1,0 +1,38 @@
+//
+// Created by eugene on 25/11/2019.
+//
+
+#include "DeDxShineFitModel.h"
+#include "AsymmetricGaussPDF.h"
+
+ClassImp(AsymmetricGaussPDF);
+
+Double_t AsymmetricGaussPDF::evaluate() const {
+  return AsymmetricGaussFCT(x_, mu_, sigma_, d_);
+}
+
+AsymmetricGaussPDF::AsymmetricGaussPDF(const char *name,
+                                       const char *title,
+                                       RooAbsReal &_x,
+                                       RooAbsReal &_mu,
+                                       RooAbsReal &_sigma,
+                                       RooAbsReal &_d) : RooAbsPdf(name, title),
+                                                         x_("x", "Observable", this, _x),
+                                                         mu_("mu_", "Mean", this, _mu),
+                                                         sigma_("sigma", "Width", this, _sigma),
+                                                         d_("d", "Asymmetry factor", this, _d)
+                                                               {
+
+
+}
+TObject *AsymmetricGaussPDF::clone(const char *newname) const {
+  return new AsymmetricGaussPDF(*this, newname);
+}
+
+double AsymmetricGaussFCT(double x, double mean, double sigma, double d) {
+  double delta = x > mean ? 1 + d : 1 - d;
+
+  double factor = 1. / (sigma * TMath::Sqrt(TMath::TwoPi()));
+  double expo = TMath::Exp(-0.5 * ((x - mean) * (x - mean) / delta / delta / sigma / sigma));
+  return factor * expo;
+}
