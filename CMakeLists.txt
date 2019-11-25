@@ -146,3 +146,5 @@ install(FILES
         )
 
 install (TARGETS pid RUNTIME DESTINATION bin)
+add_subdirectory(bb)
+
