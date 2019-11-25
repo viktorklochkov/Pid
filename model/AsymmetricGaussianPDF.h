@@ -9,27 +9,27 @@
 #include <RooAbsPdf.h>
 #include <RooRealProxy.h>
 
-double AsymmetricGaussFCT(double x, double mean, double sigma, double d);
+double AsymmetricGaussianFCT(double x, double mean, double sigma, double d);
 
 /**
  * @brief Asymmetric Gauss probability density function
  */
-class AsymmetricGaussPDF : public RooAbsPdf {
+class AsymmetricGaussianPDF : public RooAbsPdf {
  public:
-  AsymmetricGaussPDF() = default;
-  AsymmetricGaussPDF(const AsymmetricGaussPDF &other, const char *name) :
+  AsymmetricGaussianPDF() = default;
+  AsymmetricGaussianPDF(const AsymmetricGaussianPDF &other, const char *name) :
       RooAbsPdf(other, name),
       x_("x", this, other.x_),
       mu_("mu", this, other.mu_),
       sigma_("sigma", this, other.sigma_),
       d_("d", this, other.d_) {}
 
-  AsymmetricGaussPDF(const char *name,
-                     const char *title,
-                     RooAbsReal &_x,
-                     RooAbsReal &_mu,
-                     RooAbsReal &_sigma,
-                     RooAbsReal &_d);
+  AsymmetricGaussianPDF(const char *name,
+                        const char *title,
+                        RooAbsReal &_x,
+                        RooAbsReal &_mu,
+                        RooAbsReal &_sigma,
+                        RooAbsReal &_d);
 
   TObject *clone(const char *newname) const override;
 
@@ -42,7 +42,7 @@ class AsymmetricGaussPDF : public RooAbsPdf {
   RooRealProxy sigma_;
   RooRealProxy d_;
 
- ClassDefNV(AsymmetricGaussPDF, 0)
+ ClassDefNV(AsymmetricGaussianPDF, 0)
 };
 
 #endif //PID_MODEL_DEDXSHINEFITMODEL_CPP_ASYMMETRICGAUSSPDF_H_

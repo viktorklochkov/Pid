@@ -8,7 +8,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AsymmetricGaussPDF;
-#pragma link C++ function AsymmetricGaussFCT;
+#pragma link C++ class AsymmetricGaussianPDF;
+#pragma link C++ function AsymmetricGaussianFCT;
 
 #endif //__CINT__
