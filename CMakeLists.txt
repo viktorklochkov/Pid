@@ -128,4 +128,5 @@ install(FILES
         )
 
 add_subdirectory(bb)
+add_subdirectory(model)
 
