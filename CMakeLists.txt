@@ -127,3 +127,5 @@ install(FILES
         Devel
         )
 
+add_subdirectory(bb)
+
