@@ -10,6 +10,10 @@
 #include <RooRealProxy.h>
 #include <RooRealVar.h>
 
+#include <model/AsymmetricGaussianPDF.h>
+
+#include <functional>
+
 class DeDxShineFitModel {
 
 };
