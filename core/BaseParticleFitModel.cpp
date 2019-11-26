@@ -4,14 +4,8 @@
 
 #include "BaseParticleFitModel.h"
 
-void BaseParticleFitModel::fillParticleInfoFromDB(TDatabasePDG *pdgDB) {
-    auto particleDef = pdgDB->GetParticle(pdgID_);
-
-    if (particleDef) {
-        mass_ = particleDef->Mass();
-        charge_ = particleDef->Charge();
-        name_ = particleDef->GetName();
-    } else {
-        //TODO(EK) Warning
-    }
+void BaseParticleFitModel::fillParticleInfoFromDB() {
+    mass_ = PdgHelper::mass(pdgID_);
+    charge_ = PdgHelper::charge(pdgID_);
+    name_ = PdgHelper::isIon(pdgID_)? Form("ion_%d_%d", PdgHelper::getZ(pdgID_), PdgHelper::getA(pdgID_)): PdgHelper::getParticlePdg(pdgID_)->GetName();
 }

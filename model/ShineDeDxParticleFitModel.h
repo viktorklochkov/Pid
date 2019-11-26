@@ -19,6 +19,7 @@ public:
 
     std::vector<RooAbsReal *> getFitParams() override;
 
+
 private:
     RooAbsPdf *pdf_;
     RooRealVar *bb;
