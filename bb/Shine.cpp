@@ -112,7 +112,7 @@ double BetheBlochAntoni(const double betaGamma) {
   return dx * (table[j+1] - table[j]) / lnbgStep + table[j];
 }
 
-double TPC_GetBetheBlochValue(const double betaGamma) {
+double BetheBlochShine(const double betaGamma) {
   // TODO: This implementation should come at some point from manager to allow
   // versioning and time dependence
 

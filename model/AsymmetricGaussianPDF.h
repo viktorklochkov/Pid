@@ -9,6 +9,15 @@
 #include <RooAbsPdf.h>
 #include <RooRealProxy.h>
 
+/**
+ * @brief Asymmetric Gaussian probability density function (raw)
+ *
+ * @param x
+ * @param mean
+ * @param sigma
+ * @param d
+ * @return
+ */
 double AsymmetricGaussianFCT(double x, double mean, double sigma, double d);
 
 /**
