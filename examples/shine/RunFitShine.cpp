@@ -64,11 +64,24 @@ int main(int argc, char ** argv) {
 
 
         auto frame = fitterHelper.getObservable()->frame();
-        RooDataHist ds("ds", "", *fitterHelper.getObservable(), py);
 
+        RooDataHist ds("ds", "", *fitterHelper.getObservable(), py);
         ds.plotOn(frame);
+
+
+        auto model = fitterHelper.generateCompositePDF(x);
+        model->fitTo(ds);
+
+        model->plotOn(frame);
         frame->Draw();
+
+
+
+
         c->Print("output.pdf", "pdf");
+
+
+        delete model;
     }
 
     c->Print("output.pdf)", "pdf");

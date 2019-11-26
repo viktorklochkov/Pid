@@ -19,9 +19,9 @@ std::vector<RooAbsReal *> ShineDeDxParticleFitModel::getFitParams() {
 }
 
 void ShineDeDxParticleFitModel::initModel() {
-    bb = new RooRealVar();
-    sigma = new RooRealVar();
-    d = new RooRealVar();
+    bb = new RooRealVar("bb", "", 0.0, "MIP");
+    sigma = new RooRealVar("sigma", "", 1.0, "MIP");
+    d = new RooRealVar("d", "", 0, "-");
 
     pdf_ = new AsymmetricGaussianPDF(getName().c_str(), "", *getObservable(), *bb, *sigma, *d);
 }

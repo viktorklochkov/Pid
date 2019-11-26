@@ -12,14 +12,14 @@ Double_t AsymmetricGaussianPDF::evaluate() const {
 
 AsymmetricGaussianPDF::AsymmetricGaussianPDF(const char *name,
                                              const char *title,
-                                             RooAbsReal &_x,
-                                             RooAbsReal &_mu,
-                                             RooAbsReal &_sigma,
-                                             RooAbsReal &_d) : RooAbsPdf(name, title),
-                                                         x_("x", "Observable", this, _x),
-                                                         mu_("mu_", "Mean", this, _mu),
-                                                         sigma_("sigma", "Width", this, _sigma),
-                                                         d_("d", "Asymmetry factor", this, _d)
+                                             RooAbsReal &x,
+                                             RooAbsReal &mu,
+                                             RooAbsReal &sigma,
+                                             RooAbsReal &d) : RooAbsPdf(name, title),
+                                                              x_("x", "Observable", this, x),
+                                                              mu_("mu_", "Mean", this, mu),
+                                                              sigma_("sigma", "Width", this, sigma),
+                                                              d_("d", "Asymmetry factor", this, d)
                                                                {}
 
 
@@ -29,8 +29,11 @@ TObject *AsymmetricGaussianPDF::clone(const char *newname) const {
 
 double AsymmetricGaussianFCT(double x, double mean, double sigma, double d) {
   double delta = x > mean ? 1 + d : 1 - d;
+  double arg = x - mean;
+  double d2 = delta*delta;
+  double sigma2 = sigma*sigma;
 
   double factor = 1. / (sigma * TMath::Sqrt(TMath::TwoPi()));
-  double expo = TMath::Exp(-0.5 * ((x - mean) * (x - mean) / delta / delta / sigma / sigma));
+  double expo = TMath::Exp(-0.5 * (arg * arg / d2 / sigma2));
   return factor * expo;
 }
