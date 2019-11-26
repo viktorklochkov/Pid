@@ -6,7 +6,7 @@
 #define PID_SHINEDEDXPARTICLEFITMODEL_H
 
 
-#include "BaseParticleFitModel.h"
+#include <core/BaseParticleFitModel.h>
 
 class ShineDeDxParticleFitModel : public BaseParticleFitModel {
 

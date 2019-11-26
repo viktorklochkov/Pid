@@ -24,6 +24,7 @@ class Fitter {
 
  public:
 
+<<<<<<< HEAD
 //     Fitter( std::vector <ParticleFit> &&particles ) : particles_(particles) {};
   Fitter() = default;;
 
@@ -65,6 +66,7 @@ class Fitter {
   double chi2_max_{100.};
 
 //     ClassDef(Fitter, 2);
+
 
 };
 

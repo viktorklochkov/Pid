@@ -56,7 +56,11 @@ public:
 
     void initialize() {
         assert(name_ != "");
+
         assert(observable_);
+        assert(xmax_ > xmin_);
+        assert(mass_ > 0);
+        assert(charge_ != 0);
 
         initModel();
     }
@@ -67,7 +71,7 @@ public:
     virtual std::vector<RooAbsReal *> getFitParams() = 0;
 
 private:
-    int pdgID_{0};
+    int pdgID_;
     double mass_{0.};
     double charge_{0.};
     std::string name_{""};
