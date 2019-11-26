@@ -35,10 +35,10 @@ class AsymmetricGaussianPDF : public RooAbsPdf {
 
   AsymmetricGaussianPDF(const char *name,
                         const char *title,
-                        RooAbsReal &_x,
-                        RooAbsReal &_mu,
-                        RooAbsReal &_sigma,
-                        RooAbsReal &_d);
+                        RooAbsReal &x,
+                        RooAbsReal &mu,
+                        RooAbsReal &sigma,
+                        RooAbsReal &d);
 
   TObject *clone(const char *newname) const override;
 

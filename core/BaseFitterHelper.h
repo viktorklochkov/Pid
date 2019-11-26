@@ -21,8 +21,7 @@ public:
         ParticleFitModelContainer(BaseParticleFitModel *model) : model_(model) {
             /* getting name of the new variable */
             std::string integralVarName(model->getParPrefix() + "integral");
-            integral_ = new RooRealVar;
-            integral_->SetName(integralVarName.c_str());
+            integral_ = new RooRealVar(integralVarName.c_str(), "", 0.5,"-");
         }
     };
 
@@ -32,9 +31,7 @@ public:
 
     void initialize() {
         if (!observable_) {
-            observable_ = new RooRealVar;
-            observable_->SetName("y");
-            observable_->SetTitle("Observable");
+            observable_ = new RooRealVar("y", "Observable", 0.0, "MIP");
         }
     }
 
