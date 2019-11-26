@@ -18,10 +18,10 @@ public:
         BaseParticleFitModel *model_{nullptr};
         RooRealVar *integral_{nullptr};
 
-        ParticleFitModelContainer(BaseParticleFitModel *model) : model_(model) {
+        explicit ParticleFitModelContainer(BaseParticleFitModel *model) : model_(model) {
             /* getting name of the new variable */
             std::string integralVarName(model->getParPrefix() + "integral");
-            integral_ = new RooRealVar(integralVarName.c_str(), "", 0.5,"-");
+            integral_ = new RooRealVar(integralVarName.c_str(), "", 0., 1.,"-");
         }
     };
 

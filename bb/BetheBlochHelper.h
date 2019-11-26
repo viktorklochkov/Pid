@@ -9,6 +9,8 @@
 
 #include "Shine.h"
 
+#include <core/PdgHelper.h>
+
 typedef std::function<double (double)> BetheBlochFunc_t;
 
 class BetheBlochHelper {
@@ -16,7 +18,7 @@ class BetheBlochHelper {
  public:
   static BetheBlochFunc_t makeBBForMass(double mass, BetheBlochFunc_t bb_src = BetheBlochAntoniMod);
 
-  static BetheBlochFunc_t makeBBForPdg(int pdg, BetheBlochFunc_t bb_src = BetheBlochAntoniMod);
+  static BetheBlochFunc_t makeBBForPdg(Pdg_t pdg, BetheBlochFunc_t bb_src = BetheBlochAntoniMod);
 
 
 };

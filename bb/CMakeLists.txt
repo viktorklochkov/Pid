@@ -7,4 +7,4 @@ ROOT_GENERATE_DICTIONARY(G__PidBB
 
 add_library(pid_bb SHARED Shine.cpp BetheBlochHelper.cpp G__PidBB.cxx)
 target_include_directories(pid_bb PUBLIC ${CMAKE_SOURCE_DIR})
-target_link_libraries(pid_bb PUBLIC ROOT::Core ROOT::EG)
+target_link_libraries(pid_bb PUBLIC pid_core)

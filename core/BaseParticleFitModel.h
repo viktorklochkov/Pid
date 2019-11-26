@@ -14,9 +14,11 @@
 class BaseParticleFitModel {
 
 public:
-    BaseParticleFitModel(int pdgID) : pdgID_(pdgID) {}
+    BaseParticleFitModel(int pdgID) : pdgID_(pdgID) {
+        bbFun_ = BetheBlochHelper::makeBBForPdg(pdgID);
+    }
 
-    void fillParticleInfoFromDB(TDatabasePDG *pdgDB = TDatabasePDG::Instance());
+    void fillParticleInfoFromDB();
 
     double getMass() const {
         return mass_;
@@ -63,6 +65,10 @@ public:
         observable_ = observable;
     }
 
+    const BetheBlochFunc_t &getBbFun() const {
+        return bbFun_;
+    }
+
     void initialize() {
         assert(name_ != "");
 
@@ -103,6 +109,8 @@ private:
     double charge_{0.};
     std::string name_{""};
     std::string parPrefix_{""};
+
+    BetheBlochFunc_t bbFun_;
 
     double xmin_{0.};
     double xmax_{0.};
