@@ -2,7 +2,6 @@
 // Created by eugene on 25/11/2019.
 //
 
-#include "DeDxShineFitModel.h"
 #include "AsymmetricGaussianPDF.h"
 
 ClassImp(AsymmetricGaussianPDF)
@@ -21,10 +20,9 @@ AsymmetricGaussianPDF::AsymmetricGaussianPDF(const char *name,
                                                          mu_("mu_", "Mean", this, _mu),
                                                          sigma_("sigma", "Width", this, _sigma),
                                                          d_("d", "Asymmetry factor", this, _d)
-                                                               {
+                                                               {}
 
 
-}
 TObject *AsymmetricGaussianPDF::clone(const char *newname) const {
   return new AsymmetricGaussianPDF(*this, newname);
 }

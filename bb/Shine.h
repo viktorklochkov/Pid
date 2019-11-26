@@ -5,7 +5,6 @@
 #ifndef PID_BB_SHINE_H_
 #define PID_BB_SHINE_H_
 
-
 /**
  * @brief a Bethe-Block implementation adjusted by Antoni Marcinek
  * used in calibration and it is preferred to be used in the analysis
@@ -29,7 +28,6 @@ BetheBlochAntoni(double betaGamma);
  * @return
  */
 double
-TPC_GetBetheBlochValue(double betaGamma);
-
+BetheBlochShine(double betaGamma);
 
 #endif //PID_BB_SHINE_H_
