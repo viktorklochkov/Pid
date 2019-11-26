@@ -9,6 +9,7 @@
 
 #include <bb/BetheBlochHelper.h>
 #include <TDatabasePDG.h>
+#include <sstream>
 
 class BaseParticleFitModel {
 
@@ -41,6 +42,14 @@ public:
         name_ = name;
     }
 
+    const std::string &getParPrefix() const {
+        return parPrefix_;
+    }
+
+    void setParPrefix(const std::string &parPrefix) {
+        parPrefix_ = parPrefix;
+    }
+
     void setRange(double xmin, double xmax) {
         this->xmin_ = xmin;
         this->xmax_ = xmax;
@@ -63,6 +72,24 @@ public:
         assert(charge_ != 0);
 
         initModel();
+
+        for (auto par : getFitParams()) {
+            std::string newName(getParPrefix() + std::string(par->GetName()));
+            par->SetName(newName.c_str());
+        }
+    }
+
+    void print() {
+        std::ostringstream pm;
+        pm << name_ << ":" << std::endl;
+        pm << "fitting model: ";
+        getFitModel()->printClassName(pm);
+        pm << std::endl;
+        pm << "observable: ";
+        getObservable()->printName(pm);
+        pm << std::endl;
+
+        std::cout << pm.str();
     }
 
     virtual bool isDefinedAt(double x) { return xmin_ <= x && x <= xmax_; }
@@ -75,6 +102,7 @@ private:
     double mass_{0.};
     double charge_{0.};
     std::string name_{""};
+    std::string parPrefix_{""};
 
     double xmin_{0.};
     double xmax_{0.};

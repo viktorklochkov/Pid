@@ -19,16 +19,15 @@ public:
         RooRealVar *integral_{nullptr};
 
         ParticleFitModelContainer(BaseParticleFitModel *model) : model_(model) {
+            /* getting name of the new variable */
+            std::string integralVarName(model->getParPrefix() + "integral");
             integral_ = new RooRealVar;
+            integral_->SetName(integralVarName.c_str());
         }
     };
 
-    RooAbsReal *getObservable() const {
+    RooRealVar *getObservable() const {
         return observable_;
-    }
-
-    void setObservable(RooAbsReal *observable) {
-        observable_ = observable;
     }
 
     void initialize() {
@@ -75,7 +74,7 @@ public:
 private:
     std::vector<ParticleFitModelContainer> particleFitModels_;
 
-    RooAbsReal *observable_{nullptr};
+    RooRealVar *observable_{nullptr};
 };
 
 
