@@ -8,7 +8,7 @@
 #include "Parameters.h"
 
 
-// ClassImp(Pid::Fitter);
+// ClassImp(Pid::BaseFitterHelper);
 
 namespace Pid
 {

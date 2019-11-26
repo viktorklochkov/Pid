@@ -26,7 +26,7 @@ class Fitter
 
 public:
 
-//     Fitter( std::vector <ParticleFit> &&particles ) : particles_(particles) {};
+//     BaseFitterHelper( std::vector <ParticleFit> &&particles ) : particles_(particles) {};
     Fitter() {};
     
     void Fit();
@@ -64,7 +64,7 @@ private:
     
     float chi2_max_{100.};
     
-//     ClassDef(Fitter, 2);
+//     ClassDef(BaseFitterHelper, 2);
 
 };
 
