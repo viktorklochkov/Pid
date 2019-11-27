@@ -41,6 +41,7 @@ int main(int argc, char ** argv) {
         fitterHelper.addParticleModel(protons);
 
         protons->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(2212),1));
+        protons->getParByName("sigma")->range(0.05, 1.);
 
 
         protons->print();
@@ -54,20 +55,50 @@ int main(int argc, char ** argv) {
         fitterHelper.addParticleModel(pion_pos);
 
         pion_pos->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(211), 1));
+        pion_pos->getParByName("sigma")->range(0.05, 1.);
 
         pion_pos->print();
     }
 
+
     {
-        auto pion_pos = new ShineDeDxParticleFitModel(-11);
-        pion_pos->fillParticleInfoFromDB();
-        pion_pos->setRange(0.8, 4.);
-        pion_pos->setRooVarPrefix("positron_");
-        fitterHelper.addParticleModel(pion_pos);
+        auto deuteron = new ShineDeDxParticleFitModel(1000010020);
+        deuteron->fillParticleInfoFromDB();
+        deuteron->setRange(3, 3.3);
+        deuteron->setRooVarPrefix("deuteron_");
+        fitterHelper.addParticleModel(deuteron);
 
-        pion_pos->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), 1));
+        deuteron->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(1000010020), 1));
+        deuteron->getParByName("sigma")->range(0.05, 1.);
 
-        pion_pos->print();
+        deuteron->print();
+    }
+
+
+    {
+        auto positron = new ShineDeDxParticleFitModel(-11);
+        positron->fillParticleInfoFromDB();
+        positron->setRange(0.8, 4.);
+        positron->setRooVarPrefix("positron_");
+        fitterHelper.addParticleModel(positron);
+
+        positron->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), 1));
+        positron->getParByName("sigma")->range(0.05, 1.);
+
+        positron->print();
+    }
+
+    {
+        auto electron = new ShineDeDxParticleFitModel(11);
+        electron->fillParticleInfoFromDB();
+        electron->setRange(-4., 0.);
+        electron->setRooVarPrefix("electron_");
+        fitterHelper.addParticleModel(electron);
+
+        electron->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), -1));
+        electron->getParByName("sigma")->range(0.05, 1.);
+
+        electron->print();
     }
 
     inputHistogram->RebinX(3);
@@ -95,11 +126,6 @@ int main(int argc, char ** argv) {
 
         RooDataHist ds("ds", "", *fitterHelper.getObservable(), py);
         ds.plotOn(frame);
-
-
-        for (auto m : fitterHelper.particlesModelsDefinedAt(x)) {
-            m.model_->getFitModel()->chi2FitTo(ds);
-        }
 
         auto model = fitterHelper.generateCompositePDF(x);
         model->chi2FitTo(ds);

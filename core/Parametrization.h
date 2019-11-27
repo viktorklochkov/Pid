@@ -42,6 +42,14 @@ public:
         fFix_ = fix;
     }
 
+    void fix(TGraph *grFix) {
+        fix(wrapTGraph(grFix));
+    }
+
+    void fix(double _fix) {
+        fix(wrapDouble(_fix));
+    }
+
     void unmanaged() {
         parType_ = EType::kNone;
     }
@@ -51,8 +59,11 @@ public:
             var_->setVal(fFix_(x));
             var_->setConstant(kTRUE);
         } else if (parType_ == EType::kRange) {
+            var_->setConstant(kFALSE);
             var_->setRange(fMin_(x), fMax_(x));
-        } else {}
+        } else {
+            var_->setConstant(kFALSE);
+        }
     }
 
 private:
