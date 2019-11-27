@@ -12,6 +12,12 @@
 #include <TCanvas.h>
 #include <RooPlot.h>
 
+#include <TMath.h>
+#include <TPaveText.h>
+
+Parametrization::Fct_t wrapToX(Parametrization::Fct_t f, int charge) {
+    return [=] (double x) { return f(TMath::Exp(charge*x)/20); };
+}
 
 int main(int argc, char ** argv) {
 
@@ -31,8 +37,11 @@ int main(int argc, char ** argv) {
         auto protons = new ShineDeDxParticleFitModel(2212);
         protons->fillParticleInfoFromDB();
         protons->setRange(1.5, 6.4);
-        protons->setParPrefix("p_");
+        protons->setRooVarPrefix("p_");
         fitterHelper.addParticleModel(protons);
+
+        protons->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(2212),1));
+
 
         protons->print();
     }
@@ -41,13 +50,28 @@ int main(int argc, char ** argv) {
         auto pion_pos = new ShineDeDxParticleFitModel(211);
         pion_pos->fillParticleInfoFromDB();
         pion_pos->setRange(0.4, 5.5);
-        pion_pos->setParPrefix("pion_pos_");
+        pion_pos->setRooVarPrefix("pion_pos_");
         fitterHelper.addParticleModel(pion_pos);
+
+        pion_pos->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(211), 1));
 
         pion_pos->print();
     }
 
-    inputHistogram->RebinX(5);
+    {
+        auto pion_pos = new ShineDeDxParticleFitModel(-11);
+        pion_pos->fillParticleInfoFromDB();
+        pion_pos->setRange(0.8, 4.);
+        pion_pos->setRooVarPrefix("positron_");
+        fitterHelper.addParticleModel(pion_pos);
+
+        pion_pos->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), 1));
+
+        pion_pos->print();
+    }
+
+    inputHistogram->RebinX(3);
+    inputHistogram->RebinY(2);
 
     auto c = new TCanvas;
     c->Print("output.pdf(", "pdf");
@@ -59,8 +83,12 @@ int main(int argc, char ** argv) {
 
         if (fitterHelper.particlesModelsDefinedAt(x).size() == 0) continue;
 
+        fitterHelper.applyAllParametrizations(x);
+
         auto py = inputHistogram->ProjectionY("tmp", i, i);
         py->SetDirectory(0);
+
+        if (py->Integral() < 1000) continue;
 
 
         auto frame = fitterHelper.getObservable()->frame();
@@ -69,12 +97,19 @@ int main(int argc, char ** argv) {
         ds.plotOn(frame);
 
 
+        for (auto m : fitterHelper.particlesModelsDefinedAt(x)) {
+            m.model_->getFitModel()->chi2FitTo(ds);
+        }
+
         auto model = fitterHelper.generateCompositePDF(x);
-        model->fitTo(ds);
+        model->chi2FitTo(ds);
 
         model->plotOn(frame);
         frame->Draw();
 
+        auto text  = new TText(0.7, 0.8, Form("x = %f", x));
+        text->SetNDC();
+        text->Draw();
 
 
 

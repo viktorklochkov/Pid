@@ -20,8 +20,10 @@ public:
 
         explicit ParticleFitModelContainer(BaseParticleFitModel *model) : model_(model) {
             /* getting name of the new variable */
+            integral_ = model->addParameter(new RooRealVar("integral", "", 0., 1.,"-"));
             std::string integralVarName(model->getParPrefix() + "integral");
-            integral_ = new RooRealVar(integralVarName.c_str(), "", 0., 1.,"-");
+            integral_->SetName(integralVarName.c_str());
+
         }
     };
 
@@ -53,6 +55,12 @@ public:
         }
 
         return new RooAddPdf(name, "", pdfList, constantList);
+    }
+
+    void applyAllParametrizations(double x) {
+        for (auto m : particlesModelsDefinedAt(x)) {
+            m.model_->applyParAt(x);
+        }
     }
 
     /**

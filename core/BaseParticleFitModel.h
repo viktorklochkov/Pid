@@ -6,17 +6,24 @@
 #define PID_MODEL_PARTICLEFITMODEL_H_
 
 #include <RooAbsPdf.h>
+#include <RooRealVar.h>
 
 #include <bb/BetheBlochHelper.h>
 #include <TDatabasePDG.h>
 #include <sstream>
+#include "Parametrization.h"
 
 class BaseParticleFitModel {
 
 public:
-    BaseParticleFitModel(int pdgID) : pdgID_(pdgID) {
-        bbFun_ = BetheBlochHelper::makeBBForPdg(pdgID);
-    }
+    struct ParameterContainer {
+        std::string name_;
+        RooRealVar *var_;
+        Parametrization *par_;
+    };
+
+
+    BaseParticleFitModel(int pdgID) : pdgID_(pdgID) {}
 
     void fillParticleInfoFromDB();
 
@@ -48,7 +55,7 @@ public:
         return parPrefix_;
     }
 
-    void setParPrefix(const std::string &parPrefix) {
+    void setRooVarPrefix(const std::string &parPrefix) {
         parPrefix_ = parPrefix;
     }
 
@@ -63,10 +70,6 @@ public:
 
     void setObservable(RooAbsReal *observable) {
         observable_ = observable;
-    }
-
-    const BetheBlochFunc_t &getBbFun() const {
-        return bbFun_;
     }
 
     void initialize() {
@@ -98,10 +101,32 @@ public:
         std::cout << pm.str();
     }
 
+    RooRealVar *addParameter(RooRealVar *var) {
+        assert(var);
+        ParameterContainer pc;
+        pc.name_ = var->GetName();
+        pc.var_ = var;
+        pc.par_ = new Parametrization(var);
+        parameters_.emplace(pc.name_,pc);
+
+        return var;
+    }
+
+    Parametrization *getParByName(const std::string &name) {
+        return parameters_.at(name).par_;
+    }
+
+    void applyParAt(double x) {
+        for (auto &p : parameters_) {
+            p.second.par_->apply(x);
+        }
+    }
+
     virtual bool isDefinedAt(double x) { return xmin_ <= x && x <= xmax_; }
     virtual void initModel() {};
     virtual RooAbsPdf *getFitModel() = 0;
-    virtual std::vector<RooAbsReal *> getFitParams() = 0;
+    virtual std::vector<RooRealVar *> getFitParams() = 0;
+
 
 private:
     int pdgID_;
@@ -110,12 +135,12 @@ private:
     std::string name_{""};
     std::string parPrefix_{""};
 
-    BetheBlochFunc_t bbFun_;
-
     double xmin_{0.};
     double xmax_{0.};
 
     RooAbsReal *observable_{nullptr};
+
+    std::map<std::string, ParameterContainer > parameters_;
 };
 
 #endif //PID_MODEL_PARTICLEFITMODEL_H_
