@@ -28,21 +28,14 @@ public:
         return var_;
     }
 
-    void range(const Fct_t& min, const Fct_t &max) {
-        parType_ = EType::kRange;
-        fMin_ = min;
-        fMax_ = max;
-    }
+    void range(const Fct_t& min, const Fct_t &max);
 
     template <typename T, typename V>
     void range(T min, V max) {
         range(wrap(min), wrap(max));
     }
 
-    void fix(const Fct_t &fix) {
-        parType_ = EType::kFix;
-        fFix_ = fix;
-    }
+    void fix(const Fct_t &fix);
 
     template <typename T>
     void fix(T _fix) {
@@ -53,33 +46,14 @@ public:
         parType_ = EType::kNone;
     }
 
-    void apply(double x) {
-        if (parType_ == EType::kFix) {
-            var_->setVal(fFix_(x));
-            var_->setConstant(kTRUE);
-        } else if (parType_ == EType::kRange) {
-            assert(fMin_(x) <= fMax_(x));
-            var_->setConstant(kFALSE);
-            var_->setRange(fMin_(x), fMax_(x));
-        } else {
-            var_->setConstant(kFALSE);
-        }
-    }
+    void apply(double x);
 
 private:
-    static Fct_t wrap(TGraph *gr) {
-        assert(gr);
-        return [=] (double x) { return gr->Eval(x); };
-    }
+    static Fct_t wrap(TGraph *gr);
 
-    static Fct_t wrap(double v) {
-        return [=] (double /* x */) { return v; };
-    }
+    static Fct_t wrap(double v);
 
-    static Fct_t wrap(TF1 *tf) {
-        assert(tf);
-        return [=] (double x) { return tf->Eval(x); };
-    }
+    static Fct_t wrap(TF1 *tf);
 
     RooRealVar *var_{nullptr};
     EType parType_{EType::kNone};

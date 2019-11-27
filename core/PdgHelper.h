@@ -13,48 +13,19 @@ typedef int Pdg_t;
 
 class PdgHelper {
 public:
-    static double mass(Pdg_t pdg) {
-       if (isIon(pdg)) {
-           return 0.938*std::get<0>(getAZIon(pdg));
-       } else if (getParticlePdg(pdg)) {
-           return getParticlePdg(pdg)->Mass();
-       }
+    static double mass(Pdg_t pdg);
 
-       throw std::runtime_error("Unknown pdg code");
-    }
+    static double charge(Pdg_t pdg);
 
-    static double charge(Pdg_t pdg) {
-        if (isIon(pdg)) {
-            return 0.938*std::get<1>(getAZIon(pdg));
-        } else if (getParticlePdg(pdg)) {
-            return getParticlePdg(pdg)->Charge();
-        }
+    static std::tuple<int, int> getAZIon(Pdg_t pdg);
 
-        throw std::runtime_error("Unknown pdg code");
-    }
+    static int getZ(Pdg_t pdg);
 
-    static std::tuple<int, int> getAZIon(Pdg_t pdg) {
-        assert(pdg > 1000000000);
-        int A = (pdg % 10000)/10;
-        int Z = (pdg % 10000000)/10000;
-        return {A,Z};
-    }
+    static int getA(Pdg_t pdg);
 
-    static int getZ(Pdg_t pdg) {
-        return std::get<1>(getAZIon(pdg));
-    }
+    static bool isIon(Pdg_t pdg);
 
-    static int getA(Pdg_t pdg) {
-        return std::get<0>(getAZIon(pdg));
-    }
-
-    static bool isIon(Pdg_t pdg) {
-        return pdg > 1000000000;
-    }
-
-    static TParticlePDG* getParticlePdg(Pdg_t pdg) {
-        return TDatabasePDG::Instance()->GetParticle(pdg);
-    }
+    static TParticlePDG* getParticlePdg(Pdg_t pdg);
 
 };
 
