@@ -6,7 +6,7 @@
 #include <TH2D.h>
 
 #include <core/BaseFitterHelper.h>
-#include <model/ShineDeDxParticleFitModel.h>
+#include <examples/shine/ShineDeDxParticleFitModel.h>
 #include <RooWorkspace.h>
 #include <RooDataHist.h>
 #include <TCanvas.h>
@@ -112,9 +112,10 @@ int main(int argc, char ** argv) {
     for (int i = 1; i < inputHistogram->GetXaxis()->GetNbins(); ++i) {
         double x = inputHistogram->GetXaxis()->GetBinCenter(i);
 
-        if (fitterHelper.particlesModelsDefinedAt(x).size() == 0) continue;
+        if (fitterHelper.particlesModelsDefinedAt(x).empty()) continue;
 
-        fitterHelper.applyAllParametrizations(x);
+        fitterHelper.X(x);
+        fitterHelper.applyAllParametrizations();
 
         auto py = inputHistogram->ProjectionY("tmp", i, i);
         py->SetDirectory(0);
@@ -127,7 +128,7 @@ int main(int argc, char ** argv) {
         RooDataHist ds("ds", "", *fitterHelper.getObservable(), py);
         ds.plotOn(frame);
 
-        auto model = fitterHelper.generateCompositePDF(x);
+        auto model = fitterHelper.getCompositePdfAtX();
         model->chi2FitTo(ds);
 
         model->plotOn(frame);
@@ -141,8 +142,6 @@ int main(int argc, char ** argv) {
 
         c->Print("output.pdf", "pdf");
 
-
-        delete model;
     }
 
     c->Print("output.pdf)", "pdf");
