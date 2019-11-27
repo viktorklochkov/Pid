@@ -3,7 +3,7 @@
 //
 
 #include "ShineDeDxParticleFitModel.h"
-#include "AsymmetricGaussianPDF.h"
+#include <model/AsymmetricGaussianPDF.h>
 
 #include <RooRealVar.h>
 

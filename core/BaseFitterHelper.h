@@ -23,7 +23,6 @@ public:
             integral_ = model->addParameter(new RooRealVar("integral", "", 0., 1.,"-"));
             std::string integralVarName(model->getParPrefix() + "integral");
             integral_->SetName(integralVarName.c_str());
-
         }
     };
 
@@ -57,12 +56,6 @@ public:
         return new RooAddPdf(name, "", pdfList, constantList);
     }
 
-    void applyAllParametrizations(double x) {
-        for (auto m : particlesModelsDefinedAt(x)) {
-            m.model_->applyParAt(x);
-        }
-    }
-
     /**
      *  Called after initialize()
      * @param model
@@ -76,10 +69,42 @@ public:
         particleFitModels_.emplace_back(model);
     };
 
+    void X(double x) {
+        x_ = x;
+        compositePdfAtX_.reset(generateCompositePDF(x));
+        modelsAtX_ = particlesModelsDefinedAt(x);
+    }
+
+    void applyAllParametrizations(double x) {
+        for (auto m : particlesModelsDefinedAt(x)) {
+            m.model_->applyParAt(x);
+        }
+    }
+
+    void applyAllParametrizations() {
+        applyAllParametrizations(x_);
+    }
+
+    double getX() const {
+        return x_;
+    }
+
+    const std::shared_ptr<RooAbsPdf> &getCompositePdfAtX() const {
+        return compositePdfAtX_;
+    }
+
+    const std::vector<ParticleFitModelContainer> &getModelsAtX() const {
+        return modelsAtX_;
+    }
+
 private:
     std::vector<ParticleFitModelContainer> particleFitModels_;
 
     RooRealVar *observable_{nullptr};
+
+    double x_{0.};
+    std::shared_ptr<RooAbsPdf> compositePdfAtX_;
+    std::vector<ParticleFitModelContainer> modelsAtX_;
 };
 
 

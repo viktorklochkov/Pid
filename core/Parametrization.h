@@ -6,6 +6,7 @@
 #define PID_PARAMETRIZATION_H
 
 #include <functional>
+#include <TF1.h>
 #include <RooRealVar.h>
 
 
@@ -21,7 +22,11 @@ public:
 
     typedef std::function<double (double)> Fct_t;
 
-    Parametrization(RooRealVar *var) : var_(var) {}
+    explicit Parametrization(RooRealVar *var) : var_(var) {}
+
+    RooRealVar *getVar() const {
+        return var_;
+    }
 
     void range(const Fct_t& min, const Fct_t &max) {
         parType_ = EType::kRange;
@@ -29,12 +34,9 @@ public:
         fMax_ = max;
     }
 
-    void range(TGraph *grMin, TGraph *grMax) {
-        range(wrapTGraph(grMin), wrapTGraph(grMax));
-    }
-
-    void range(double min, double max) {
-        range(wrapDouble(min), wrapDouble(max));
+    template <typename T, typename V>
+    void range(T min, V max) {
+        range(wrap(min), wrap(max));
     }
 
     void fix(const Fct_t &fix) {
@@ -42,12 +44,9 @@ public:
         fFix_ = fix;
     }
 
-    void fix(TGraph *grFix) {
-        fix(wrapTGraph(grFix));
-    }
-
-    void fix(double _fix) {
-        fix(wrapDouble(_fix));
+    template <typename T>
+    void fix(T _fix) {
+        fix(wrap(_fix));
     }
 
     void unmanaged() {
@@ -59,6 +58,7 @@ public:
             var_->setVal(fFix_(x));
             var_->setConstant(kTRUE);
         } else if (parType_ == EType::kRange) {
+            assert(fMin_(x) <= fMax_(x));
             var_->setConstant(kFALSE);
             var_->setRange(fMin_(x), fMax_(x));
         } else {
@@ -67,13 +67,18 @@ public:
     }
 
 private:
-    static Fct_t wrapTGraph(TGraph *gr) {
-        assert(gr != nullptr);
+    static Fct_t wrap(TGraph *gr) {
+        assert(gr);
         return [=] (double x) { return gr->Eval(x); };
     }
 
-    Fct_t wrapDouble(double v) {
+    static Fct_t wrap(double v) {
         return [=] (double /* x */) { return v; };
+    }
+
+    static Fct_t wrap(TF1 *tf) {
+        assert(tf);
+        return [=] (double x) { return tf->Eval(x); };
     }
 
     RooRealVar *var_{nullptr};

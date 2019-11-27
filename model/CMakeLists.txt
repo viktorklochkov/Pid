@@ -5,7 +5,7 @@ ROOT_GENERATE_DICTIONARY(G__PidModel
         OPTIONS -noIncludePaths
         )
 
-add_library(pid_model SHARED AsymmetricGaussianPDF.cpp G__PidModel.cxx ../core/BaseParticleFitModel.cpp ../core/BaseParticleFitModel.h ShineDeDxParticleFitModel.cpp ShineDeDxParticleFitModel.h)
+add_library(pid_model SHARED AsymmetricGaussianPDF.cpp G__PidModel.cxx)
 target_include_directories(pid_model
         PUBLIC
             $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
