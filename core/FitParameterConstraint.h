@@ -2,18 +2,18 @@
 // Created by eugene on 27/11/2019.
 //
 
-#ifndef PID_PARAMETRIZATION_H
-#define PID_PARAMETRIZATION_H
+#ifndef PID_FITPARAMETERCONSTRAINT_H
+#define PID_FITPARAMETERCONSTRAINT_H
 
 #include <functional>
 #include <TF1.h>
 #include <RooRealVar.h>
 
 
-class Parametrization {
+class FitParameterConstraint {
 
 public:
-    enum class EType {
+    enum class EConstraintType {
         kNone,
         kRange,
         kFix,
@@ -22,11 +22,7 @@ public:
 
     typedef std::function<double (double)> Fct_t;
 
-    explicit Parametrization(RooRealVar *var) : var_(var) {}
-
-    RooRealVar *getVar() const {
-        return var_;
-    }
+    explicit FitParameterConstraint(RooRealVar *var) : var_(var) {}
 
     void range(const Fct_t& min, const Fct_t &max);
 
@@ -43,10 +39,10 @@ public:
     }
 
     void unmanaged() {
-        parType_ = EType::kNone;
+        parType_ = EConstraintType::kNone;
     }
 
-    void apply(double x);
+    void applyConstraint(double x);
 
 private:
     static Fct_t wrap(TGraph *gr);
@@ -56,7 +52,7 @@ private:
     static Fct_t wrap(TF1 *tf);
 
     RooRealVar *var_{nullptr};
-    EType parType_{EType::kNone};
+    EConstraintType parType_{EConstraintType::kNone};
 
     Fct_t fMin_;
     Fct_t fMax_;
@@ -68,4 +64,4 @@ private:
 
 
 
-#endif //PID_PARAMETRIZATION_H
+#endif //PID_FITPARAMETERCONSTRAINT_H

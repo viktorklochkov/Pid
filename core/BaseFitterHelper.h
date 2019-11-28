@@ -69,20 +69,20 @@ public:
         particleFitModels_.emplace_back(model);
     };
 
-    void X(double x) {
+    void at(double x) {
         x_ = x;
         compositePdfAtX_.reset(generateCompositePDF(x));
         modelsAtX_ = particlesModelsDefinedAt(x);
     }
 
-    void applyAllParametrizations(double x) {
+    void applyAllParameterConstraints(double x) {
         for (auto m : particlesModelsDefinedAt(x)) {
-            m.model_->applyParAt(x);
+            m.model_->applyParameterConstraintsAt(x);
         }
     }
 
     void applyAllParametrizations() {
-        applyAllParametrizations(x_);
+        applyAllParameterConstraints(x_);
     }
 
     double getX() const {

@@ -15,7 +15,7 @@
 #include <TMath.h>
 #include <TPaveText.h>
 
-Parametrization::Fct_t wrapToX(Parametrization::Fct_t f, int charge) {
+FitParameterConstraint::Fct_t wrapToX(FitParameterConstraint::Fct_t f, int charge) {
     return [=] (double x) { return f(TMath::Exp(charge*x)/20); };
 }
 
@@ -40,8 +40,8 @@ int main(int argc, char ** argv) {
         protons->setRooVarPrefix("p_");
         fitterHelper.addParticleModel(protons);
 
-        protons->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(2212),1));
-        protons->getParByName("sigma")->range(0.05, 1.);
+        protons->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(2212), 1));
+        protons->parameter("sigma").range(0.05, 1.);
 
 
         protons->print();
@@ -54,8 +54,8 @@ int main(int argc, char ** argv) {
         pion_pos->setRooVarPrefix("pion_pos_");
         fitterHelper.addParticleModel(pion_pos);
 
-        pion_pos->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(211), 1));
-        pion_pos->getParByName("sigma")->range(0.05, 1.);
+        pion_pos->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(211), 1));
+        pion_pos->parameter("sigma").range(0.05, 1.);
 
         pion_pos->print();
     }
@@ -68,8 +68,8 @@ int main(int argc, char ** argv) {
         deuteron->setRooVarPrefix("deuteron_");
         fitterHelper.addParticleModel(deuteron);
 
-        deuteron->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(1000010020), 1));
-        deuteron->getParByName("sigma")->range(0.05, 1.);
+        deuteron->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(1000010020), 1));
+        deuteron->parameter("sigma").range(0.05, 1.);
 
         deuteron->print();
     }
@@ -82,8 +82,8 @@ int main(int argc, char ** argv) {
         positron->setRooVarPrefix("positron_");
         fitterHelper.addParticleModel(positron);
 
-        positron->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), 1));
-        positron->getParByName("sigma")->range(0.05, 1.);
+        positron->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), 1));
+        positron->parameter("sigma").range(0.05, 1.);
 
         positron->print();
     }
@@ -95,8 +95,8 @@ int main(int argc, char ** argv) {
         electron->setRooVarPrefix("electron_");
         fitterHelper.addParticleModel(electron);
 
-        electron->getParByName("bb")->fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), -1));
-        electron->getParByName("sigma")->range(0.05, 1.);
+        electron->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), -1));
+        electron->parameter("sigma").range(0.05, 1.);
 
         electron->print();
     }
@@ -114,7 +114,7 @@ int main(int argc, char ** argv) {
 
         if (fitterHelper.particlesModelsDefinedAt(x).empty()) continue;
 
-        fitterHelper.X(x);
+        fitterHelper.at(x);
         fitterHelper.applyAllParametrizations();
 
         auto py = inputHistogram->ProjectionY("tmp", i, i);
