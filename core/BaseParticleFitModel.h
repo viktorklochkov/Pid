@@ -11,19 +11,12 @@
 #include <bb/BetheBlochHelper.h>
 #include <TDatabasePDG.h>
 #include <sstream>
-#include "Parametrization.h"
+#include "FitParameter.h"
 
 class BaseParticleFitModel {
 
 public:
-    struct ParameterContainer {
-        std::string name_;
-        RooRealVar *var_;
-        Parametrization *par_;
-    };
-
-
-    BaseParticleFitModel(int pdgID) : pdgID_(pdgID) {}
+    explicit BaseParticleFitModel(int pdgID) : pdgID_(pdgID) {}
 
     void fillParticleInfoFromDB();
 
@@ -72,55 +65,17 @@ public:
         observable_ = observable;
     }
 
-    void initialize() {
-        assert(name_ != "");
+    void initialize();
 
-        assert(observable_);
-        assert(xmax_ > xmin_);
-        assert(mass_ > 0);
-        assert(charge_ != 0);
+    void print();
 
-        initModel();
+    RooRealVar *addParameter(RooRealVar *var);
 
-        for (auto par : getFitParams()) {
-            std::string newName(getParPrefix() + std::string(par->GetName()));
-            par->SetName(newName.c_str());
-        }
+    FitParameter &parameter(const std::string &name) {
+        return parameterMap_.at(name);
     }
 
-    void print() {
-        std::ostringstream pm;
-        pm << name_ << ":" << std::endl;
-        pm << "fitting model: ";
-        getFitModel()->printClassName(pm);
-        pm << std::endl;
-        pm << "observable: ";
-        getObservable()->printName(pm);
-        pm << std::endl;
-
-        std::cout << pm.str();
-    }
-
-    RooRealVar *addParameter(RooRealVar *var) {
-        assert(var);
-        ParameterContainer pc;
-        pc.name_ = var->GetName();
-        pc.var_ = var;
-        pc.par_ = new Parametrization(var);
-        parameters_.emplace(pc.name_,pc);
-
-        return var;
-    }
-
-    Parametrization *getParByName(const std::string &name) {
-        return parameters_.at(name).par_;
-    }
-
-    void applyParAt(double x) {
-        for (auto &p : parameters_) {
-            p.second.par_->apply(x);
-        }
-    }
+    void applyParameterConstraintsAt(double x);
 
     virtual bool isDefinedAt(double x) { return xmin_ <= x && x <= xmax_; }
     virtual void initModel() {};
@@ -140,7 +95,7 @@ private:
 
     RooAbsReal *observable_{nullptr};
 
-    std::map<std::string, ParameterContainer > parameters_;
+    std::map<std::string, FitParameter> parameterMap_;
 };
 
 #endif //PID_MODEL_PARTICLEFITMODEL_H_
