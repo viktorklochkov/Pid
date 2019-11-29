@@ -16,13 +16,13 @@ class BaseFitterHelper {
 public:
     struct ParticleFitModelContainer {
         BaseParticleFitModel *model_{nullptr};
-        RooRealVar *integral_{nullptr};
+        RooRealVar *integralVar_{nullptr};
 
         explicit ParticleFitModelContainer(BaseParticleFitModel *model) : model_(model) {
             /* getting name of the new variable */
-            integral_ = model->addParameter(new RooRealVar("integral", "", 0., 1.,"-"));
+            integralVar_ = model->addParameter(new RooRealVar("integral", "", 0., 1., "-"));
             std::string integralVarName(model->getParPrefix() + "integral");
-            integral_->SetName(integralVarName.c_str());
+            integralVar_->SetName(integralVarName.c_str());
         }
     };
 
@@ -47,10 +47,12 @@ public:
         RooArgList pdfList;
         RooArgList constantList;
 
-        for (auto &model : particlesModelsDefinedAt(x)) {
+        auto modelsAtX = particlesModelsDefinedAt(x);
+
+        for (auto &model : modelsAtX) {
             /* Unowned objects are inserted with the add() method. Owned objects are added with addOwned() or addClone() */
             pdfList.add(*model.model_->getFitModel());
-            constantList.add(*model.integral_);
+            constantList.add(*model.integralVar_);
         }
 
         return new RooAddPdf(name, "", pdfList, constantList);
@@ -81,8 +83,23 @@ public:
         }
     }
 
-    void applyAllParametrizations() {
+    void applyAllParameterConstraints() {
         applyAllParameterConstraints(x_);
+    }
+
+    void pickAllFitResults() {
+        for (auto &m: modelsAtX_) {
+            m.model_->pickFitParameterResultsAt(x_);
+        }
+    }
+
+    void saveAllTo(TDirectory *dir) const {
+        assert(dir);
+
+        for (auto &m : particleFitModels_) {
+            m.model_->saveModelTo(dir);
+        }
+
     }
 
     double getX() const {
@@ -96,6 +113,7 @@ public:
     const std::vector<ParticleFitModelContainer> &getModelsAtX() const {
         return modelsAtX_;
     }
+
 
 private:
     std::vector<ParticleFitModelContainer> particleFitModels_;

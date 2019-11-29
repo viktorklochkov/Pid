@@ -50,3 +50,9 @@ void BaseParticleFitModel::initialize() {
         par->SetName(newName.c_str());
     }
 }
+
+void BaseParticleFitModel::pickFitParameterResultsAt(double x) {
+    for (auto &p : parameterMap_) {
+        p.second.pickFitResultAt(x);
+    }
+}
