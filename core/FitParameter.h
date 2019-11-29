@@ -7,15 +7,15 @@
 
 
 #include "FitParameterConstraint.h"
-#include "FitParameterTrack.h"
+#include "FitParameterResult.h"
 
-class FitParameter : public FitParameterConstraint, public FitParameterTrack {
+class FitParameter : public FitParameterConstraint, public FitParameterResult {
 
 
 public:
     FitParameter(RooRealVar *var, const std::string &name) :
             FitParameterConstraint(var),
-            FitParameterTrack(var),
+            FitParameterResult(var),
             name_(name), var_(var) {}
 
     const std::string &getName() const {
@@ -25,6 +25,8 @@ public:
     RooRealVar *getVar() const {
         return var_;
     }
+
+    void fixWithFitResults();
 
 private:
     std::string name_{""};

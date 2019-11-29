@@ -77,6 +77,18 @@ public:
 
     void applyParameterConstraintsAt(double x);
 
+    void pickFitParameterResultsAt(double x);
+
+    void saveModelTo(TDirectory *dir) const {
+        assert (dir);
+
+        auto saveDir = dir->mkdir(getName().c_str());
+
+        for (auto &p : parameterMap_) {
+            saveDir->WriteObject(p.second.toTGraph(), p.second.getName().c_str());
+        }
+    }
+
     virtual bool isDefinedAt(double x) { return xmin_ <= x && x <= xmax_; }
     virtual void initModel() {};
     virtual RooAbsPdf *getFitModel() = 0;

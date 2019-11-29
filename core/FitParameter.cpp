@@ -3,3 +3,8 @@
 //
 
 #include "FitParameter.h"
+
+void FitParameter::fixWithFitResults() {
+    fix(toTGraph());
+}
+

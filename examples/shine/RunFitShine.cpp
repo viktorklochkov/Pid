@@ -36,12 +36,12 @@ int main(int argc, char ** argv) {
     {
         auto protons = new ShineDeDxParticleFitModel(2212);
         protons->fillParticleInfoFromDB();
-        protons->setRange(1.5, 6.4);
+        protons->setRange(2.2, 6.4);
         protons->setRooVarPrefix("p_");
         fitterHelper.addParticleModel(protons);
 
         protons->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(2212), 1));
-        protons->parameter("sigma").range(0.05, 1.);
+        protons->parameter("sigma").range(0.05, .15);
 
 
         protons->print();
@@ -55,11 +55,23 @@ int main(int argc, char ** argv) {
         fitterHelper.addParticleModel(pion_pos);
 
         pion_pos->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(211), 1));
-        pion_pos->parameter("sigma").range(0.05, 1.);
+        pion_pos->parameter("sigma").range(0.05, .15);
 
         pion_pos->print();
     }
 
+    {
+        auto pion_neg = new ShineDeDxParticleFitModel(-211);
+        pion_neg->fillParticleInfoFromDB();
+        pion_neg->setRange(-5.5, -0.4);
+        pion_neg->setRooVarPrefix("pion_neg_");
+        fitterHelper.addParticleModel(pion_neg);
+
+        pion_neg->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
+        pion_neg->parameter("sigma").range(0.02, 0.13);
+
+        pion_neg->print();
+    }
 
     {
         auto deuteron = new ShineDeDxParticleFitModel(1000010020);
@@ -83,7 +95,7 @@ int main(int argc, char ** argv) {
         fitterHelper.addParticleModel(positron);
 
         positron->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), 1));
-        positron->parameter("sigma").range(0.05, 1.);
+        positron->parameter("sigma").range(0.07, 0.13);
 
         positron->print();
     }
@@ -96,7 +108,7 @@ int main(int argc, char ** argv) {
         fitterHelper.addParticleModel(electron);
 
         electron->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), -1));
-        electron->parameter("sigma").range(0.05, 1.);
+        electron->parameter("sigma").range(0.07, 0.13);
 
         electron->print();
     }
@@ -107,6 +119,8 @@ int main(int argc, char ** argv) {
     auto c = new TCanvas;
     c->Print("output.pdf(", "pdf");
 
+    inputHistogram->Draw("colz");
+
 
 
     for (int i = 1; i < inputHistogram->GetXaxis()->GetNbins(); ++i) {
@@ -114,14 +128,12 @@ int main(int argc, char ** argv) {
 
         if (fitterHelper.particlesModelsDefinedAt(x).empty()) continue;
 
-        fitterHelper.at(x);
-        fitterHelper.applyAllParametrizations();
-
         auto py = inputHistogram->ProjectionY("tmp", i, i);
         py->SetDirectory(0);
-
         if (py->Integral() < 1000) continue;
 
+        fitterHelper.at(x);
+        fitterHelper.applyAllParameterConstraints();
 
         auto frame = fitterHelper.getObservable()->frame();
 
@@ -129,7 +141,9 @@ int main(int argc, char ** argv) {
         ds.plotOn(frame);
 
         auto model = fitterHelper.getCompositePdfAtX();
-        model->chi2FitTo(ds);
+        model->fitTo(ds, RooFit::Extended());
+
+        fitterHelper.pickAllFitResults();
 
         model->plotOn(frame);
         frame->Draw();
@@ -145,6 +159,9 @@ int main(int argc, char ** argv) {
     }
 
     c->Print("output.pdf)", "pdf");
+
+    TFile outputFile("output.root", "RECREATE");
+    fitterHelper.saveAllTo(&outputFile);
 
     return 0;
 }
