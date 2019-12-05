@@ -2,7 +2,10 @@
 // Created by eugene on 26/11/2019.
 //
 
+#include <RooExtendPdf.h>
+
 #include "BaseParticleFitModel.h"
+#include "FitParameter.h"
 
 void BaseParticleFitModel::fillParticleInfoFromDB() {
     mass_ = PdgHelper::mass(pdgID_);
@@ -10,10 +13,12 @@ void BaseParticleFitModel::fillParticleInfoFromDB() {
     name_ = PdgHelper::isIon(pdgID_)? Form("ion_%d_%d", PdgHelper::getZ(pdgID_), PdgHelper::getA(pdgID_)): PdgHelper::getParticlePdg(pdgID_)->GetName();
 }
 
-RooRealVar *BaseParticleFitModel::addParameter(RooRealVar *var) {
+FitParameter *BaseParticleFitModel::addParameter(RooRealVar *var) {
     assert(var);
-    parameterMap_.emplace(var->GetName(), FitParameter(var, var->GetName()));
-    return var;
+    auto insertResult = parameterMap_.emplace(var->GetName(), FitParameter(var, var->GetName()));
+    /* ensure parameter is not exists */
+    assert(insertResult.second);
+    return &insertResult.first->second;
 }
 
 void BaseParticleFitModel::applyParameterConstraintsAt(double x) {
@@ -36,7 +41,7 @@ void BaseParticleFitModel::print() {
 }
 
 void BaseParticleFitModel::initialize() {
-    assert(name_ != "");
+    assert(!name_.empty());
 
     assert(observable_);
     assert(xmax_ > xmin_);
@@ -44,10 +49,13 @@ void BaseParticleFitModel::initialize() {
     assert(charge_ != 0);
 
     initModel();
+    initExtPdf();
 
-    for (auto par : getFitParams()) {
-        std::string newName(getParPrefix() + std::string(par->GetName()));
-        par->SetName(newName.c_str());
+    for (const auto& par : parameterMap_) {
+        auto rooVar = par.second.getVar();
+        auto &name = par.first;
+        std::string newName(getParPrefix() + name);
+        rooVar->SetName(newName.c_str());
     }
 }
 
@@ -56,3 +64,26 @@ void BaseParticleFitModel::pickFitParameterResultsAt(double x) {
         p.second.pickFitResultAt(x);
     }
 }
+
+void BaseParticleFitModel::initExtPdf() {
+    auto normPar = addParameter("integral");
+    normPar->range(0, RooNumber::infinity());
+    this->extPdf_.reset(new RooExtendPdf(("ext_" + getName()).c_str(), "", *getFitModel(), *normPar->getVar()));
+}
+
+FitParameter *BaseParticleFitModel::addParameter(const std::string &name) {
+    auto insertResult = parameterMap_.emplace(name, name);
+    assert(insertResult.second);
+    return &insertResult.first->second;
+}
+
+void BaseParticleFitModel::saveModelTo(TDirectory *dir) const {
+    assert (dir);
+
+    auto saveDir = dir->mkdir(getName().c_str());
+
+    for (auto &p : parameterMap_) {
+        saveDir->WriteObject(p.second.toTGraph(), p.second.getName().c_str());
+    }
+}
+

@@ -14,8 +14,9 @@
 
 #include <TMath.h>
 #include <TPaveText.h>
+#include <core/FitParameter.h>
 
-FitParameterConstraint::Fct_t wrapToX(FitParameterConstraint::Fct_t f, int charge) {
+FitParameter::ConstraintFct_t wrapToX(FitParameter::ConstraintFct_t f, int charge) {
     return [=] (double x) { return f(TMath::Exp(charge*x)/20); };
 }
 
@@ -41,7 +42,7 @@ int main(int argc, char ** argv) {
         fitterHelper.addParticleModel(protons);
 
         protons->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(2212), 1));
-        protons->parameter("sigma").range(0.05, .15);
+        protons->parameter("sigma").range(0.05, .11);
 
 
         protons->print();
@@ -55,7 +56,8 @@ int main(int argc, char ** argv) {
         fitterHelper.addParticleModel(pion_pos);
 
         pion_pos->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(211), 1));
-        pion_pos->parameter("sigma").range(0.05, .15);
+//        pion_pos->parameter("sigma").range(0.05, .13);
+        pion_pos->parameter("sigma").fix("1.25402e-01 - 1.03784e-02*x");
 
         pion_pos->print();
     }
@@ -68,20 +70,34 @@ int main(int argc, char ** argv) {
         fitterHelper.addParticleModel(pion_neg);
 
         pion_neg->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
-        pion_neg->parameter("sigma").range(0.02, 0.13);
+//        pion_neg->parameter("sigma").range(0.02, 0.13);
+        pion_neg->parameter("sigma").fix("1.25402e-01 + 1.03784e-02*x");
 
         pion_neg->print();
     }
 
+//    {
+//        auto kaon_neg = new ShineDeDxParticleFitModel(-321);
+//        kaon_neg->fillParticleInfoFromDB();
+//        kaon_neg->setRange(-5.5, -3.);
+//        kaon_neg->setRooVarPrefix("kaon_neg_");
+//        fitterHelper.addParticleModel(kaon_neg);
+//
+//        kaon_neg->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-321), -1));
+//        kaon_neg->parameter("sigma").range(0.02, 0.13);
+//
+//        kaon_neg->print();
+//    }
+
     {
         auto deuteron = new ShineDeDxParticleFitModel(1000010020);
         deuteron->fillParticleInfoFromDB();
-        deuteron->setRange(3, 3.3);
+        deuteron->setRange(3, 3.8);
         deuteron->setRooVarPrefix("deuteron_");
         fitterHelper.addParticleModel(deuteron);
 
         deuteron->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(1000010020), 1));
-        deuteron->parameter("sigma").range(0.05, 1.);
+        deuteron->parameter("sigma").range(0.05, .3);
 
         deuteron->print();
     }
@@ -90,7 +106,7 @@ int main(int argc, char ** argv) {
     {
         auto positron = new ShineDeDxParticleFitModel(-11);
         positron->fillParticleInfoFromDB();
-        positron->setRange(0.8, 4.);
+        positron->setRange(0.4, 4.);
         positron->setRooVarPrefix("positron_");
         fitterHelper.addParticleModel(positron);
 
@@ -152,7 +168,7 @@ int main(int argc, char ** argv) {
         text->SetNDC();
         text->Draw();
 
-
+        gPad->SetLogy();
 
         c->Print("output.pdf", "pdf");
 

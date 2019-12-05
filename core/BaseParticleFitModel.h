@@ -6,6 +6,7 @@
 #define PID_MODEL_PARTICLEFITMODEL_H_
 
 #include <RooAbsPdf.h>
+#include <RooExtendPdf.h>
 #include <RooRealVar.h>
 
 #include <bb/BetheBlochHelper.h>
@@ -67,9 +68,13 @@ public:
 
     void initialize();
 
+    void initExtPdf();
+
     void print();
 
-    RooRealVar *addParameter(RooRealVar *var);
+    FitParameter *addParameter(RooRealVar *var);
+
+    FitParameter *addParameter(const std::string& name);
 
     FitParameter &parameter(const std::string &name) {
         return parameterMap_.at(name);
@@ -79,20 +84,15 @@ public:
 
     void pickFitParameterResultsAt(double x);
 
-    void saveModelTo(TDirectory *dir) const {
-        assert (dir);
-
-        auto saveDir = dir->mkdir(getName().c_str());
-
-        for (auto &p : parameterMap_) {
-            saveDir->WriteObject(p.second.toTGraph(), p.second.getName().c_str());
-        }
-    }
+    void saveModelTo(TDirectory *dir) const;
 
     virtual bool isDefinedAt(double x) { return xmin_ <= x && x <= xmax_; }
     virtual void initModel() {};
     virtual RooAbsPdf *getFitModel() = 0;
-    virtual std::vector<RooRealVar *> getFitParams() = 0;
+
+    RooAbsPdf &getExtFitModel() {
+        return *extPdf_;
+    }
 
 
 private:
@@ -107,6 +107,7 @@ private:
 
     RooAbsReal *observable_{nullptr};
 
+    std::unique_ptr<RooExtendPdf> extPdf_;
     std::map<std::string, FitParameter> parameterMap_;
 };
 

@@ -9,6 +9,7 @@
 #include <vector>
 #include <RooRealVar.h>
 #include <RooAddPdf.h>
+#include <RooExtendPdf.h>
 #include "BaseParticleFitModel.h"
 
 class BaseFitterHelper {
@@ -16,14 +17,8 @@ class BaseFitterHelper {
 public:
     struct ParticleFitModelContainer {
         BaseParticleFitModel *model_{nullptr};
-        RooRealVar *integralVar_{nullptr};
 
-        explicit ParticleFitModelContainer(BaseParticleFitModel *model) : model_(model) {
-            /* getting name of the new variable */
-            integralVar_ = model->addParameter(new RooRealVar("integral", "", 0., 1., "-"));
-            std::string integralVarName(model->getParPrefix() + "integral");
-            integralVar_->SetName(integralVarName.c_str());
-        }
+        explicit ParticleFitModelContainer(BaseParticleFitModel *model) : model_(model) {}
     };
 
     RooRealVar *getObservable() const {
@@ -51,11 +46,10 @@ public:
 
         for (auto &model : modelsAtX) {
             /* Unowned objects are inserted with the add() method. Owned objects are added with addOwned() or addClone() */
-            pdfList.add(*model.model_->getFitModel());
-            constantList.add(*model.integralVar_);
+            pdfList.add(model.model_->getExtFitModel());
         }
 
-        return new RooAddPdf(name, "", pdfList, constantList);
+        return new RooAddPdf(name, "", pdfList);
     }
 
     /**
