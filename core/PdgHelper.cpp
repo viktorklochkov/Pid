@@ -28,7 +28,7 @@ std::tuple<int, int> PdgHelper::getAZIon(Pdg_t pdg) {
     assert(pdg > 1000000000);
     int A = (pdg % 10000)/10;
     int Z = (pdg % 10000000)/10000;
-    return {A,Z};
+    return std::tuple<int, int>(A,Z);
 }
 
 int PdgHelper::getZ(Pdg_t pdg) {
