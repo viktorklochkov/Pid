@@ -72,7 +72,7 @@ void BaseParticleFitModel::initExtPdf() {
 }
 
 FitParameter *BaseParticleFitModel::addParameter(const std::string &name) {
-    auto insertResult = parameterMap_.emplace(name, name);
+    auto insertResult = parameterMap_.emplace(name, FitParameter(name));
     assert(insertResult.second);
     return &insertResult.first->second;
 }
