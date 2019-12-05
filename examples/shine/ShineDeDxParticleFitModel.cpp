@@ -14,14 +14,10 @@ RooAbsPdf *ShineDeDxParticleFitModel::getFitModel() {
     return pdf_;
 }
 
-std::vector<RooRealVar *> ShineDeDxParticleFitModel::getFitParams() {
-    return {bb, sigma, d};
-}
-
 void ShineDeDxParticleFitModel::initModel() {
-    bb = addParameter(new RooRealVar("bb", "", 0., 4., "MIP"));
-    sigma = addParameter(new RooRealVar("sigma", "", 1e-2, 5, "MIP"));
-    d = addParameter(new RooRealVar("d", "", -0.2, 0.2, "-"));
+    bb = addParameter(new RooRealVar("bb", "", 0., 4., "MIP"))->getVar();
+    sigma = addParameter(new RooRealVar("sigma", "", 1e-2, 5, "MIP"))->getVar();
+    d = addParameter(new RooRealVar("d", "", -0.2, 0.2, "-"))->getVar();
 
     pdf_ = new AsymmetricGaussianPDF(getName().c_str(), "", *getObservable(), *bb, *sigma, *d);
 }
