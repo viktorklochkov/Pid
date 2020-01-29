@@ -49,11 +49,15 @@ add_executable(main main.cpp)
 target_link_libraries(main Pid ${ROOT_LIBRARIES})
 target_include_directories(main PUBLIC src)
 
+# Create a main program using the library
+add_executable(pid macro/pid.cpp)
+target_link_libraries(pid Pid ${ROOT_LIBRARIES})
+target_include_directories(pid PUBLIC src)
+
 # Packaging routine
 # For complete explanation
 # @see https://cmake.org/cmake/help/git-master/manual/cmake-packages.7.html#creating-packages
 include(GenerateExportHeader)
-
 
 generate_export_header(Pid)
 set_property(TARGET Pid PROPERTY VERSION ${PROJECT_VERSION})
@@ -127,3 +131,4 @@ install(FILES
         Devel
         )
 
+install (TARGETS pid RUNTIME DESTINATION bin)

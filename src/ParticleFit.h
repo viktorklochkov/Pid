@@ -24,7 +24,7 @@ class ParticleFit {
   explicit ParticleFit(int type) : particle_type_(type) {};
 
   std::vector<double> GetFunctionParams(double p) const;
-  double Eval(double p, double m2) const;
+  double Eval(double p, double m2) ;
 
   void SetParametrization(const std::vector<TF1> &parametrization) { parametrization_ = parametrization; }
   void SetFitFunction(const TF1 &function) { function_ = function; }

@@ -56,20 +56,4 @@ void RunGetter(TString InputFile = "../build/pid_getter.root") {
     h2Purity.at(pid)->Draw("colz");
     h2Purity.at(pid)->GetYaxis()->SetTitleOffset(1.4);
   }
-/*    
-    for (int i=0; i<10; ++i)
-    {
-        const float m2 = r->Uniform(-0.1, 1);
-        const float qp = r->Uniform(-5, 5);
-        
-        auto prob = getter->GetBayesianProbability(qp, m2);
-        
-        std::cout << "m2 = " << m2 << " qp = " << qp << " proton probability = " << prob[PidParticles::kProton] << std::endl;
-        std::cout << "m2 = " << m2 << " qp = " << qp << " kaon   probability = " << prob[PidParticles::kKaonPos] << std::endl;
-        std::cout << "m2 = " << m2 << " qp = " << qp << " pion   probability = " << prob[PidParticles::kPionPos] << std::endl;
-        std::cout << "m2 = " << m2 << " qp = " << qp << " bg     probability = " << prob[PidParticles::kBg] << std::endl;
-    }
-    
-    f2->Close();
-*/
 }
