@@ -14,8 +14,8 @@ namespace Pid {
 std::map<int, double> Getter::GetBayesianProbability(double p, double m2) {
   std::map<int, double> prob{};
 
-  if (p > maxx_ || p < minx_)
-    return prob;
+//  if (p > maxx_ || p < minx_)
+//    return prob;
 
   double sum{0.};
   for (auto &specie : species_) {
