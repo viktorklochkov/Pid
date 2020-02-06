@@ -36,7 +36,7 @@ std::vector<double> ParticleFit::GetFunctionParams(double p) const {
 * @return vector of parameters
 */
 double ParticleFit::Eval(double p, double m2) {
-  if (p > maxx_ || p < minx_) return 0.;
+//  if (p > maxx_ || p < minx_) return 0.;
 
   const uint npar = function_.GetNpar();
   if (parametrization_.size() != npar)
