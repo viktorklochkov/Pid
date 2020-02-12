@@ -41,7 +41,7 @@ set(PCM_FILE_NAME lib${PROJECT_NAME})
 
 
 ROOT_GENERATE_DICTIONARY(${DICT_FILE_NAME} ${HEADERS} LINKDEF src/PidLinkDef.h)
-add_library(Pid SHARED ${SOURCES} ${DICT_FILE_NAME})
+add_library(Pid STATIC ${SOURCES} ${DICT_FILE_NAME})
 target_link_libraries(Pid ${ROOT_LIBRARIES})
 
 # Create a main program using the library
