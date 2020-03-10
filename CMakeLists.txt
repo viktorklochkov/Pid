@@ -21,9 +21,7 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -ggdb")
 message(STATUS "Using CXX flags for ${CMAKE_BUILD_TYPE}: ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
 
 set(SOURCES
-        src/Fitter.cpp
         src/ParticleFit.cpp
-        src/Parameters.cpp
         src/Getter.cpp
         src/Container.cpp
         )
@@ -57,16 +55,6 @@ set(PCM_FILE_NAME lib${PROJECT_NAME})
 ROOT_GENERATE_DICTIONARY(${DICT_FILE_NAME} ${HEADERS} LINKDEF src/PidLinkDef.h)
 add_library(Pid SHARED ${SOURCES} ${DICT_FILE_NAME})
 target_link_libraries(Pid ${ROOT_LIBRARIES})
-
-# Create a main program using the library
-add_executable(main main.cpp)
-target_link_libraries(main Pid ${ROOT_LIBRARIES})
-target_include_directories(main PUBLIC src)
-
-# Create a main program using the library
-add_executable(pid macro/pid.cpp)
-target_link_libraries(pid Pid ${ROOT_LIBRARIES})
-target_include_directories(pid PUBLIC src)
 
 # Packaging routine
 # For complete explanation
