@@ -99,8 +99,14 @@ public:
         return *extPdf_;
     }
 
+    EColor getModelColor() const {
+        const int colors[]{kRed, kGreen+2, kMagenta, kCyan, kOrange, kAzure};
+        return EColor(colors[modelId_ % sizeof(colors)]);
+    }
 
 private:
+
+    size_t modelId_ {MODEL_ID_COUNTER++};
     int pdgID_;
     double mass_{0.};
     double charge_{0.};
@@ -115,6 +121,8 @@ private:
 
     std::unique_ptr<RooExtendPdf> extPdf_;
     std::map<std::string, FitParameter> parameterMap_;
+
+    static size_t MODEL_ID_COUNTER;
 };
 
 
