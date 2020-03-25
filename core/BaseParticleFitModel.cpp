@@ -67,7 +67,7 @@ void BaseParticleFitModel::pickFitParameterResultsAt(double x) {
 
 void BaseParticleFitModel::initExtPdf() {
     auto normPar = addParameter("integral");
-    normPar->range(0, RooNumber::infinity());
+//    normPar->range(0, RooNumber::infinity());
     this->extPdf_.reset(new RooExtendPdf(("ext_" + getName()).c_str(), "", *getFitModel(), *normPar->getVar()));
 }
 
