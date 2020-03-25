@@ -87,3 +87,5 @@ void BaseParticleFitModel::saveModelTo(TDirectory *dir) const {
     }
 }
 
+size_t BaseParticleFitModel::MODEL_ID_COUNTER = 0UL;
+
