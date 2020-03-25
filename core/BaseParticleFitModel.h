@@ -5,6 +5,9 @@
 #ifndef PID_MODEL_PARTICLEFITMODEL_H_
 #define PID_MODEL_PARTICLEFITMODEL_H_
 
+
+#include <Math/Functor.h>
+
 #include <RooAbsPdf.h>
 #include <RooExtendPdf.h>
 #include <RooRealVar.h>
@@ -12,7 +15,9 @@
 #include <bb/BetheBlochHelper.h>
 #include <TDatabasePDG.h>
 #include <sstream>
+#include <Math/IFunctionfwd.h>
 #include "FitParameter.h"
+
 
 class BaseParticleFitModel {
 
@@ -105,10 +110,16 @@ private:
     double xmin_{0.};
     double xmax_{0.};
 
+
     RooAbsReal *observable_{nullptr};
 
     std::unique_ptr<RooExtendPdf> extPdf_;
     std::map<std::string, FitParameter> parameterMap_;
 };
+
+
+
+
+
 
 #endif //PID_MODEL_PARTICLEFITMODEL_H_

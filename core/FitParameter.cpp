@@ -4,6 +4,8 @@
 
 #include "FitParameter.h"
 
+FitParameter::RangedConstraint_t FitParameter::RangedConstraint_t::NONE_CONSTRAINT{FitParameter::RangedConstraint_t::NoneConstraint()};
+
 void FitParameter::fixWithFitResults() {
     fix(toTGraph());
 }
@@ -23,27 +25,50 @@ FitParameter::ConstraintFct_t FitParameter::wrap(TF1 *tf) {
 }
 
 void FitParameter::applyConstraint(double x) {
-    if (parType_ == EConstraintType::kFix) {
-        var_->setVal(fFix_(x));
+    auto &c = findConstraint(x);
+
+    if (c.type_ == EConstraintType::kFix) {
+        var_->setVal(c.fix_(x));
         var_->setConstant(kTRUE);
-    } else if (parType_ == EConstraintType::kRange) {
-        assert(fMin_(x) <= fMax_(x));
+    } else if (c.type_ == EConstraintType::kRange) {
+        assert(c.lo_(x) <= c.hi_(x));
         var_->setConstant(kFALSE);
-        var_->setRange(fMin_(x), fMax_(x));
+        var_->setRange(c.lo_(x), c.hi_(x));
     } else {
         var_->setConstant(kFALSE);
     }
 }
 
-void FitParameter::range(const FitParameter::ConstraintFct_t &min, const FitParameter::ConstraintFct_t &max) {
-    parType_ = EConstraintType::kRange;
-    fMin_ = min;
-    fMax_ = max;
+void FitParameter::range(const ConstraintFct_t &&lo, const ConstraintFct_t &&hi, double min,
+                         double max) {
+    RangedConstraint_t c;
+    c.type_ = EConstraintType::kRange;
+    c.min_ = min;
+    c.max_ = max;
+    c.lo_ = lo;
+    c.hi_ = hi;
+
+    if (checkConstraintRange(min, max)) {
+        constraints_.push_back(std::move(c));
+    } else {
+        throw std::runtime_error("Illegal constraint range");
+    }
 }
 
-void FitParameter::fix(const FitParameter::ConstraintFct_t &fix) {
-    parType_ = EConstraintType::kFix;
-    fFix_ = fix;
+void FitParameter::fix(const ConstraintFct_t &&fix, double min, double max) {
+
+    RangedConstraint_t c;
+    c.type_ = EConstraintType::kFix;
+    c.fix_ = fix;
+    c.min_ = min;
+    c.max_ = max;
+
+    if (checkConstraintRange(min, max)) {
+        constraints_.push_back(std::move(c));
+    } else {
+        throw std::runtime_error("Illegal constraint range");
+    }
+
 }
 
 void FitParameter::pickFitResultAt(double x) {
@@ -68,4 +93,23 @@ FitParameter::ConstraintFct_t FitParameter::wrap(const std::string &formula) {
     /* TODO fix up this memory leakage */
     auto fct = new TF1("tmp", formula.c_str());
     return wrap(fct);
+}
+
+FitParameter::RangedConstraint_t &FitParameter::findConstraint(double x) {
+    RangedConstraint_t *result = nullptr;
+    for (auto &c : constraints_) {
+        if (c.contains(x)) {
+            if (result) {
+                throw std::runtime_error("More then one constraint contains x = " + std::to_string(x));
+            }
+
+            result = &c;
+        }
+    }
+
+    if (!result) {
+        return RangedConstraint_t::NONE_CONSTRAINT;
+    }
+
+    return *result;
 }
