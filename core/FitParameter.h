@@ -80,7 +80,7 @@ public:
     template<typename T, typename V>
     void range(T lo, V hi,
                double min = -RooNumber::infinity(),
-               double max =  RooNumber::infinity()
+               double max = RooNumber::infinity()
     ) {
         range(wrap(lo), wrap(hi), min, max);
     }
@@ -88,20 +88,33 @@ public:
     template<typename T>
     void fix(T _fix,
              double min = -RooNumber::infinity(),
-             double max =  RooNumber::infinity()
+             double max = RooNumber::infinity()
     ) {
         fix(wrap(_fix), min, max);
     }
 
+    template<typename T>
+    void fixTol(T _fix, double tol,
+                double min = -RooNumber::infinity(),
+                double max = RooNumber::infinity()
+    ) {
+        fixTol(wrap(_fix), tol, min, max);
+    }
+
     void range(const ConstraintFct_t &&lo, const ConstraintFct_t &&hi,
                double min = -RooNumber::infinity(),
-               double max =  RooNumber::infinity()
+               double max = RooNumber::infinity()
     );
 
     void fix(const ConstraintFct_t &&fix,
              double min = -RooNumber::infinity(),
-             double max =  RooNumber::infinity()
-            );
+             double max = RooNumber::infinity()
+    );
+
+    void fixTol(const ConstraintFct_t &&fix, double relTol,
+                double min = -RooNumber::infinity(),
+                double max = RooNumber::infinity()
+    );
 
 
     void pickFitResultAt(double x);
@@ -140,7 +153,6 @@ private:
     static ConstraintFct_t wrap(TF1 *tf);
 
     static ConstraintFct_t wrap(const std::string &formulaStr);
-
 
 
     std::vector<RangedConstraint_t> constraints_;

@@ -34,6 +34,7 @@ void FitParameter::applyConstraint(double x) {
         assert(c.lo_(x) <= c.hi_(x));
         var_->setConstant(kFALSE);
         var_->setRange(c.lo_(x), c.hi_(x));
+        var_->setVal(0.5*(c.lo_(x) + c.hi_(x)));
     } else {
         var_->setConstant(kFALSE);
     }
@@ -112,4 +113,20 @@ FitParameter::RangedConstraint_t &FitParameter::findConstraint(double x) {
     }
 
     return *result;
+}
+
+void FitParameter::fixTol(const FitParameter::ConstraintFct_t &&fix, double relTol, double min, double max) {
+    RangedConstraint_t c;
+    c.type_ = EConstraintType::kRange;
+    c.lo_ = [=] (double x) -> double { return (1 - relTol)*fix(x); };
+    c.hi_ = [=] (double x) -> double { return (1 + relTol)*fix(x); };
+    c.min_ = min;
+    c.max_ = max;
+
+    if (checkConstraintRange(min,max)) {
+        constraints_.push_back(std::move(c));
+    } else {
+        throw std::runtime_error("Illegal constraint range");
+    }
+
 }
