@@ -16,6 +16,20 @@
 
 namespace Pid {
 
+class ParticleFitBase{
+ public:
+  ParticleFitBase() = default;
+  virtual ~ParticleFitBase() = default;
+
+  virtual float GetPdfValue(float x, float y) = 0;
+
+ protected:
+  float min_x_{0.f};
+  float max_x_{0.f};
+  bool is_init_{false};
+};
+
+
 class ParticleFit {
  public:
 
@@ -24,7 +38,7 @@ class ParticleFit {
   explicit ParticleFit(int type) : particle_type_(type) {};
 
   std::vector<double> GetFunctionParams(double p) const;
-  double Eval(double p, double m2) ;
+  double Eval(double p, double m2);
 
   void SetParametrization(const std::vector<TF1> &parametrization) { parametrization_ = parametrization; }
   void SetFitFunction(const TF1 &function) { function_ = function; }

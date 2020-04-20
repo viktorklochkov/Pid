@@ -5,8 +5,8 @@
     @brief  Class to store PID information
 */
 
-#ifndef CENTRALITY_CONTAINER_H
-#define CENTRALITY_CONTAINER_H
+#ifndef PID_CONTAINER_H
+#define PID_CONTAINER_H
 
 #include <map>
 
@@ -41,4 +41,4 @@ class Container {
 };
 }
 
-#endif //CENTRALITY_CONTAINER_H
+#endif //PID_CONTAINER_H

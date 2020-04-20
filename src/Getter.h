@@ -21,17 +21,11 @@ namespace Pid {
  * @brief interface class for Pid getters
  */
 class BaseGetter {
-
  public:
-
   virtual ~BaseGetter() = default;
-
   virtual double GetWeight(double var1, double var2, int pid) = 0;
-
   virtual std::map<int, double> GetWeights(double var1, double var2) = 0;
-
   virtual int GetPid(double var1, double var2, double purity) = 0;
-
   virtual void Streamer(TBuffer &) {};
 };
 
