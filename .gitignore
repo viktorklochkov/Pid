@@ -1,3 +1,5 @@
 Doxygen/*
-build/*
+*build*/*
 install/*
+macro/*.root
+tasks/*.root

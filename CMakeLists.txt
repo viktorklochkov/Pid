@@ -36,6 +36,7 @@ include(${ROOT_USE_FILE})
 add_definitions(${ROOT_CXX_FLAGS})
 
 add_subdirectory(src)
+add_subdirectory(tasks)
 
 # Packaging routine
 # For complete explanation
