@@ -20,18 +20,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ftree-vectorize -ffast-math -DNODEBUG -fopenmp
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -ggdb")
 message(STATUS "Using CXX flags for ${CMAKE_BUILD_TYPE}: ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
 
-set(SOURCES
-        src/ParticleFit.cpp
-        src/Getter.cpp
-        src/Container.cpp
-        )
-
-string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")
-
-set(HEADERS
-        ${HEADERS}
-        src/Constants.h
-        )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
@@ -47,14 +35,7 @@ find_package(ROOT REQUIRED COMPONENTS Core MathCore RIO Hist Tree)
 include(${ROOT_USE_FILE})
 add_definitions(${ROOT_CXX_FLAGS})
 
-include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS})
-
-set(DICT_FILE_NAME G__${PROJECT_NAME})
-set(PCM_FILE_NAME lib${PROJECT_NAME})
-
-ROOT_GENERATE_DICTIONARY(${DICT_FILE_NAME} ${HEADERS} LINKDEF src/PidLinkDef.h)
-add_library(Pid SHARED ${SOURCES} ${DICT_FILE_NAME})
-target_link_libraries(Pid ${ROOT_LIBRARIES})
+add_subdirectory(src)
 
 # Packaging routine
 # For complete explanation
@@ -133,4 +114,4 @@ install(FILES
         Devel
         )
 
-install (TARGETS pid RUNTIME DESTINATION bin)
+#install (TARGETS pid RUNTIME DESTINATION bin)

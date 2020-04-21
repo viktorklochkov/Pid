@@ -16,18 +16,10 @@
 
 namespace Pid {
 
-class ParticleFitBase{
- public:
-  ParticleFitBase() = default;
-  virtual ~ParticleFitBase() = default;
 
-  virtual float GetPdfValue(float x, float y) = 0;
 
- protected:
-  float min_x_{0.f};
-  float max_x_{0.f};
-  bool is_init_{false};
-};
+
+
 
 
 class ParticleFit {
