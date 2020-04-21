@@ -24,7 +24,6 @@ class Fitter {
 
  public:
 
-<<<<<<< HEAD
 //     Fitter( std::vector <ParticleFit> &&particles ) : particles_(particles) {};
   Fitter() = default;;
 
