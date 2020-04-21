@@ -8,6 +8,7 @@
 #include "TFile.h"
 #include "TH2.h"
 
+#include "Getter.h"
 #include "ParticlePdf1D.h"
 #include "ParticlePdf2D.h"
 
@@ -17,15 +18,22 @@ std::vector<Pid::ParticlePdf1D*> Fit1D(TH1* input, float momentum);
 
 int main(int argc, char* argv[]){
 
+  if(argc<=2){
+    std::cout << "./fit_tof filename histoname" << std::endl;
+    return 1;
+  }
+
+  TString filename{argv[1]};
+  TString histoname{argv[2]};
+
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
 
-  auto* file{TFile::Open("/home/vklochkov/Data/cbm/trunk/urqmd/auau/12agev/mbias/psd44_hole20_pipe0_default_new/TGeant3/qa.root")};
-  TH2* m2p = file->Get<TH2>("VtxTracks/VtxTracks_q*p_TofHits_M^{2} (p_{TOF}, l_{reco}, t_{reco})_CorrectMatch");
+  auto* file{TFile::Open(filename)};
+  TH2* m2p = file->Get<TH2>(histoname);
   m2p->Rebin2D(10, 1);
 
   auto* out_file{TFile::Open("result.root", "recreate")};
 
-//  int i=4;
   for(int i=0; i<m2p->GetXaxis()->GetNbins(); ++i)
   {
     TH1* slice = m2p->ProjectionY(Form("px_%d",i), i, i);
@@ -35,10 +43,12 @@ int main(int argc, char* argv[]){
 
     auto result = Fit1D(slice, momentum);
 
-//    std::cout << "width - " << pi_width.getVal() << " " << K_width.getVal() << " " << p_width.getVal() << std::endl;
-//    std::cout << "mean -  " << pi_mean << " " << K_mean << " " << p_mean << std::endl;
 
   }
+
+  Pid::ParticlePdf2DBinned p;
+  Pid::Getter tof();
+
   out_file->Close();
 
 }
