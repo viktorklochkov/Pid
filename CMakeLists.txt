@@ -115,4 +115,9 @@ install(FILES
         Devel
         )
 
-#install (TARGETS pid RUNTIME DESTINATION bin)
+install (TARGETS pid RUNTIME DESTINATION bin)
+add_subdirectory(core)
+add_subdirectory(bb)
+add_subdirectory(model)
+add_subdirectory(examples/shine)
+
