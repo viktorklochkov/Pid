@@ -36,6 +36,11 @@ include(${ROOT_USE_FILE})
 add_definitions(${ROOT_CXX_FLAGS})
 
 add_subdirectory(src)
+add_subdirectory(core)
+add_subdirectory(bb)
+add_subdirectory(model)
+add_subdirectory(examples/shine)
+
 add_subdirectory(tasks)
 
 # Packaging routine
@@ -115,9 +120,4 @@ install(FILES
         Devel
         )
 
-install (TARGETS pid RUNTIME DESTINATION bin)
-add_subdirectory(core)
-add_subdirectory(bb)
-add_subdirectory(model)
-add_subdirectory(examples/shine)
 
