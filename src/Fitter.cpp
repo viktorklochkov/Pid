@@ -66,11 +66,19 @@ float Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::
 {
     auto f = ConstructFit1DFunction(p); //particles_.at(0).GetFunction(0.);
         
-    h->Fit( f, "Q,L", "", miny_, maxy_ );
-
+    h->Fit( f, "Q,M", "", miny_, maxy_ );
+    
     par = std::vector<double> (f->GetParameters(), f->GetParameters() + f->GetNpar() );
     par_err = std::vector<double>  (f->GetParErrors(), f->GetParErrors() + f->GetNpar() );    
-    
+//    
+//    int colors [6] = {kBlack,kGreen+2,kViolet,kOrange+2,kPink+2,kCyan+2};
+//    for (uint i = 0; i < particles_.size(); i++)
+//    {
+//      TF1 *func = (TF1*)particles_.at(i).GetFunction().Clone();
+//      func->SetLineColor(colors [i]);
+//      h->GetListOfFunctions()->Add(func);
+//    }
+//    
     h->Write( Form("h_%f", p) );
     
     return f->GetChisquare()/f->GetNDF();
@@ -84,7 +92,7 @@ float Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::
 */
 TF1* Fitter::ConstructFit1DFunction(float p)
 {
-    TF1 *temp{nullptr}; 
+//    TF1 *temp{nullptr};
     TString sumname{""};
     std::vector <double> par{};
     
@@ -93,18 +101,26 @@ TF1* Fitter::ConstructFit1DFunction(float p)
     {
         const TString name = particle.GetFunction().GetName();
         
-        temp = (TF1*)particle.GetFunction().Clone(name); 
+//        temp = (TF1*)particle.GetFunction().Clone(name); 
         iparticle == 0 ? sumname=name : sumname += "+" + name;        
         std::vector <double> par_i = particle.GetFunctionParams(p);
-        
+           
+//        for (uint i=0; i<par_i.size();i++)
+//	    particle.GetFunction().SetParName(i, Form("p%d", (int)par.size()+i));
         par.insert(par.end(), par_i.begin(), par_i.end());
-        
         iparticle++;
     }
 
-    TF1* f = new TF1("fit1D", sumname, miny_, maxy_ );   
+    TF1 *f;
+    if(particles_.size() > 1)
+        f = new TF1("fit1D", sumname, miny_, maxy_ );
+    else {
+        f = new TF1;
+        particles_.at(0).GetFunction().Copy(*f);
+//      f->SetName("fit1D");
+        f->SetRange(miny_, maxy_);
+    }
     f->SetParameters( &(par[0]) );
-
     uint iparam_all{0};
     for (auto const& particle : particles_)
     {
@@ -123,9 +139,10 @@ TF1* Fitter::ConstructFit1DFunction(float p)
 //     for (auto ipar : par)
 //         std::cout << ipar << " ";
 //     std::cout << std::endl;
+//     std::cout << sumname  << std::endl;
 //     std::cout << f->GetName() << " " << f->GetExpFormula() << std::endl;
     
-    delete temp;
+//    delete temp;
     
     return f;
 }

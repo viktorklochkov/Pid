@@ -29,6 +29,7 @@ public:
     float Eval(float p, float m2);
     
     void SetParametrization(const std::vector <TF1> &parametrization) { parametrization_ = parametrization; }
+    void SetParametrizationFunction(uint ivar, TF1 func) { parametrization_.at(ivar) = func; }
     void SetFitFunction(const TF1 &function) { function_ = function; }
     void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
     void SetIsFitted(bool is=true) { isfitted_=is; }

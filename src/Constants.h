@@ -20,7 +20,8 @@ namespace PidParticles{
         kKaonPos = 321,
         kKaonNeg = -321,
         kDeutron = 1000010020,
-        kHelium = 1000020040
+        kHe3 = 1000020030,
+        kHe4 = 1000020040
     };
     
     const std::unordered_map <int, float> masses = 
@@ -34,7 +35,8 @@ namespace PidParticles{
       { kKaonPos, 0.498 },
       { kKaonNeg, 0.498 },
       { kDeutron, 1.862 },
-      { kHelium, 3.724 },
+      { kHe3, 2.793 },
+      { kHe4, 3.724 },
     };
 }
 

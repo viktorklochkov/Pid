@@ -42,9 +42,22 @@ void Parameters::Parametrize( std::vector <ParticleFit> &particles)
 
             }
             
-            graphs.push_back( TGraphErrors( params_.size(), &(x_[0]), &(y[0]), 0, &(dy[0]) ) );
-            graphs.back().Fit( &(particles.at(ipart).GetParametrizationFunction(ivar)), "Q" );
-            graphs.back().Write( particles.at(ipart).GetParametrizationFunction(ivar).GetName() );
+	    TGraphErrors par( params_.size(), &(x_[0]), &(y[0]), 0, &(dy[0]) );
+	    TF1 &fit = particles.at(ipart).GetParametrizationFunction(ivar);
+            if (strcmp(fit.GetTitle(), "0") == 0)
+            {
+	      std::function <double (const double*, const double*)> fitFunc=[=](const double *x, const double *) { return par.Eval(x[0]);};
+	      TF1 *false_fit = new TF1(fit.GetName(), fitFunc, fit.GetXmin(), fit.GetXmax(),0); 
+	      false_fit->SetNpx(par.GetN());
+	      false_fit->SetTitle("0");
+	      particles.at(ipart).SetParametrizationFunction(ivar, *false_fit);
+	      par.GetListOfFunctions()->Add(false_fit);
+	      par.Draw();
+	    }
+	    else
+              par.Fit( &fit, "Q" );
+            par.Write( fit.GetName() );
+            graphs.push_back( par );
         }
         
         
