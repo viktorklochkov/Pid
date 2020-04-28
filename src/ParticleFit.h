@@ -47,6 +47,7 @@ public:
     
     float GetSigma(float p) { return parametrization_.at(PidFunction::kSigma).Eval(p); }
     float GetMean(float p) { return parametrization_.at(PidFunction::kMean).Eval(p); }
+    void GetRange(float &min, float &max) const { min = minx_, max = maxx_; }
     
 private:
 

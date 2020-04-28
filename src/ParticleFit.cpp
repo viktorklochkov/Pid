@@ -22,7 +22,10 @@ std::vector <double> ParticleFit::GetFunctionParams(float p) const
     const uint npar = function_.GetNpar();        
 
     if ( parametrization_.size() != npar )
+    {
+	std::cout << "\n\nNumber of parameters is not equal to number of parameter functions!\nExiting...\n"; 
         exit(0);        
+    }
 
     if (!isfitted_)
         return std::move(params);

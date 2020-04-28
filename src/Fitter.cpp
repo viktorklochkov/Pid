@@ -23,6 +23,8 @@ void Fitter::Fit()
     std::vector <std::vector <double>> params;
     std::vector <std::vector <double>> params_errors;
     std::vector <double> x;
+    std::vector <double> chi2_x;
+    std::vector <double> chi2_y;
 
     std::unique_ptr <TFile> f{ TFile::Open( outfilename_, "recreate") };
 
@@ -34,11 +36,16 @@ void Fitter::Fit()
         std::vector <double> par_err;
         
         const float mom = histo2D_->GetXaxis()->GetBinCenter(ibin);
-        const float chi2 = Fit1D(h1fit, par, par_err, mom);
+        float chi2 = Fit1D(h1fit, par, par_err, mom);
         
         std::cout << mom << "  " << chi2 << std::endl;
         
-        if (chi2 > chi2_max_) continue;
+	if (isnan(chi2) || isinf(chi2)) chi2 = -1.;
+        
+	chi2_x.push_back( mom );
+        chi2_y.push_back( chi2 );
+        
+        if (chi2 < 0. || chi2 > chi2_max_) continue;
         
         params.push_back(par);
         params_errors.push_back(par_err);
@@ -48,6 +55,10 @@ void Fitter::Fit()
     Parameters p;
     p.SetParams( std::move(x), std::move(params), std::move(params_errors) );
 //     p.SetParticles();
+    TGraph chi2( chi2_x.size(), &(chi2_x[0]), &(chi2_y[0]) );
+    chi2.SetName("chi2");
+    chi2.SetTitle( "#chi^{2}/NDF;p (GeV/#it{c});#chi^{2}/NDF" );
+    chi2.Write();
     p.Parametrize(particles_);
     
     f->Close();
@@ -92,7 +103,6 @@ float Fitter::Fit1D( std::unique_ptr <TH1D>& h, std::vector <double>& par, std::
 */
 TF1* Fitter::ConstructFit1DFunction(float p)
 {
-//    TF1 *temp{nullptr};
     TString sumname{""};
     std::vector <double> par{};
     
@@ -100,13 +110,9 @@ TF1* Fitter::ConstructFit1DFunction(float p)
     for (auto const& particle : particles_)
     {
         const TString name = particle.GetFunction().GetName();
-        
-//        temp = (TF1*)particle.GetFunction().Clone(name); 
         iparticle == 0 ? sumname=name : sumname += "+" + name;        
         std::vector <double> par_i = particle.GetFunctionParams(p);
            
-//        for (uint i=0; i<par_i.size();i++)
-//	    particle.GetFunction().SetParName(i, Form("p%d", (int)par.size()+i));
         par.insert(par.end(), par_i.begin(), par_i.end());
         iparticle++;
     }
@@ -124,25 +130,36 @@ TF1* Fitter::ConstructFit1DFunction(float p)
     uint iparam_all{0};
     for (auto const& particle : particles_)
     {
+	float pmin, pmax;
+        bool notInRange = false;	
+	particle.GetRange(pmin, pmax);
+        if ( p < pmin || pmax < p ) notInRange = true;  
         for (uint iparam=0; iparam<particle.GetNpar(); ++iparam, ++iparam_all)
         {
+            if ( notInRange )
+	    {
+                f->FixParameter( iparam_all, 0. );
+		continue;
+	    }
+            
+            if ( particle.GetIsFixed(iparam) )
+	    {
+                f->FixParameter( iparam_all, par.at(iparam_all) );
+		continue;
+	    }
+            
             double parmin{-1.};
             double parmax{-1.};
             particle.GetFunction().GetParLimits(iparam, parmin, parmax);
             f->SetParLimits( iparam_all, parmin, parmax );
-            
-            if ( particle.GetIsFixed(iparam) )
-                f->FixParameter( iparam_all, par.at(iparam_all) );
         }
         
     }
-//     for (auto ipar : par)
-//         std::cout << ipar << " ";
-//     std::cout << std::endl;
-//     std::cout << sumname  << std::endl;
-//     std::cout << f->GetName() << " " << f->GetExpFormula() << std::endl;
-    
-//    delete temp;
+    //std::cout << sumname << std::endl;
+    //std::cout << f->GetName() << " " << f->GetExpFormula() << std::endl;
+    //for (auto ipar : par)
+    //    std::cout << ipar << " ";
+    //std::cout << std::endl;
     
     return f;
 }
