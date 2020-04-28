@@ -14,7 +14,7 @@
 
 using namespace RooFit;
 
-std::vector<Pid::ParticlePdf1D*> Fit1D(TH1* input, float momentum);
+std::vector<Pid::ParticlePdf1DBase*> Fit1D(TH1* input, float momentum);
 
 int main(int argc, char* argv[]){
 
@@ -34,26 +34,44 @@ int main(int argc, char* argv[]){
 
   auto* out_file{TFile::Open("result.root", "recreate")};
 
-  for(int i=0; i<m2p->GetXaxis()->GetNbins(); ++i)
+  std::vector<Pid::ParticlePdf1DBase*> pdfs_pion;
+  std::vector<Pid::ParticlePdf1DBase*> pdfs_kaon;
+  std::vector<Pid::ParticlePdf1DBase*> pdfs_proton;
+
+  std::vector<double> bins{ m2p->GetXaxis()->GetBinLowEdge(1) };
+  for(int i=1; i<m2p->GetXaxis()->GetNbins(); ++i)
   {
     TH1* slice = m2p->ProjectionY(Form("px_%d",i), i, i);
 
     if(slice->GetEntries() < 1000) continue;
+    bins.emplace_back(m2p->GetXaxis()->GetBinUpEdge(i));
+    std::cout << "bins " << bins.back() << std::endl;
+
     const float momentum = m2p->GetXaxis()->GetBinCenter(i);
 
     auto result = Fit1D(slice, momentum);
-
-
+    pdfs_pion.emplace_back( result[0] );
+    pdfs_kaon.emplace_back( result[1] );
+    pdfs_proton.emplace_back( result[2] );
   }
+  TAxis a(static_cast<Int_t>(bins.size()-1), &(bins[0]));
 
-  Pid::ParticlePdf2DBinned p;
-  Pid::Getter tof();
+  Pid::ParticlePdf2DBinned* protons = new Pid::ParticlePdf2DBinned(pdfs_proton, {static_cast<Int_t>(bins.size()-1), &(bins[0])});
+  Pid::ParticlePdf2DBinned* kaons = new Pid::ParticlePdf2DBinned(pdfs_kaon, {static_cast<Int_t>(bins.size()-1), &(bins[0])});
+  Pid::ParticlePdf2DBinned* pions = new Pid::ParticlePdf2DBinned(pdfs_pion, {static_cast<Int_t>(bins.size()-1), &(bins[0])});
+
+  Pid::Getter tof;
+  tof.AddParticle(protons, 2212);
+  tof.AddParticle(kaons, 321);
+  tof.AddParticle(pions, 211);
+
+  tof.Write("tof_getter");
 
   out_file->Close();
 
 }
 
-std::vector<Pid::ParticlePdf1D*> Fit1D(TH1* input, float momentum){
+std::vector<Pid::ParticlePdf1DBase*> Fit1D(TH1* input, float momentum){
 
   const float p2 = momentum*momentum;
 
@@ -96,5 +114,12 @@ std::vector<Pid::ParticlePdf1D*> Fit1D(TH1* input, float momentum){
 
   m2frame->Write(Form("bin_%f", momentum));
 
-  return std::vector<Pid::ParticlePdf1D*>();
+  TF1 gaus("g", "gaus", -0.5, 1.5);
+  std::vector<Pid::ParticlePdf1DBase*> ret = {
+    new Pid::ParticlePdf1D(gaus, {pi_frac.getVal(), pi_mean.getVal(), pi_width.getVal()}, 211),
+    new Pid::ParticlePdf1D(gaus, {K_frac.getVal(), K_mean.getVal(), K_width.getVal()}, 321),
+    new Pid::ParticlePdf1D(gaus, { 1-pi_frac.getVal()-K_frac.getVal(), p_mean.getVal(), p_width.getVal()}, 2212),
+  };
+
+  return ret;
 }

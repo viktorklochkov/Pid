@@ -1,4 +1,4 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR})
 ROOT_GENERATE_DICTIONARY(G__PidBB
         BetheBlochHelper.h Shine.h
         LINKDEF BBLinkDef.h

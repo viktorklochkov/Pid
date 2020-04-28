@@ -1,6 +1,5 @@
 
 set(SOURCES
-#    ParticleFit.cpp
     Getter.cpp
     CutGGetter.cpp
     ParticlePdf1D.cpp

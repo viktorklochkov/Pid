@@ -38,6 +38,8 @@ const std::unordered_map<int, float> masses =
     };
 }
 
+typedef int PdgCode_t;
+
 namespace PidFunction {
 enum eNames {
   kA = 0,
