@@ -5,12 +5,13 @@
 #include <TFile.h>
 #include <TH2D.h>
 
-#include <core/BaseFitterHelper.h>
+#include <core/FitterHelper.h>
 #include <examples/shine/ShineDeDxParticleFitModel.h>
 #include <RooWorkspace.h>
 #include <RooDataHist.h>
 #include <TCanvas.h>
 #include <RooPlot.h>
+#include <TLegend.h>
 
 #include <TMath.h>
 #include <TPaveText.h>
@@ -59,10 +60,10 @@ int main(int argc, char **argv) {
 
     TH2D *inputHistogram = nullptr;
     inputFile->GetObject("reco_info/hTrackdEdx_allTPC", inputHistogram);
-    inputHistogram->SetDirectory(0);
+    inputHistogram->SetDirectory(nullptr);
     inputHistogram->Print();
 
-    BaseFitterHelper fitterHelper;
+    FitterHelper fitterHelper;
     fitterHelper.initialize();
 
     fitterHelper.getObservable()->setRange(0., 4.);
@@ -71,13 +72,14 @@ int main(int argc, char **argv) {
     {
         auto protons = new ShineDeDxParticleFitModel(2212);
         protons->fillParticleInfoFromDB();
-        protons->setRange(2.2, 6.4);
+        protons->setRange(2.33, 6.4);
         protons->setRooVarPrefix("p_");
         fitterHelper.addParticleModel(protons);
 
         protons->parameter("integral").range(0, RooNumber::infinity());
         protons->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(2212), 1));
-        protons->parameter("sigma").range(0.05, .11);
+        protons->parameter("sigma").range(0.05, .35, 2.33, 2.81);
+        protons->parameter("sigma").range(0.05, .11, 2.81);
 
 
         protons->print();
@@ -110,7 +112,7 @@ int main(int argc, char **argv) {
         pion_neg->setRooVarPrefix("pion_neg_");
         fitterHelper.addParticleModel(pion_neg);
 
-        pion_neg->parameter("integral").fix(polyF({
+        pion_neg->parameter("integral").fixTol(polyF({
                                                           2.98904e+04,
                                                           1.79762e+05,
                                                           4.11753e+05,
@@ -120,10 +122,10 @@ int main(int argc, char **argv) {
                                                           1.52933e+04,
                                                           1.23289e+03,
                                                           3.66055e+01
-                                                  }));
+                                                  }), 0.05);
         pion_neg->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
 //        pion_neg->parameter("sigma").range(0.02, 0.13);
-        pion_neg->parameter("sigma").fix("1.51831e-01 + 2.69106e-02*x + 2.70373e-03*x*x");
+        pion_neg->parameter("sigma").fixTol("1.51831e-01 + 2.69106e-02*x + 2.70373e-03*x*x", 0.05);
         pion_neg->parameter("d").range(0, 0.1);
 
         pion_neg->print();
@@ -180,7 +182,7 @@ int main(int argc, char **argv) {
 
         electron->parameter("integral").range(0, RooNumber::infinity());
         electron->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), -1));
-        electron->parameter("sigma").range(0.03, 0.1);
+        electron->parameter("sigma").range(0.03, 0.15);
 
         electron->print();
     }
@@ -199,38 +201,90 @@ int main(int argc, char **argv) {
 
         if (fitterHelper.particlesModelsDefinedAt(x).empty()) continue;
 
+
         auto py = inputHistogram->ProjectionY("tmp", i, i);
-        py->SetDirectory(0);
+        py->SetDirectory(nullptr);
         if (py->Integral() < 1000) continue;
 
-        fitterHelper.at(x);
-        fitterHelper.applyAllParameterConstraints();
+        auto context = fitterHelper.getFitContext(x);
+        context.applyConstraints();
 
         auto frame = fitterHelper.getObservable()->frame();
 
         RooDataHist ds("ds", "", *fitterHelper.getObservable(), py);
         ds.plotOn(frame);
 
-        auto model = fitterHelper.getCompositePdfAtX();
-        model->fitTo(ds, RooFit::Extended());
+        context.pdf->fitTo(ds, RooFit::Extended());
+        context.pickFitResults();
 
 
-        fitterHelper.pickAllFitResults();
+        context.pdf->plotOn(frame, RooFit::Name("fit_composite"));
 
-        model->plotOn(frame);
-        for (auto &m : fitterHelper.particlesModelsDefinedAt(x)) {
-            m.model_->getExtFitModel().plotOn(frame, RooFit::LineColor(kRed),
-                                              RooFit::Normalization(1.0, RooAbsReal::RelativeExpected));
+        for (auto &m : context.fitModels) {
+            m->getExtFitModel().plotOn(frame,
+                    RooFit::LineStyle(kDashed),
+                    RooFit::LineColor(m->getModelColor()),
+                    RooFit::Normalization(1., RooAbsReal::RelativeExpected),
+                    RooFit::Name(m->getName().c_str())
+                    );
         }
-        frame->Draw();
 
-        auto text = new TText(0.7, 0.8, Form("x = %f", x));
-        text->SetNDC();
-        text->Draw();
 
+        c->Divide(2,2);
+        c->cd(1);
         gPad->SetLogy();
 
+        frame->Draw();
+
+        c->cd(2);
+        frame->Draw();
+
+        auto legend = new TLegend(0.1, 0.8, 0.9, 1.);
+        legend->SetNColumns(2);
+        legend->SetHeader(Form("x = %f", x));
+        legend->AddEntry(frame->findObject("fit_composite"), "Composite fit", "l");
+
+        for (auto &m : context.fitModels) {
+            legend->AddEntry(frame->findObject(m->getName().c_str()), m->getName().c_str(), "l");
+        }
+
+        legend->Draw();
+
+        c->cd(3);
+
+        auto framePurity = frame->emptyClone("purity");
+        framePurity->SetTitle("Purity");
+        RooRealVar compositeIntegral("compositeIntegral", "", context.pdf->expectedEvents(RooArgSet(*fitterHelper.getObservable())));
+
+        for (auto &m : context.fitModels) {
+            auto componentIntegral = m->parameter("integral").getVar();
+            RooFormulaVar purityVar(Form("purity_%s", m->getName().c_str()),"purity", "@0*@1/(@2*@3)",RooArgSet(
+                    m->getExtFitModel(),
+                    *componentIntegral,
+                    *context.pdf,
+                    compositeIntegral
+                    ));
+
+            purityVar.plotOn(framePurity, RooFit::LineColor(m->getModelColor()));
+        }
+        framePurity->Draw();
+
+
+
+        c->cd(4);
+
+        inputHistogram->Draw("colz");
+        inputHistogram->GetYaxis()->SetRangeUser(0, 4);
+        TLine l;
+        l.SetLineColor(kRed);
+        l.SetLineWidth(2);
+        l.DrawLine(x, 0., x, 4.);
+        gPad->SetLogz();
+
         c->Print("output.pdf", "pdf");
+        c->Clear();
+
+        delete py;
 
     }
 
