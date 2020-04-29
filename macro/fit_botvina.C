@@ -250,7 +250,7 @@ void fit_botvina () {
   getter.AddParticle(tof.GetParticleSpecie(PidParticles::kPionPos), PidParticles::kPionPos);
   getter.AddParticle(tof.GetParticleSpecie(PidParticles::kKaonPos), PidParticles::kKaonPos);
   getter.AddParticle(tof.GetParticleSpecie(PidParticles::kProton ), PidParticles::kProton );
-  getter.AddParticle(tof.GetParticleSpecie(PidParticles::kProton ), PidParticles::kHe3    );
+  getter.AddParticle(tof.GetParticleSpecie(PidParticles::kHe3    ), PidParticles::kHe3    );
   getter.AddParticle(tof.GetParticleSpecie(PidParticles::kDeutron), PidParticles::kDeutron);
   getter.AddParticle(tof.GetParticleSpecie(PidParticles::kBgPos  ), PidParticles::kBgPos  );
   
