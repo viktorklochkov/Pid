@@ -18,7 +18,7 @@
 #include <core/FitParameter.h>
 
 #include <model/AsymmetricGaussianPDF.h>
-
+#include <core/ParticleFitModel.h>
 
 double poly(const std::vector<double> &pv, double x) {
     double result = 0.;
@@ -56,6 +56,30 @@ FitParameter::ConstraintFct_t wrapToX(FitParameter::ConstraintFct_t f, int charg
 
 int main(int argc, char **argv) {
 
+    /* Building RooFit model */
+
+    /* observable */
+    RooRealVar v_dEdx("x","dEdx", 0, 4.0, "MIP");
+    RooDataHist dh_dEdx("dh_dEdx", "", v_dEdx);
+
+    /* common for all particle species asymmetry parameter */
+    RooRealVar v_d("d", "#delta", 0, "");
+
+    /* negative pions model */
+    RooRealVar v_pion_neg_bb("pion_neg_bb", "BB(#pi^{-})", 0, "MIP");
+    RooRealVar v_pion_neg_sigma("pion_neg_sigma", "#sigma(#pi^{-})", 0, "MIP");
+    RooRealVar v_pion_neg_n("pion_neg_n", "N(#pi^{-})", 0, "");
+    AsymmetricGaussianPDF pdf_pion_neg("pion_neg", "", v_dEdx, v_pion_neg_bb, v_pion_neg_sigma, v_d);
+    RooExtendPdf epdf_pion_neg("ext_pion_neg","",pdf_pion_neg, v_pion_neg_n);
+
+    ParticleFitModel m_pion_neg("pion_neg", epdf_pion_neg, dh_dEdx, "pion_neg_");
+    m_pion_neg.setRange(-5.5, -0.4);
+    m_pion_neg.parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
+
+    return 0;
+
+
+
     auto inputFile = TFile::Open(argv[1]);
 
     TH2D *inputHistogram = nullptr;
@@ -78,8 +102,9 @@ int main(int argc, char **argv) {
 
         protons->parameter("integral").range(0, RooNumber::infinity());
         protons->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(2212), 1));
-        protons->parameter("sigma").range(0.05, .35, 2.33, 2.81);
-        protons->parameter("sigma").range(0.05, .11, 2.81);
+        protons->parameter("sigma").fixTol(polyF({-7.55547e+00, 1.66733e+01, -8.22026e+00, -8.80845e-01, 1.71284e+00, -4.63780e-01, 4.04260e-02}), 0.05, 2.25, 3.3);
+        protons->parameter("sigma").fixTol(polyF({2.37175e-01, -3.64606e-02}), 0.05, 3.3, 4.0);
+        protons->parameter("sigma").fixTol(polyF({1.07984e+00, -5.29675e-01, 9.23235e-02, -5.41696e-03}), 0.05, 4., RooNumber::infinity());
 
 
         protons->print();
@@ -112,7 +137,7 @@ int main(int argc, char **argv) {
         pion_neg->setRooVarPrefix("pion_neg_");
         fitterHelper.addParticleModel(pion_neg);
 
-        pion_neg->parameter("integral").fixTol(polyF({
+        pion_neg->parameter("integral").fix(polyF({
                                                           2.98904e+04,
                                                           1.79762e+05,
                                                           4.11753e+05,
@@ -122,7 +147,7 @@ int main(int argc, char **argv) {
                                                           1.52933e+04,
                                                           1.23289e+03,
                                                           3.66055e+01
-                                                  }), 0.05);
+                                                  }));
         pion_neg->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
 //        pion_neg->parameter("sigma").range(0.02, 0.13);
         pion_neg->parameter("sigma").fixTol("1.51831e-01 + 2.69106e-02*x + 2.70373e-03*x*x", 0.05);
@@ -131,18 +156,19 @@ int main(int argc, char **argv) {
         pion_neg->print();
     }
 
-//    {
-//        auto kaon_neg = new ShineDeDxParticleFitModel(-321);
-//        kaon_neg->fillParticleInfoFromDB();
-//        kaon_neg->setRange(-5.5, -3.);
-//        kaon_neg->setRooVarPrefix("kaon_neg_");
-//        fitterHelper.addParticleModel(kaon_neg);
-//
-//        kaon_neg->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-321), -1));
-//        kaon_neg->parameter("sigma").range(0.02, 0.13);
-//
-//        kaon_neg->print();
-//    }
+    {
+        auto kaon_neg = new ShineDeDxParticleFitModel(-321);
+        kaon_neg->fillParticleInfoFromDB();
+        kaon_neg->setRange(-5.5, -3.);
+        kaon_neg->setRooVarPrefix("kaon_neg_");
+        fitterHelper.addParticleModel(kaon_neg);
+
+        kaon_neg->parameter("integral").range(0, RooNumber::infinity());
+        kaon_neg->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-321), -1));
+        kaon_neg->parameter("sigma").range(0.02, 0.13);
+
+        kaon_neg->print();
+    }
 
     {
         auto deuteron = new ShineDeDxParticleFitModel(1000010020);
@@ -182,7 +208,8 @@ int main(int argc, char **argv) {
 
         electron->parameter("integral").range(0, RooNumber::infinity());
         electron->parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(11), -1));
-        electron->parameter("sigma").range(0.03, 0.15);
+        electron->parameter("sigma").range(0.03, 0.09, -RooNumber::infinity(), -1.4);
+        electron->parameter("sigma").fixTol(polyF({1.66744e-01, 4.52550e-02}), 0.01,-1.4,RooNumber::infinity());
 
         electron->print();
     }
@@ -194,6 +221,62 @@ int main(int argc, char **argv) {
     c->Print("output.pdf(", "pdf");
 
     inputHistogram->Draw("colz");
+    gPad->SetLogz();
+    inputHistogram->GetYaxis()->SetRangeUser(0, 4.);
+
+    {
+        TF1 bbPionNeg("bbPionNeg", [](const Double_t *x, const Double_t *p) {
+            return wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1).operator()(x[0]);
+        }, -6., -0.5, 0);
+        bbPionNeg.SetLineColor(kRed);
+        bbPionNeg.Draw("same");
+
+        TF1 bbPionPos("bbPionPos", [](const Double_t *x, const Double_t *p) {
+            return wrapToX(BetheBlochHelper::makeBBForPdg(211), 1).operator()(x[0]);
+        }, 0.5, 6, 0);
+        bbPionPos.SetLineColor(kMagenta + 1);
+        bbPionPos.Draw("same");
+
+        TF1 bbProton("bbProton", [](const Double_t *x, const Double_t *p) {
+            return wrapToX(BetheBlochHelper::makeBBForPdg(2212), 1).operator()(x[0]);
+        }, 2.5, 6, 0);
+        bbProton.SetLineColor(kBlack );
+        bbProton.Draw("same");
+
+        TF1 bbPositron("bbPositron", [](const Double_t *x, const Double_t *p) {
+            return wrapToX(BetheBlochHelper::makeBBForPdg(11), 1).operator()(x[0]);
+        }, 0., 5., 0);
+        bbPositron.SetLineColor(kBlue + 1 );
+        bbPositron.Draw("same");
+
+
+        TF1 bbElectron("bbElectron", [](const Double_t *x, const Double_t *p) {
+            return wrapToX(BetheBlochHelper::makeBBForPdg(-11), -1).operator()(x[0]);
+        }, -5., 0., 0);
+        bbElectron.SetLineColor(kBlue + 1 );
+        bbElectron.Draw("same");
+
+        TF1 bbDeuteron("bbDeuteron", [](const Double_t *x, const Double_t *p) {
+            return wrapToX(BetheBlochHelper::makeBBForPdg(1000010020), 1).operator()(x[0]);
+        }, 3., 6., 0);
+        bbDeuteron.SetLineColor(kOrange + 1 );
+        bbDeuteron.Draw("same");
+
+        TF1 bbKaonPos("bbKaonPos", [](const Double_t *x, const Double_t *p) {
+            return wrapToX(BetheBlochHelper::makeBBForPdg(321), 1).operator()(x[0]);
+        }, 2., 5., 0);
+        bbKaonPos.SetLineColor(kCyan + 1 );
+        bbKaonPos.Draw("same");
+
+        TF1 bbKaonNeg("bbKaonNeg", [](const Double_t *x, const Double_t *p) {
+            return wrapToX(BetheBlochHelper::makeBBForPdg(-321), -1).operator()(x[0]);
+        }, -5., -2., 0);
+        bbKaonNeg.SetLineColor(kCyan + 1 );
+        bbKaonNeg.Draw("same");
+
+        c->Print("output.pdf(", "pdf");
+        c->Clear();
+    }
 
 
     for (int i = 1; i < inputHistogram->GetXaxis()->GetNbins(); ++i) {
@@ -258,7 +341,7 @@ int main(int argc, char **argv) {
 
         for (auto &m : context.fitModels) {
             auto componentIntegral = m->parameter("integral").getVar();
-            RooFormulaVar purityVar(Form("purity_%s", m->getName().c_str()),"purity", "@0*@1/(@2*@3)",RooArgSet(
+            RooFormulaVar purityVar(Form("purity_%s", m->getName().c_str()),"purity", "@0*@1/(@2*@3)*((@0*@1) > 1)",RooArgSet(
                     m->getExtFitModel(),
                     *componentIntegral,
                     *context.pdf,

@@ -37,6 +37,7 @@ void FitParameter::applyConstraint(double x) {
         var_->setVal(0.5*(c.lo_(x) + c.hi_(x)));
     } else {
         var_->setConstant(kFALSE);
+        var_->removeRange();
     }
 }
 
