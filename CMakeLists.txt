@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(Pid)
 set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_cpp_STANDARD 14)
-set(CMAKE_BUILD_TYPE RELEASE)
+set(CMAKE_cpp_STANDARD 11)
 set(PROJECT_VERSION 1.0)
 
 # by default build optimized code with debug symbols
@@ -15,9 +14,6 @@ if (CMAKE_BUILD_TYPE MATCHES DEBUG)
     set(CMAKE_VERBOSE_MAKEFILE ON)
 endif ()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb -DDEBUG -D__DEBUG -Wall -Wextra -fopenmp")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ftree-vectorize -ffast-math -DNODEBUG -fopenmp")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -ggdb")
 message(STATUS "Using CXX flags for ${CMAKE_BUILD_TYPE}: ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
 
 set(SOURCES
@@ -35,7 +31,6 @@ set(HEADERS
         src/Constants.h
         )
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
 
 # Telling CMake where to find the ROOT installation.

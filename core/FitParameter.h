@@ -5,7 +5,7 @@
 #ifndef PID_FITPARAMETER_H
 #define PID_FITPARAMETER_H
 
-
+#include <algorithm>
 #include <functional>
 #include <utility>
 #include <TF1.h>
@@ -127,6 +127,22 @@ public:
 
     TGraph *toTGraph() const;
 
+    inline static std::vector<FitParameter>::iterator par_begin() { return fit_parameters_registry.begin(); }
+    inline static std::vector<FitParameter>::iterator par_end() { return fit_parameters_registry.end(); }
+    inline static std::vector<FitParameter>::const_iterator par_cbegin() { return fit_parameters_registry.cbegin(); }
+    inline static std::vector<FitParameter>::const_iterator par_cend() { return fit_parameters_registry.cend(); }
+    static FitParameter* par_find(const std::string &name);
+    static FitParameter* par_find(const RooRealVar *varPtr);
+    static FitParameter* add_parameter(RooRealVar &var) {
+        if (!par_find(&var)) {
+            fit_parameters_registry.emplace_back(&var, var.namePtr()->GetName());
+            return &fit_parameters_registry.back();
+        }
+
+        throw std::runtime_error("Given RooRealVar is already associated with FitParameter");
+    }
+
+
 private:
 
     RangedConstraint_t &findConstraint(double x);
@@ -165,6 +181,8 @@ private:
     std::vector<float> xV_;
     std::vector<float> parValV_;
     std::vector<float> parErrV_;
+
+    static std::vector<FitParameter> fit_parameters_registry;
 
 };
 

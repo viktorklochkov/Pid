@@ -131,3 +131,22 @@ void FitParameter::fixTol(const FitParameter::ConstraintFct_t &&fix, double relT
     }
 
 }
+
+std::vector<FitParameter> FitParameter::fit_parameters_registry {};
+
+FitParameter *FitParameter::par_find(const std::string &name) {
+    auto it = std::find_if(par_begin(), par_end(), [name] (FitParameter &p) { return p.getName() == name; });
+    if (it != par_end()) {
+        return &(*it);
+    }
+    return nullptr;
+}
+
+FitParameter *FitParameter::par_find(const RooRealVar *varPtr) {
+    auto it = std::find_if(par_begin(), par_end(), [varPtr] (FitParameter &p) { return p.getVar() == varPtr; });
+    if (it != par_end()) {
+        return &(*it);
+    }
+    return nullptr;
+}
+

@@ -72,14 +72,25 @@ int main(int argc, char **argv) {
     AsymmetricGaussianPDF pdf_pion_neg("pion_neg", "", v_dEdx, v_pion_neg_bb, v_pion_neg_sigma, v_d);
     RooExtendPdf epdf_pion_neg("ext_pion_neg","",pdf_pion_neg, v_pion_neg_n);
 
-    ParticleFitModel m_pion_neg("pion_neg", epdf_pion_neg, dh_dEdx, "pion_neg_");
-    m_pion_neg.setRange(-5.5, -0.4);
-    m_pion_neg.parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
+    /* negative kaons model */
+    RooRealVar v_kaon_neg_bb("kaon_neg_bb", "BB(K^{-})", 0, "MIP");
+    RooFormulaVar v_kaon_neg_sigma("kaon_neg_sigma", "#sigma(K^{-})", "@0*TMath::Pow(@1/@2, 0.65)", RooArgSet(v_pion_neg_sigma, v_kaon_neg_bb, v_pion_neg_bb));
+    RooRealVar v_kaon_neg_n("kaon_neg_n", "N(K^{-})", 0, "");
+    AsymmetricGaussianPDF pdf_kaon_neg("kaon_neg", "", v_dEdx, v_kaon_neg_bb, v_kaon_neg_sigma, v_d);
+    RooExtendPdf epdf_kaon_pdf("ext_kaon_neg", "", pdf_kaon_neg, v_kaon_neg_n);
 
-    return 0;
+    std::list<ParticleFitModel> fit_models;
+
+    fit_models.emplace_back("pion_neg", epdf_pion_neg, dh_dEdx, "pion_neg_");
+    fit_models.back().setRange(-5.5, -0.4);
+    fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
+
+    fit_models.emplace_back("kaon_neg", epdf_kaon_pdf, dh_dEdx, "kaon_neg_");
+    fit_models.back().setRange(-5.5, -0.4);
+    fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-321), -1));
 
 
-
+    /* IO */
     auto inputFile = TFile::Open(argv[1]);
 
     TH2D *inputHistogram = nullptr;
@@ -87,12 +98,13 @@ int main(int argc, char **argv) {
     inputHistogram->SetDirectory(nullptr);
     inputHistogram->Print();
 
+
     FitterHelper fitterHelper;
     fitterHelper.initialize();
 
     fitterHelper.getObservable()->setRange(0., 4.);
 
-
+    /*
     {
         auto protons = new ShineDeDxParticleFitModel(2212);
         protons->fillParticleInfoFromDB();
@@ -213,6 +225,7 @@ int main(int argc, char **argv) {
 
         electron->print();
     }
+    */
 
     inputHistogram->RebinX(3);
     inputHistogram->RebinY(2);
@@ -282,12 +295,21 @@ int main(int argc, char **argv) {
     for (int i = 1; i < inputHistogram->GetXaxis()->GetNbins(); ++i) {
         double x = inputHistogram->GetXaxis()->GetBinCenter(i);
 
-        if (fitterHelper.particlesModelsDefinedAt(x).empty()) continue;
+//        if (fitterHelper.particlesModelsDefinedAt(x).empty()) continue;
 
+        /* building composite model */
+        RooArgList composite_model_components;
+        std::for_each(fit_models.begin(), fit_models.end(), [x,&composite_model_components] (ParticleFitModel &m) {
+            if (m.isDefinedAt(x)) {
+                composite_model_components.add(m.getPdf());
+            }
+        });
+
+        RooAddPdf pdf_composite(Form("composite_%d", i), "", composite_model_components);
+        ParticleFitModel m_composite("model", pdf_composite, dh_dEdx);
 
         auto py = inputHistogram->ProjectionY("tmp", i, i);
         py->SetDirectory(nullptr);
-        if (py->Integral() < 1000) continue;
 
         auto context = fitterHelper.getFitContext(x);
         context.applyConstraints();

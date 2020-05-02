@@ -17,41 +17,38 @@ ParticleFitModel::ParticleFitModel(const std::string &name, RooAbsPdf &pdf, RooA
     auto params = pdf_->getParameters(data);
 
     for (size_t i = 0; i < params->size(); ++i) {
-        auto p = dynamic_cast<RooRealVar*>(params->operator[](i));
+        auto pVar = dynamic_cast<RooRealVar *>(params->operator[](i));
 
-        if (p && !p->isDerived()) {
-            auto parName = std::string(p->namePtr()->GetName());
-            parameters_.emplace_back(p, parName);
-        }
-    } // params
+        if (pVar == nullptr) {
+            std::cerr << "Parameter is not RooRealVar" << std::endl;
+        } else {
 
-    stripParNames();
+            std::string varName{pVar->namePtr()->GetName()};
 
-    std::cout << "Model: " << name_ << std::endl;
-    std::for_each(par_begin(), par_end(), [this] (FitParameter &p) {
-        std::cout << "\tParameter: " << p.getName() << std::endl;
-    });
+            if (pVar->isDerived()) {
+                std::cerr << "Parameter is derived" << std::endl;
+            } else {
 
-}
+                if (FitParameter::par_find(pVar)) {
+                    std::cerr << "Parameter is already exists" << std::endl;
+                } else {
+                    std::cout << "Adding parameter " << varName << " to the global registry" << std::endl;
+                    FitParameter::add_parameter(*pVar);
+                }
 
-void ParticleFitModel::stripParNames() {
-    std::for_each(par_begin(), par_end(), [this] (FitParameter &p) {
-        auto name = p.getName();
-
-        /* strip prefix */
-        if (!par_prefix_.empty()) {
-            if (name.substr(0, par_prefix_.size()) == par_prefix_) {
-                name = name.substr(par_prefix_.size(), name.size());
+                if (varName.substr(0, par_prefix.size()) == par_prefix) {
+                    std::cout << "Adding parameter " << varName << " to the model"  << std::endl;
+                    parameters_.push_back(FitParameter::par_find(pVar));
+                } else {
+                    std::cerr << "Parameter '" << varName << "' has no required prefix '" << par_prefix << "'."
+                              << "It won't be associated with model '" << name_ << "'" << std::endl;
+                }
             }
-        }
 
-        /* strip suffix */
-        if (!par_suffix_.empty()) {
-            if (name.substr(name.size() - par_suffix_.size(), name.size()) == par_suffix_) {
-                name = name.substr(0, name.size() - par_suffix_.size());
+
+
             }
-        }
+        } // params
 
-        p.setName(name);
-    });
-}
+    }
+
