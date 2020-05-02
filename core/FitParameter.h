@@ -121,6 +121,10 @@ public:
                 double max = RooNumber::infinity()
     );
 
+    void reset_constraints() {
+        constraints_.clear();
+    }
+
 
     void pickFitResultAt(double x);
 
@@ -190,15 +194,21 @@ public:
         return it == par_end()? nullptr : it.operator->();
     }
 
-    std::vector<std::reference_wrapper<FitParameter>> par_find_prefix(const std::string &prefix_) {
-        std::vector<std::reference_wrapper<FitParameter>> result;
-        for (auto &p : parameters_) {
-            if (prefix_ == p.getName().substr(0, prefix_.size())) {
-                result.push_back(std::ref(p));
-            }
+    std::vector<FitParameter *> par_find_pdf(RooAbsPdf &pdf, RooAbsData &data) {
+        std::vector<FitParameter *> result;
+        auto params_set = pdf.getParameters(data);
+
+        for (size_t ip = 0; ip < params_set->size(); ++ip) {
+            auto p_real_var = dynamic_cast<RooRealVar*>(params_set->operator[](ip));
+
+            auto fit_parameter = par_find(p_real_var);
+            assert(fit_parameter);
+            result.push_back(fit_parameter);
         }
+
         return result;
     }
+
 
     void add_parameter(RooRealVar *v) {
         if (v && !par_find(v)) {
@@ -214,6 +224,7 @@ public:
             add_parameter(p_real_var);
         }
     }
+
 
     static FitParameterRegistry& instance();
 
