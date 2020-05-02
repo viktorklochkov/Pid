@@ -14,8 +14,9 @@
 class ParticleFitModel {
 
 public:
-    ParticleFitModel(const std::string &name, RooAbsPdf &pdf, RooAbsData &data, const std::string &par_prefix = "",
-                     const std::string &par_suffix = "");
+    ParticleFitModel(std::string name, RooAbsPdf &pdf, RooAbsData &data,
+                     std::string par_prefix = "",
+                     std::string par_suffix = "");
 
     /* fitting ranges */
     void setRange(double xmin, double xmax) {
@@ -26,7 +27,7 @@ public:
     inline bool isDefinedAt(double x) const { return xmin_ <= x && x <= xmax_; }
 
     /* accessors */
-    inline RooAbsPdf& getPdf() const {
+    inline RooAbsPdf &getPdf() const {
         return *pdf_;
     }
 
@@ -43,13 +44,16 @@ public:
     }
 
     /* parameter accessors */
-    inline FitParameter& parameter(const std::string& pname) {
-        auto find_it = std::find_if(parameters_.begin(), parameters_.end(), [=] (const FitParameter* p) { return p->getName() == par_prefix_ + pname; });
-        if (find_it == parameters_.end()) {
-            throw std::runtime_error("Parameter '" + pname + "' is not found in model '" + name_ + "'");
+    inline FitParameter &parameter(const std::string &pname) {
+
+        for (auto it = FitParameterRegistry::instance().par_begin();
+            it != FitParameterRegistry::instance().par_end(); ++it) {
+            if (it->getName() == par_prefix_ + pname) {
+                return it.operator*();
+            }
         }
 
-        return *(*find_it);
+        throw std::runtime_error("Parameter '" + par_prefix_ + pname + "' is not found in the registry");
     }
 
 
@@ -64,8 +68,6 @@ private:
 
     double xmin_{0.};
     double xmax_{0.};
-
-    std::vector<FitParameter*> parameters_;
 
 };
 

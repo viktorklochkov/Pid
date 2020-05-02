@@ -10,6 +10,7 @@
 #include <utility>
 #include <TF1.h>
 #include <RooRealVar.h>
+#include <RooAbsPdf.h>
 #include <TGraphErrors.h>
 
 
@@ -127,21 +128,6 @@ public:
 
     TGraph *toTGraph() const;
 
-    inline static std::vector<FitParameter>::iterator par_begin() { return fit_parameters_registry.begin(); }
-    inline static std::vector<FitParameter>::iterator par_end() { return fit_parameters_registry.end(); }
-    inline static std::vector<FitParameter>::const_iterator par_cbegin() { return fit_parameters_registry.cbegin(); }
-    inline static std::vector<FitParameter>::const_iterator par_cend() { return fit_parameters_registry.cend(); }
-    static FitParameter* par_find(const std::string &name);
-    static FitParameter* par_find(const RooRealVar *varPtr);
-    static FitParameter* add_parameter(RooRealVar &var) {
-        if (!par_find(&var)) {
-            fit_parameters_registry.emplace_back(&var, var.namePtr()->GetName());
-            return &fit_parameters_registry.back();
-        }
-
-        throw std::runtime_error("Given RooRealVar is already associated with FitParameter");
-    }
-
 
 private:
 
@@ -182,7 +168,57 @@ private:
     std::vector<float> parValV_;
     std::vector<float> parErrV_;
 
-    static std::vector<FitParameter> fit_parameters_registry;
+};
+
+
+class FitParameterRegistry {
+
+public:
+
+    inline std::vector<FitParameter>::iterator par_begin() { return parameters_.begin(); }
+    inline std::vector<FitParameter>::iterator par_end() { return parameters_.end(); }
+    inline std::vector<FitParameter>::const_iterator par_cbegin() const { return parameters_.cbegin(); }
+    inline std::vector<FitParameter>::const_iterator par_cend() const { return parameters_.cend(); }
+
+    FitParameter *par_find(const std::string &name) {
+        auto it = std::find_if(par_begin(), par_end(), [name] (const FitParameter& p) { return name == p.getName(); });
+        return it == par_end()? nullptr : it.operator->();
+    }
+
+    FitParameter *par_find(void *ptr) {
+        auto it = std::find_if(par_begin(), par_end(), [ptr] (const FitParameter& p) { return ptr == p.getVar(); });
+        return it == par_end()? nullptr : it.operator->();
+    }
+
+    std::vector<std::reference_wrapper<FitParameter>> par_find_prefix(const std::string &prefix_) {
+        std::vector<std::reference_wrapper<FitParameter>> result;
+        for (auto &p : parameters_) {
+            if (prefix_ == p.getName().substr(0, prefix_.size())) {
+                result.push_back(std::ref(p));
+            }
+        }
+        return result;
+    }
+
+    void add_parameter(RooRealVar *v) {
+        if (v && !par_find(v)) {
+            parameters_.emplace_back(v, v->namePtr()->GetName());
+        }
+    }
+
+    void add_parameters_from_pdf(RooAbsPdf& pdf, RooAbsData& data) {
+        auto params_set = pdf.getParameters(data);
+
+        for (size_t ip = 0; ip < params_set->size(); ++ip) {
+            auto p_real_var = dynamic_cast<RooRealVar*>(params_set->operator[](ip));
+            add_parameter(p_real_var);
+        }
+    }
+
+    static FitParameterRegistry& instance();
+
+private:
+    std::vector<FitParameter> parameters_;
 
 };
 
