@@ -12,6 +12,7 @@
 #include <RooRealVar.h>
 #include <RooAbsPdf.h>
 #include <TGraphErrors.h>
+#include <TVirtualPad.h>
 
 
 /**
@@ -132,6 +133,27 @@ public:
 
     TGraph *toTGraph() const;
 
+    void dumpResult(TDirectory &d, TVirtualPad *pad = nullptr) {
+        grPARvsX_.SetTitle(getName().c_str());
+        d.WriteObject(grPARvsX_.Clone(getName().c_str()), getName().c_str());
+
+        grCONSTRvsX_.SetTitle((getName() + "_constraint").c_str());
+        grCONSTRvsX_.SetDrawOption("a3");
+        grCONSTRvsX_.SetFillColor(kMagenta);
+        grCONSTRvsX_.SetFillStyle(3005);
+        d.WriteObject(grCONSTRvsX_.Clone((getName() + "_constraint").c_str()), (getName() + "_constraint").c_str());
+
+        if (pad) {
+            pad->cd();
+            if (grCONSTRvsX_.GetN() > 0) {
+                grCONSTRvsX_.DrawClone("a3");
+                grPARvsX_.DrawClone("l");
+            } else {
+                grPARvsX_.DrawClone("al");
+            }
+        }
+    }
+
 
 private:
 
@@ -171,6 +193,9 @@ private:
     std::vector<float> xV_;
     std::vector<float> parValV_;
     std::vector<float> parErrV_;
+
+    TGraphErrors grPARvsX_;
+    TGraphErrors grCONSTRvsX_;
 
 };
 

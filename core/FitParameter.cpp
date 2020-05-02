@@ -74,11 +74,22 @@ void FitParameter::fix(const ConstraintFct_t &&fix, double min, double max) {
 }
 
 void FitParameter::pickFitResultAt(double x) {
-    assert(var_);
-
     xV_.push_back(x);
     parValV_.push_back(var_->getVal());
     parErrV_.push_back(var_->getError());
+
+    grPARvsX_.SetPoint(grPARvsX_.GetN(), x, var_->getVal());
+    grPARvsX_.SetPointError(grPARvsX_.GetN() - 1, 0., var_->getError());
+
+    if (findConstraint(x).type_ == EConstraintType::kRange) {
+        double constraint_lo = findConstraint(x).lo_(x);
+        double constraint_hi = findConstraint(x).hi_(x);
+        grCONSTRvsX_.SetPoint(grCONSTRvsX_.GetN(), x, 0.5 * (constraint_lo + constraint_hi));
+        grCONSTRvsX_.SetPointError(grCONSTRvsX_.GetN() - 1, 0, 0.5 * (constraint_hi - constraint_lo));
+    } else if (findConstraint(x).type_ == EConstraintType::kFix) {
+        double fix_val = findConstraint(x).fix_(x);
+        grCONSTRvsX_.SetPoint(grCONSTRvsX_.GetN(), x, fix_val);
+    }
 }
 
 void FitParameter::clearFitResult() {

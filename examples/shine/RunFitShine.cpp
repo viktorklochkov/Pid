@@ -93,7 +93,8 @@ int main(int argc, char **argv) {
     fit_models.emplace_back("pion_neg", epdf_pion_neg, dh_dEdx, "pion_neg_");
     fit_models.back().setRange(-5.5, -0.4);
     fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
-    fit_models.back().parameter("sigma").fixTol(polyF({3.34221e-01, 2.10099e-01, 6.72043e-02, 9.48219e-03, 4.98327e-04}), 0.05, -5.5, -3.5);
+    fit_models.back().parameter("sigma").fixTol(polyF({3.34221e-01, 2.10099e-01, 6.72043e-02, 9.48219e-03, 4.98327e-04}), 0.1, -5.5, -1.15);
+    fit_models.back().parameter("sigma").fixTol(polyF({4.00148e-01, 4.12100e-01, 1.77967e-01}), 0.02, -1.15, -0.4);
 
     fit_models.emplace_back("kaon_neg", epdf_kaon_pdf, dh_dEdx, "kaon_neg_");
     fit_models.back().setRange(-5.0, -2.5);
@@ -463,9 +464,10 @@ int main(int argc, char **argv) {
        auto parameter_graph = p.toTGraph();
        parameter_graph->SetName(p.getName().c_str());
        parameter_graph->SetTitle(p.getName().c_str());
-       outputFile.WriteObject(parameter_graph, p.getName().c_str());
+//       outputFile.WriteObject(parameter_graph, p.getName().c_str());
+       p.dumpResult(outputFile, c);
 
-       parameter_graph->Draw("Al");
+//       parameter_graph->Draw("Al");
        c->Print("output.pdf", "pdf");
        c->Clear();
     });
