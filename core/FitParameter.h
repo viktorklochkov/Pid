@@ -13,6 +13,8 @@
 #include <RooAbsPdf.h>
 #include <TGraphErrors.h>
 #include <TVirtualPad.h>
+#include <TStyle.h>
+#include <TLegend.h>
 
 
 /**
@@ -134,23 +136,33 @@ public:
     TGraph *toTGraph() const;
 
     void dumpResult(TDirectory &d, TVirtualPad *pad = nullptr) {
+
         grPARvsX_.SetTitle(getName().c_str());
         d.WriteObject(grPARvsX_.Clone(getName().c_str()), getName().c_str());
 
-        grCONSTRvsX_.SetTitle((getName() + "_constraint").c_str());
+        grCONSTRvsX_.SetTitle("constraint");
         grCONSTRvsX_.SetDrawOption("a3");
         grCONSTRvsX_.SetFillColor(kMagenta);
         grCONSTRvsX_.SetFillStyle(3005);
         d.WriteObject(grCONSTRvsX_.Clone((getName() + "_constraint").c_str()), (getName() + "_constraint").c_str());
 
         if (pad) {
+            gStyle->SetOptTitle(0);
             pad->cd();
+            pad->SetName(getName().c_str());
             if (grCONSTRvsX_.GetN() > 0) {
                 grCONSTRvsX_.DrawClone("a3");
                 grPARvsX_.DrawClone("l");
             } else {
                 grPARvsX_.DrawClone("al");
             }
+
+            auto leg = pad->BuildLegend(0.50, 0.75, 0.9, 0.8);
+            leg->SetNColumns(2);
+            leg->SetFillStyle(0);
+            leg->SetBorderSize(0);
+
+
         }
     }
 
