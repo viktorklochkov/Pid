@@ -1,0 +1,2 @@
+add_executable(RunFitShine RunFitShine.cpp ShineDeDxParticleFitModel.cpp)
+target_link_libraries(RunFitShine pid_core pid_bb pid_model)
