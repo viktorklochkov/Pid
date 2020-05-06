@@ -25,7 +25,7 @@ set(SOURCES
         src/ParticleFit.cpp
         src/Parameters.cpp
         src/Getter.cpp
-        src/Container.cpp
+#        src/Container.cpp
         )
 
 string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")
