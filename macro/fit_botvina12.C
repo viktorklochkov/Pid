@@ -38,14 +38,14 @@ double asymmGauss (double *xx, double *p){
   return amp*exp(-0.5*(x-mean)*(x-mean)/sig/sig);
 }
 
-void fit_botvina () {
+void fit_botvina12 () {
   auto start = std::chrono::system_clock::now();
   gROOT -> SetBatch (true);
   gROOT -> SetEscape (true);
   ROOT::EnableImplicitMT(2);    
   
-  TString inputFileName = "~/desktop/analysis/mc/sim_qa/comp_oct19/botv_12agev_default.root";
-  TString cutsFileName = "~/desktop/analysis/mc/sim_qa/comp_oct19/cuts.root";
+  TString inputFileName = "~/desktop/analysis/mc/sim_qa/oct19/botv_12agev_default.root";
+  TString cutsFileName = "~/desktop/analysis/mc/sim_qa/oct19/cuts.root";
   std::unique_ptr <TFile> fIn { TFile::Open(inputFileName, "read")};
   std::unique_ptr <TFile> fCuts { TFile::Open(cutsFileName, "read")};
 
