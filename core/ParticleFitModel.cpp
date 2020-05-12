@@ -26,3 +26,6 @@ ParticleFitModel::ParticleFitModel(std::string name, RooAbsPdf &pdf, RooAbsData 
 
 }
 
+size_t ParticleFitModel::N_MODELS = 0;
+std::vector<int> ParticleFitModel::MODEL_COLORS {kRed, kGreen+1, kCyan+1, kMagenta+1, kOrange, kBlack};
+

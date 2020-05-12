@@ -6,12 +6,12 @@
 #include <TH2D.h>
 
 #include <core/FitterHelper.h>
-#include <examples/shine/ShineDeDxParticleFitModel.h>
 #include <RooWorkspace.h>
 #include <RooDataHist.h>
 #include <TCanvas.h>
 #include <RooPlot.h>
 #include <TLegend.h>
+#include <TRatioPlot.h>
 
 #include <TMath.h>
 #include <TPaveText.h>
@@ -35,17 +35,6 @@ double poly(const std::vector<double> &pv, double x) {
 FitParameter::ConstraintFct_t polyF(std::initializer_list<double> params) {
     std::vector<double> pv(params.begin(), params.end());
     return [pv](double x) { return poly(pv, x); };
-}
-
-FitParameter::ConstraintFct_t ranged(FitParameter::ConstraintFct_t &&ff, double min, double max, double def) {
-    return [=](double x) {
-        if (min <= x && x < max) {
-            return ff(x);
-        }
-
-        return def;
-    };
-
 }
 
 
@@ -98,7 +87,7 @@ int main(int argc, char **argv) {
     /* protons model */
     RooRealVar v_proton_bb("proton_bb", "BB(p)", 0, "MIP");
     RooFormulaVar v_proton_sigma("proton_sigma", "#sigma(p)", "@0*TMath::Power(@1/@2, 0.65)",
-                                   RooArgSet(v_pion_pos_sigma, v_proton_bb, v_pion_pos_bb));
+                                 RooArgSet(v_pion_pos_sigma, v_proton_bb, v_pion_pos_bb));
     RooRealVar v_proton_n("proton_n", "N(p)", 0, "");
     AsymmetricGaussianPDF pdf_proton("proton", "", v_dEdx, v_proton_bb, v_proton_sigma, v_d);
     RooExtendPdf epdf_proton("ext_proton", "", pdf_proton, v_proton_n);
@@ -125,10 +114,7 @@ int main(int argc, char **argv) {
     fit_models.emplace_back("pion_neg", epdf_pion_neg, dh_dEdx, "pion_neg_");
     fit_models.back().setRange(-5.5, -0.4);
     fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
-    fit_models.back().parameter("sigma").fixTol(polyF({1.27477e-01, 1.05430e-02}), 0.05, -5.5, -4.);
-    fit_models.back().parameter("sigma").fixTol(polyF({4.51838e-02, -3.28804e-02, 6.11775e-03, 6.08648e-03, 7.80633e-04}), 0.02, -4.0, -2.5);
-    fit_models.back().parameter("sigma").fixTol(polyF({3.49191e-01, 3.19159e-01, 1.69915e-01, 4.49549e-02, 4.85014e-03}), 0.02, -2.5, -1);
-    fit_models.back().parameter("sigma").fixTol(polyF({4.00148e-01, 4.12100e-01, 1.77967e-01}), 0.02, -1.0, -0.4);
+    fit_models.back().parameter("sigma").range(0.05, 0.4);
 
     fit_models.emplace_back("kaon_neg", epdf_kaon_pdf, dh_dEdx, "kaon_neg_");
     fit_models.back().setRange(-5.3, -2.5);
@@ -142,7 +128,8 @@ int main(int argc, char **argv) {
     fit_models.emplace_back("pion_pos", epdf_pion_pos, dh_dEdx, "pion_pos_");
     fit_models.back().setRange(0.4, 5.5);
     fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(211), 1));
-    fit_models.back().parameter("sigma").fixTol(polyF({3.34221e-01, -2.10099e-01, 6.72043e-02, -9.48219e-03, 4.98327e-04}), 0.02, 1.15, 5.5);
+    fit_models.back().parameter("sigma").fixTol(
+            polyF({3.34221e-01, -2.10099e-01, 6.72043e-02, -9.48219e-03, 4.98327e-04}), 0.02, 1.15, 5.5);
     fit_models.back().parameter("sigma").fixTol(polyF({4.00148e-01, -4.12100e-01, 1.77967e-01}), 0.02, 0.4, 1.15);
 
     fit_models.emplace_back("proton", epdf_proton, dh_dEdx, "proton_");
@@ -162,13 +149,12 @@ int main(int argc, char **argv) {
 
     /* IO */
     auto inputFile = TFile::Open(argv[1]);
+    TFile outputFile("output.root", "RECREATE");
 
     TH2D *inputHistogram = nullptr;
     inputFile->GetObject("reco_info/hTrackdEdx_allTPC", inputHistogram);
     inputHistogram->SetDirectory(nullptr);
     inputHistogram->Print();
-
-
 
 
     inputHistogram->RebinX(1);
@@ -238,20 +224,23 @@ int main(int argc, char **argv) {
 
     for (int i = 1; i < inputHistogram->GetXaxis()->GetNbins(); ++i) {
         double x = inputHistogram->GetXaxis()->GetBinCenter(i);
+        double xlo = inputHistogram->GetXaxis()->GetBinLowEdge(i);
+        double xhi = inputHistogram->GetXaxis()->GetBinUpEdge(i);
+
         std::cout << "Bin: " << i << "; x = " << x << std::endl;
 
-//        if (fitterHelper.particlesModelsDefinedAt(x).empty()) continue;
+
 
         /* building composite model */
         RooArgList composite_model_components;
         std::for_each(fit_models.begin(), fit_models.end(), [x, &composite_model_components](ParticleFitModel &m) {
             if (m.isDefinedAt(x)) {
-                composite_model_components.add(m.getPdf());
+                composite_model_components.add(m.pdf());
             }
         });
 
         if (composite_model_components.empty()) {
-            std::cout << "Nothing to fit in this bin" << std::endl;
+            std::cout << "Nothing to fit in this momentum bin" << std::endl;
             continue;
         }
 
@@ -259,56 +248,126 @@ int main(int argc, char **argv) {
         ParticleFitModel m_composite("composite", pdf_composite, dh_dEdx);
 
         /* preparing input */
-        {
-            auto py = inputHistogram->ProjectionY("tmp", i, i);
-            py->SetDirectory(nullptr);
+        auto py = inputHistogram->ProjectionY("tmp", i, i);
+        py->SetDirectory(nullptr);
 
-            dh_dEdx.reset();
-            RooDataHist slice_data("slice_dh", "", v_dEdx, py);
-            dh_dEdx.add(slice_data);
+        dh_dEdx.reset();
+        RooDataHist slice_data("slice_dh", "", v_dEdx, py);
+        dh_dEdx.add(slice_data);
 
-            delete py;
-        }
+        auto qa_dir = outputFile.mkdir(Form("bin_%d", i));
 
         auto slice_integral = dh_dEdx.sumEntries();
 
         /* set range for the component integrals */
         auto integral_params = m_composite.parameters_matching(".*_n$");
-        std::for_each(integral_params.begin(), integral_params.end(), [=] (FitParameter* p) { p->reset_constraints(); p->range(0., slice_integral); });
+        std::for_each(integral_params.begin(), integral_params.end(), [=](FitParameter *p) {
+            auto &constr_lo = p->findConstraint(xlo);
+            auto &constr_hi = p->findConstraint(xhi);
+
+            if (
+                    constr_lo.type_ == FitParameter::EConstraintType::kNone &&
+                    constr_hi.type_ == FitParameter::EConstraintType::kNone
+                    ) {
+                p->range(0., slice_integral, xlo, xhi);
+            }
+        });
         /* constraints */
         auto model_params = m_composite.parameters();
         std::for_each(model_params.begin(), model_params.end(), [=](FitParameter *p) { p->applyConstraint(x); });
 
-        m_composite.getPdf().fitTo(dh_dEdx, RooFit::Extended());
-        std::for_each(model_params.begin(), model_params.end(), [=] (FitParameter *p) { p->pickFitResultAt(x); });
+        m_composite.pdf().fitTo(dh_dEdx, RooFit::Extended());
+        std::for_each(model_params.begin(), model_params.end(), [=](FitParameter *p) { p->pickFitResultAt(x); });
 
         auto frame_data_fit = v_dEdx.frame();
-        dh_dEdx.plotOn(frame_data_fit);
-        m_composite.getPdf().plotOn(frame_data_fit, RooFit::Name(m_composite.getName().c_str()));
+        dh_dEdx.plotOn(frame_data_fit, RooFit::Name("data"));
+        m_composite.pdf().plotOn(frame_data_fit, RooFit::Name("fit"));
 
 
-        c->Divide(2,2);
+        qa_dir->WriteObject(frame_data_fit, "data_fit");
+
+        TPaveText pave_text(0.1, 0.9, 0.4, 0.98);
+        pave_text.AddText(Form("x = %f", x));
+
+        c->cd();
+        c->Divide(2, 2);
 
         c->cd(1);
         frame_data_fit->Draw();
+        pave_text.DrawClone();
 
         c->cd(2);
         frame_data_fit->Draw();
         gPad->SetLogy(1);
 
+        c->cd(3);
+        auto hist_data = dh_dEdx.createHistogram("tmp_data", v_dEdx, RooFit::IntrinsicBinning());
+        auto hist_fit = m_composite.pdf().createHistogram("tmp_fit", v_dEdx, RooFit::IntrinsicBinning(),
+                                                          RooFit::Extended(kTRUE), RooFit::Scaling(kTRUE));
+        hist_fit->Scale(v_dEdx.getBinWidth(1));
+
+        TRatioPlot rp(hist_fit, hist_data, "divsym");
+        rp.Draw("nohide,grid");
+        rp.GetLowerRefGraph()->SetMinimum(0.5);
+        rp.GetLowerRefGraph()->SetMaximum(1.5);
+
+
+        c->cd(4);
+
+        bool same_flag = false;
+        /* calculate purity */
+        for (auto &m : fit_models) {
+            if (m.isDefinedAt(x)) {
+                auto model_color = m.getColor();
+
+                auto particle_pdf_hist = (TH1F*) m.pdf().createHistogram("tmp_component", v_dEdx, RooFit::IntrinsicBinning());
+                auto composite_pdf_hist = (TH1F*) m_composite.pdf().createHistogram("tmp_composite", v_dEdx, RooFit::IntrinsicBinning(), RooFit::Extended());
+                auto data_hist = (TH1F*) dh_dEdx.createHistogram("tmp_data", v_dEdx, RooFit::IntrinsicBinning());
+                qa_dir->WriteObject(particle_pdf_hist, Form("pdf_%s",m.getName().c_str()));
+
+                auto purity_hist = (*particle_pdf_hist)/(*composite_pdf_hist);
+                purity_hist.SetName(Form("purity_%s", m.getName().c_str()));
+                purity_hist.SetLineColor(model_color+1);
+                purity_hist.SetMarkerColor(model_color + 1);
+                purity_hist.SetLineWidth(2);
+                qa_dir->WriteObject(&purity_hist, purity_hist.GetName());
+
+                particle_pdf_hist->Scale(v_dEdx.getBinWidth(1));
+                auto purity_hist_data = (*particle_pdf_hist)/(*data_hist);
+                purity_hist_data.SetName(Form("purity_to_data_%s", m.getName().c_str()));
+                purity_hist_data.SetLineColor(model_color);
+                purity_hist_data.SetMarkerColor(model_color);
+                qa_dir->WriteObject(&purity_hist_data, purity_hist_data.GetName());
+
+                purity_hist_data.GetYaxis()->SetRangeUser(0., 2.);
+                purity_hist_data.DrawClone(same_flag? "same,LE1" : "LE1");
+                same_flag = true;
+                purity_hist.DrawClone("same");
+
+
+                delete particle_pdf_hist;
+                delete composite_pdf_hist;
+                delete data_hist;
+            }
+        }
+
+
 
         c->Print("output.pdf", "pdf");
         c->Clear();
 
+        delete hist_fit;
+        delete hist_data;
+        delete py;
     }
 
 
-    TFile outputFile("output.root", "RECREATE");
-    std::for_each(FitParameterRegistry::instance().par_begin(), FitParameterRegistry::instance().par_end(), [&outputFile, c] (FitParameter& p) {
-       p.dumpResult(outputFile, c);
-       c->Print("output.pdf", "pdf");
-       c->Clear();
-    });
+    std::for_each(FitParameterRegistry::instance().par_begin(), FitParameterRegistry::instance().par_end(),
+                  [&outputFile, c](FitParameter &p) {
+                      p.dumpResult(outputFile, c);
+                      c->Print("output.pdf", "pdf");
+                      c->Clear();
+                  });
 
     c->Print("output.pdf)", "pdf");
     return 0;

@@ -29,7 +29,7 @@ public:
     inline bool isDefinedAt(double x) const { return xmin_ <= x && x <= xmax_; }
 
     /* accessors */
-    inline RooAbsPdf &getPdf() const {
+    inline RooAbsPdf &pdf() const {
         return *pdf_;
     }
 
@@ -43,6 +43,10 @@ public:
 
     const std::string &getParSuffix() const {
         return par_suffix_;
+    }
+
+    EColor getColor() const {
+        return static_cast<EColor>(color_);
     }
 
     /* parameter accessors */
@@ -76,6 +80,7 @@ public:
     }
 
 
+
 private:
 
     RooAbsPdf *pdf_{nullptr};
@@ -88,6 +93,12 @@ private:
 
     double xmin_{0.};
     double xmax_{0.};
+
+    size_t model_id_{N_MODELS++};
+    int color_{MODEL_COLORS[model_id_ % MODEL_COLORS.size()]};
+
+    static size_t N_MODELS;
+    static std::vector<int> MODEL_COLORS;
 
 };
 
