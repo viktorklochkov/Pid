@@ -2,7 +2,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ROOT_GENERATE_DICTIONARY(G__PidBB
         BetheBlochHelper.h Shine.h
         LINKDEF BBLinkDef.h
-        OPTIONS -noIncludePaths
         )
 
 add_library(pid_bb SHARED Shine.cpp BetheBlochHelper.cpp G__PidBB.cxx)

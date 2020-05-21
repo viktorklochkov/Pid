@@ -112,13 +112,18 @@ int main(int argc, char **argv) {
 
     /* negative */
     fit_models.emplace_back("pion_neg", epdf_pion_neg, dh_dEdx, "pion_neg_");
-    fit_models.back().setRange(-5.5, -0.4);
+    fit_models.back().setRange(-5.5, -0.7);
     fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-211), -1));
-    fit_models.back().parameter("sigma").range(0.05, 0.4);
+    fit_models.back().parameter("sigma").fix(polyF({1.17732e-01, 8.11273e-03}), -5.5, -3.0);
+    fit_models.back().parameter("sigma").fix(polyF({1.28975e-01, 1.14362e-02}), -3.0, -2.6);
+    fit_models.back().parameter("sigma").fix(polyF({4.81931e-01,7.07309e-01,5.30289e-01,1.81315e-01,2.31737e-02}), -2.6, -0.4);
+    fit_models.back().parameter("n").fix(polyF({5.98777e+05, 2.17637e+05, 2.35418e+04, 1.51676e+03, 1.53068e+02}), -5.5, -4.5);
+    fit_models.back().parameter("n").fix(polyF({-5.56917e+04, -1.64847e+05, -1.78915e+05, -8.46502e+04, -1.34296e+04}), -2.2, -0.4);
 
     fit_models.emplace_back("kaon_neg", epdf_kaon_pdf, dh_dEdx, "kaon_neg_");
     fit_models.back().setRange(-5.3, -2.5);
     fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(-321), -1));
+    fit_models.back().parameter("n").range(0,2000);
 
     fit_models.emplace_back("electron", epdf_electron, dh_dEdx, "electron_");
     fit_models.back().setRange(-5., -0.4);
@@ -128,9 +133,9 @@ int main(int argc, char **argv) {
     fit_models.emplace_back("pion_pos", epdf_pion_pos, dh_dEdx, "pion_pos_");
     fit_models.back().setRange(0.4, 5.5);
     fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(211), 1));
-    fit_models.back().parameter("sigma").fixTol(
-            polyF({3.34221e-01, -2.10099e-01, 6.72043e-02, -9.48219e-03, 4.98327e-04}), 0.02, 1.15, 5.5);
-    fit_models.back().parameter("sigma").fixTol(polyF({4.00148e-01, -4.12100e-01, 1.77967e-01}), 0.02, 0.4, 1.15);
+    fit_models.back().parameter("sigma").fix(polyF({4.81931e-01,-7.07309e-01,5.30289e-01,-1.81315e-01,2.31737e-02}), 0.4, 2.6);
+    fit_models.back().parameter("sigma").fix(polyF({1.28975e-01, -1.14362e-02}),  2.6, 3.0);
+    fit_models.back().parameter("sigma").fix(polyF({1.17732e-01, -8.11273e-03}), 3.0, 5.5);
 
     fit_models.emplace_back("proton", epdf_proton, dh_dEdx, "proton_");
     fit_models.back().setRange(2.2, 5.5);
@@ -143,8 +148,9 @@ int main(int argc, char **argv) {
     fit_models.emplace_back("kaon_pos", epdf_kaon_pos_pdf, dh_dEdx, "kaon_pos_");
     fit_models.back().setRange(2.5, 5.5);
     fit_models.back().parameter("bb").fix(wrapToX(BetheBlochHelper::makeBBForPdg(321), 1));
+    fit_models.back().parameter("n").range(0,2000);
 
-    FitParameterRegistry::instance().par_find("d")->range(0., 0.3);
+    FitParameterRegistry::instance().par_find("d")->fix(0.05);
 
 
     /* IO */
@@ -283,6 +289,15 @@ int main(int argc, char **argv) {
         dh_dEdx.plotOn(frame_data_fit, RooFit::Name("data"));
         m_composite.pdf().plotOn(frame_data_fit, RooFit::Name("fit"));
 
+        for (auto &m: fit_models) {
+            if (m.isDefinedAt(x)) {
+                m.pdf().plotOn(frame_data_fit,
+                        RooFit::Normalization(1., RooAbsReal::RelativeExpected),
+                        RooFit::LineColor(m.getColor())
+                        );
+            }
+        }
+
 
         qa_dir->WriteObject(frame_data_fit, "data_fit");
 
@@ -314,35 +329,47 @@ int main(int argc, char **argv) {
 
         c->cd(4);
 
+        gStyle->SetOptStat(0);
+        gStyle->SetOptTitle(0);
+
+        TLegend species_legend(0.3, 0.85, 0.7, 0.95);
+        species_legend.SetNColumns(2);
+
         bool same_flag = false;
+        bool legend_flag = false;
         /* calculate purity */
         for (auto &m : fit_models) {
             if (m.isDefinedAt(x)) {
                 auto model_color = m.getColor();
 
-                auto particle_pdf_hist = (TH1F*) m.pdf().createHistogram("tmp_component", v_dEdx, RooFit::IntrinsicBinning());
-                auto composite_pdf_hist = (TH1F*) m_composite.pdf().createHistogram("tmp_composite", v_dEdx, RooFit::IntrinsicBinning(), RooFit::Extended());
-                auto data_hist = (TH1F*) dh_dEdx.createHistogram("tmp_data", v_dEdx, RooFit::IntrinsicBinning());
-                qa_dir->WriteObject(particle_pdf_hist, Form("pdf_%s",m.getName().c_str()));
+                auto particle_pdf_hist = (TH1F *) m.pdf().createHistogram("tmp_component", v_dEdx,
+                                                                          RooFit::IntrinsicBinning());
+                auto composite_pdf_hist = (TH1F *) m_composite.pdf().createHistogram("tmp_composite", v_dEdx,
+                                                                                     RooFit::IntrinsicBinning(),
+                                                                                     RooFit::Extended());
+                auto data_hist = (TH1F *) dh_dEdx.createHistogram("tmp_data", v_dEdx, RooFit::IntrinsicBinning());
+                qa_dir->WriteObject(particle_pdf_hist, Form("pdf_%s", m.getName().c_str()));
 
-                auto purity_hist = (*particle_pdf_hist)/(*composite_pdf_hist);
+                auto purity_hist = (*particle_pdf_hist) / (*composite_pdf_hist);
                 purity_hist.SetName(Form("purity_%s", m.getName().c_str()));
-                purity_hist.SetLineColor(model_color+1);
-                purity_hist.SetMarkerColor(model_color + 1);
+                purity_hist.SetLineColor(model_color);
+                purity_hist.SetMarkerColor(model_color);
                 purity_hist.SetLineWidth(2);
                 qa_dir->WriteObject(&purity_hist, purity_hist.GetName());
 
                 particle_pdf_hist->Scale(v_dEdx.getBinWidth(1));
-                auto purity_hist_data = (*particle_pdf_hist)/(*data_hist);
+                auto purity_hist_data = (*particle_pdf_hist) / (*data_hist);
                 purity_hist_data.SetName(Form("purity_to_data_%s", m.getName().c_str()));
                 purity_hist_data.SetLineColor(model_color);
                 purity_hist_data.SetMarkerColor(model_color);
                 qa_dir->WriteObject(&purity_hist_data, purity_hist_data.GetName());
 
                 purity_hist_data.GetYaxis()->SetRangeUser(0., 2.);
-                purity_hist_data.DrawClone(same_flag? "same,LE1" : "LE1");
+                purity_hist_data.DrawClone(same_flag ? "same,LE1" : "LE1");
                 same_flag = true;
                 purity_hist.DrawClone("same");
+
+                species_legend.AddEntry(Form("purity_%s", m.getName().c_str()), m.getName().c_str(), "l");
 
 
                 delete particle_pdf_hist;
@@ -351,7 +378,7 @@ int main(int argc, char **argv) {
             }
         }
 
-
+        species_legend.Draw();
 
         c->Print("output.pdf", "pdf");
         c->Clear();
