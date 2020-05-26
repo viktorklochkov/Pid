@@ -1,5 +1,5 @@
 #include <cmath>
-#include "Shine.h"
+#include "BetheBlochShine.h"
 
 double BetheBlochAntoniMod(const double betaGamma) {
   const double lnbg = std::log(betaGamma);

@@ -7,7 +7,7 @@
 
 #include <functional>
 
-#include "Shine.h"
+#include "BetheBlochShine.h"
 
 #include <core/PdgHelper.h>
 

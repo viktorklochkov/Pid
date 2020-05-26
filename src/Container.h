@@ -10,6 +10,8 @@
 
 #include <map>
 
+typedef unsigned int uint;
+
 namespace Pid {
 
 class Container {

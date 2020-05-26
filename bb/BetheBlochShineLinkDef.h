@@ -8,7 +8,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class BetheBlochHelper;
+#pragma link C++ function BetheBloch*;
 
 
 #endif //__CINT__
