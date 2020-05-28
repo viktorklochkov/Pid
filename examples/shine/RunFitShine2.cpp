@@ -19,148 +19,155 @@
 #include <RooFormulaVar.h>
 #include <RooFunctor1DBinding.h>
 #include <RooExtendPdf.h>
+#include <RooAddPdf.h>
 #include <RooPlot.h>
 #include <TCanvas.h>
+#include <RooSimultaneous.h>
 
 #include <ROOT/RDataFrame.hxx>
 
+#include <bb/BetheBlochShine.h>
+#include <model/AsymmetricGaussianPDF.h>
+#include <RooConstVar.h>
 
 
 int main() {
 
-    TAxis axis_log_20p(20, 1.6, 7.);
-    TAxis axis_pt(10, 0., 2.);
-    TAxis axis_phi(8, -TMath::Pi(), TMath::Pi());
+    std::vector<double> ncl_binning{30., 35., 40., 45.0, 50., 55., 60., 70., 90., 110., 130., 150., 170., 200., 250.};
+    TAxis ncl_axis(ncl_binning.size() - 1, ncl_binning.data());
 
-    auto n_bins = axis_log_20p.GetNbins() * axis_pt.GetNbins() * axis_phi.GetNbins();
+    size_t min_entries_ncl = 2000ul;
+    std::map<int, size_t> nn_ncl_bin;
+
+    ROOT::RDataFrame rdf("negative/bin_103/track_tree",
+                         "/home/eugene/STORAGE/data/pid/vtx_tack_dumps/pbpb_13agev_16_026/tracks_binned.root");
+    auto rdf_ncl_binned = rdf
+            .Define("ncl_bin", [ncl_axis](int ncl) -> int { return ncl_axis.FindBin(ncl); }, {"ncl"})
+            .Define("sigma_factor", "TMath::Power(ncl, -0.5)");
+    rdf_ncl_binned.Display(".*").GetValue().Print();
+    std::cout << "NE = " << rdf_ncl_binned.Count().GetValue() << std::endl;
+
+    rdf_ncl_binned.Foreach([&nn_ncl_bin](int ncl_bin) {
+        auto insert_result = nn_ncl_bin.emplace(ncl_bin, 0);
+        if (!insert_result.second) { /* map entry already exists */
+            insert_result.first->second++;
+        }
+    }, {"ncl_bin"});
 
 
+    auto rdf_filtered = rdf_ncl_binned.Filter([=](int ncl_bin) {
+        return ncl_bin != -1 && nn_ncl_bin.at(ncl_bin) > min_entries_ncl;
+    }, {"ncl_bin"}, "nn_cut");
 
-    ROOT::RDataFrame rdf("track_tree","/home/eugene/STORAGE/data/pid/vtx_tack_dumps/pbpb_13agev_16_026/merged.vtxtd.root");
 
-    auto rdf_10M = rdf
-            .Range(0, 10000000)
-            .Define("log_20p", "TMath::Log(20*p)")
-            /* side (RST/WST) */
-            .Define("side", [] (const int charge, const double phi) -> int {
-                return (
-                        (charge > 0 && -TMath::PiOver2() < phi && phi < TMath::PiOver2()) ||
-                        (charge < 0 && phi < -TMath::PiOver2() && TMath::PiOver2() < phi)
-                )? 1 : -1;
-            }, {"charge", "phi"})
-            .Define("bin_log_20p", [axis_log_20p] (double log_20p) -> int {
-                return axis_log_20p.FindBin(log_20p);
-            }, {"log_20p"})
-            .Define("bin_pt", [axis_pt] (double pt) -> int {
-                return axis_pt.FindBin(pt);
-            }, {"pt"})
-            .Define("bin_phi", [axis_phi] (double phi) -> int {
-                return axis_phi.FindBin(phi);
-            }, {"phi"})
-            .Define("bin_global", [=] (int i_log_20p, int i_pt, int i_phi) -> int {
-                return i_log_20p + axis_log_20p.GetNbins() * i_pt + axis_log_20p.GetNbins() * axis_pt.GetNbins() * i_phi;
-            }, {"bin_log_20p", "bin_pt", "bin_phi"})
-            .Define("denom_sqrt_ncl", "1.0/TMath::Sqrt(ncl)")
-            ;
+    rdf_filtered.Display(".*").GetValue().Print();
+    std::cout << "NE = " << rdf_filtered.Count().GetValue() << std::endl;
 
-    for (int ib = 0; ib < n_bins; ++ib) {
-        auto filtered = rdf_10M.Filter([ib] (const int bin_global) { return ib == bin_global; }, {"bin_global"}, Form("bin_%d", ib));
+    /* make snapshot */
+    std::string tmp_name = std::tmpnam(nullptr);
+    tmp_name.append(".root");
+    std::cout << tmp_name << std::endl;
+    rdf_filtered.Snapshot("track_tree", tmp_name);
+
+    /* prepare model */
+    auto w = RooWorkspace("w");
+
+    /* observables */
+    RooRealVar v_dedx("dedx", "dE/dx", 0, 2.5, "MIP");
+    RooCategory v_ncl_bin("ncl_bin", "");
+    for (auto p: nn_ncl_bin) {
+        if (p.second >= min_entries_ncl) v_ncl_bin.defineType(Form("ncl_bin_%d", p.first), p.first);
     }
 
-    for (auto &report : rdf_10M.Report().GetValue()) {
-        std::cout << "Passed " << report.GetPass() << "out of" << report.GetAll() << std::endl;
+    /* input data */
+    RooDataSet ds("ds", "", RooArgSet(v_dedx, v_ncl_bin), RooFit::ImportFromFile(tmp_name.c_str(), "track_tree"));
+    v_ncl_bin.Print();
+    ds.Print();
+
+    /* model parameters */
+    RooRealVar p_delta("delta", "#delta", 0.079);
+    RooRealVar p_sigma0_pion_neg("sigma0_pion_neg", "#sigma_0 (#pi^{-})", 0., 1., "MIP");
+    RooRealVar p_yield_pion_neg("yield_pion_neg", "Y (#pi^{-})", 0., 1.);
+
+    /* Bethe-Blochs */
+    auto p_mid = 0.5 * (rdf_filtered.Min("p").GetValue() + rdf_filtered.Max("p").GetValue());
+    RooConstVar bb_pion_neg("bb_pion_neg", "BB (#pi^{-})", BetheBlochAntoniMod(p_mid / 0.139));
+    RooConstVar bb_electron("bb_electrons", "BB (e)", BetheBlochAntoniMod(p_mid / 0.000511));
+
+    /* Derivatives */
+    RooFormulaVar p_sigma0_electron("sigma0_electron", "#sigma_0 (e^{-})",
+                                    "@0 * TMath::Power(@1 / @2, 0.65)",
+                                    RooArgList(p_sigma0_pion_neg, bb_electron, bb_pion_neg));
+
+
+    std::map<std::string, RooAbsPdf *> sim_fit_components;
+    for (auto p : nn_ncl_bin) {
+        if (p.second < min_entries_ncl) continue;
+
+        auto ncl_bin = p.first;
+        auto mean_sigma_factor = rdf_filtered
+                .Filter([ncl_bin](int _ncl_bin) { return ncl_bin == _ncl_bin; }, {"ncl_bin"})
+                .Mean("sigma_factor").GetValue();
+
+        auto sigma_factor = new RooConstVar("sigma_factor", "", mean_sigma_factor);
+        auto p_sigma_pion_neg = new RooFormulaVar("sigma_pion_neg", "#sigma (#pi^{-})",
+                                       "@0 * @1",
+                                       RooArgList(p_sigma0_pion_neg, *sigma_factor));
+
+        auto p_sigma_electron = new RooFormulaVar("sigma_electron", "#sigma (e^{-})",
+                                        "@0 * @1",
+                                        RooArgList(p_sigma0_electron, *sigma_factor));
+
+        auto pdf_pion_neg = new AsymmetricGaussianPDF(Form("pdf_pion_neg_%d", ncl_bin),"",v_dedx, bb_pion_neg, *p_sigma_pion_neg, p_delta);
+        auto pdf_electron = new AsymmetricGaussianPDF(Form("pdf_electron_%d", ncl_bin),"",v_dedx, bb_electron, *p_sigma_electron, p_delta);
+
+        auto composite_pdf = new RooAddPdf(Form("pdf_composite_%d", ncl_bin), "", *pdf_pion_neg, *pdf_electron, p_yield_pion_neg);
+        composite_pdf->Print();
+
+        sim_fit_components.emplace(std::string(Form("ncl_bin_%d", ncl_bin)), composite_pdf);
     }
 
-    {
-        auto d = rdf_10M.Display("");
-        d->Print();
-    }
+    auto sim_pdf = new RooSimultaneous("sim_pdf", "", sim_fit_components, v_ncl_bin);
+    sim_pdf->Print();
 
+    sim_pdf->fitTo(ds, RooFit::Minos());
 
-
-
-    /* control plots */
-    auto h_phi = rdf_10M.Histo1D({"h_phi", "#Phi", 600, -TMath::Pi(), +TMath::Pi()}, "phi");
-    auto h_phi_pos = rdf_10M.Filter("charge == 1").Histo1D({"h_phi_pos", "#Phi (positive)", 600, -TMath::Pi(), +TMath::Pi()}, "phi");
-    auto h_phi_neg = rdf_10M.Filter("charge == -1").Histo1D({"h_phi_neg", "#Phi (negative)", 600, -TMath::Pi(), +TMath::Pi()}, "phi");
-
-    auto h_pt = rdf_10M.Histo1D({"h_pt", "p_{T}", 1000, 0., 10.}, "pt");
-
-    auto h_dedx_p_neg = rdf_10M.Filter("charge == -1").Histo2D({"h_dedx_p_neg", "dE/dx vs momentum (-)", 1000, 0., 20., 1000, 0., 2.5}, "p", "dedx");
-    auto h_dedx_p_pos = rdf_10M.Filter("charge == 1").Histo2D({"h_dedx_p_pos", "dE/dx vs momentum (+)", 1000, 0., 20., 1000, 0., 2.5}, "p", "dedx");
-    auto h_dedx_logp_neg = rdf_10M.Filter("charge == -1").Histo2D({"h_dedx_logp_neg", "dE/dx vs Log(20 x p) (-)", 1000, 0., 7., 1000, 0., 2.5}, "log_20p", "dedx");
-    auto h_dedx_logp_pos = rdf_10M.Filter("charge == 1").Histo2D({"h_dedx_logp_pos", "dE/dx vs Log(20 x p) (+)", 1000, 0., 7., 1000, 0., 2.5}, "log_20p", "dedx");
-
-    auto h_ncl = rdf_10M.Histo1D({"h_ncl", "N_{cl}", 300, 0, 300}, "ncl");
-    auto h_ncl_phi = rdf_10M.Histo2D({"h_ncl_phi", "N_{cl} vs #Phi", 600, -TMath::Pi(), TMath::Pi(), 300, 0, 300}, "phi", "ncl");
-    auto h_ncl_p = rdf_10M.Histo2D({"h_ncl_p", "N_{cl} vs p", 1000, 0, 20, 300, 0, 300}, "p", "ncl");
-
-    auto h_denom_sqrt_ncl = rdf_10M.Histo1D({"h_denom_sqrt_ncl", "N_{cl}^{-1/2}", 1000, 0, 0.2}, "denom_sqrt_ncl");
-
-    auto h_bin_global = rdf_10M.Histo1D({"h_bin_global", "BIN", n_bins, 0, double(n_bins)}, "bin_global");
 
     auto c = new TCanvas;
-    gStyle->SetOptStat(0);
-    c->Print("output.pdf(", "pdf");
+    c->Print("fit_qa.pdf(", "pdf");
 
+    for (const auto &st : v_ncl_bin) {
+        std::cout << st->GetName() << std::endl;
+        auto frame_dedx = v_dedx.frame();
+        ds.plotOn(frame_dedx, RooFit::Cut(std::string("ncl_bin==ncl_bin::").append(st->GetName()).c_str()));
+        sim_pdf->plotOn(frame_dedx, RooFit::Slice(v_ncl_bin, st->GetName()), RooFit::ProjWData(v_ncl_bin, ds));
 
-    h_phi->SetLineColor(kBlack);
-    h_phi->Draw();
-    h_phi_pos->SetLineColor(kRed);
-    h_phi_pos->Draw("same");
-    h_phi_neg->Draw("same");
-    gPad->BuildLegend();
-    c->Print("output.pdf", "pdf");
+        c->Clear();
+        c->Divide(2,1);
+        c->cd(1);
+        frame_dedx->Draw();
+        c->cd(2);
+        gPad->SetLogy();
+        frame_dedx->Draw();
+        c->Print("fit_qa.pdf", "pdf");
+    }
+
+    auto frame_dedx = v_dedx.frame();
+    ds.plotOn(frame_dedx);
+    sim_pdf->plotOn(frame_dedx, RooFit::ProjWData(v_ncl_bin, ds));
     c->Clear();
+    frame_dedx->Draw();
+    c->Print("fit_qa.pdf", "pdf");
 
-    gPad->SetLogy();
-    h_pt->Draw();
-    c->Print("output.pdf", "pdf");
+
+
+
     c->Clear();
-    gPad->SetLogy(0);
-
-    gPad->SetLogz(1);
-    h_dedx_p_neg->Draw("colz");
-    c->Print("output.pdf", "pdf");
-    c->Clear();
-
-    gPad->SetLogz(1);
-    h_dedx_p_pos->Draw("colz");
-    c->Print("output.pdf", "pdf");
-    c->Clear();
+    c->Print("fit_qa.pdf)", "pdf");
 
 
-    gPad->SetLogz(1);
-    h_dedx_logp_neg->Draw("colz");
-    c->Print("output.pdf", "pdf");
-    c->Clear();
 
-    h_dedx_logp_pos->Draw("colz");
-    c->Print("output.pdf", "pdf");
-    c->Clear();
 
-    h_ncl->Draw();
-    c->Print("output.pdf", "pdf");
-    c->Clear();
-
-    h_ncl_phi->Draw("colz");
-    c->Print("output.pdf", "pdf");
-    c->Clear();
-
-    h_ncl_p->Draw("colz");
-    c->Print("output.pdf", "pdf");
-    c->Clear();
-
-    h_denom_sqrt_ncl->Draw();
-    c->Print("output.pdf", "pdf");
-    c->Clear();
-
-    gPad->SetLogy();
-    h_bin_global->Draw();
-    c->Print("output.pdf", "pdf");
-    c->Clear();
-
-    c->Print("output.pdf)", "pdf");
-
+    std::remove(tmp_name.c_str());
     return 0;
 }
