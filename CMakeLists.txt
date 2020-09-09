@@ -40,11 +40,11 @@ find_package(ROOT REQUIRED COMPONENTS Core MathCore RIO Hist Tree)
 include(${ROOT_USE_FILE})
 add_definitions(${ROOT_CXX_FLAGS})
 
-include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS})
 
 set(DICT_FILE_NAME G__${PROJECT_NAME})
 set(PCM_FILE_NAME lib${PROJECT_NAME})
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ROOT_GENERATE_DICTIONARY(${DICT_FILE_NAME} ${HEADERS} LINKDEF src/PidLinkDef.h)
 add_library(Pid SHARED ${SOURCES} ${HEADERS} ${DICT_FILE_NAME})
 foreach(_HEADER ${HEADERS})
