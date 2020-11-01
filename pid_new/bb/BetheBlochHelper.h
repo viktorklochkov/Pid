@@ -9,7 +9,7 @@
 
 #include "BetheBlochShine.h"
 
-#include <core/PdgHelper.h>
+#include <pid_new/core/PdgHelper.h>
 
 typedef std::function<double (double)> BetheBlochFunc_t;
 

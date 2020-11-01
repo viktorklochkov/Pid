@@ -12,7 +12,7 @@
 #include <RooExtendPdf.h>
 #include <RooRealVar.h>
 
-#include <bb/BetheBlochHelper.h>
+#include <pid_new/bb/BetheBlochHelper.h>
 #include <TDatabasePDG.h>
 #include <sstream>
 #include <Math/IFunctionfwd.h>

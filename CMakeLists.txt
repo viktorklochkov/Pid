@@ -4,31 +4,6 @@ set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_cpp_STANDARD 11)
 set(PROJECT_VERSION 1.0)
 
-# by default build optimized code with debug symbols
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-endif ()
-
-# in DEBUG mode make verbose Makefile
-if (CMAKE_BUILD_TYPE MATCHES DEBUG)
-    set(CMAKE_VERBOSE_MAKEFILE ON)
-endif ()
-
-message(STATUS "Using CXX flags for ${CMAKE_BUILD_TYPE}: ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
-
-set(SOURCES
-        src/Fitter.cpp
-        src/ParticleFit.cpp
-        src/Parameters.cpp
-        src/Getter.cpp
-#        src/Container.cpp
-        )
-
-string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")
-list(APPEND HEADERS src/Constants.h)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
-
 # Telling CMake where to find the ROOT installation.
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib")
@@ -40,6 +15,41 @@ find_package(ROOT REQUIRED COMPONENTS Core MathCore RIO Hist Tree)
 include(${ROOT_USE_FILE})
 add_definitions(${ROOT_CXX_FLAGS})
 
+if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    option(Pid_BUILD_NEW "Build experimental PID" OFF)
+endif ()
+
+set(Pid_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+# by default build optimized code with debug symbols
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+endif ()
+
+# in DEBUG mode make verbose Makefile
+if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+    set(CMAKE_VERBOSE_MAKEFILE ON)
+endif ()
+
+if (Pid_BUILD_NEW)
+    add_subdirectory(pid_new)
+endif ()
+
+message(STATUS "Using CXX flags for ${CMAKE_BUILD_TYPE}: ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
+
+set(SOURCES
+        src/Fitter.cpp
+        src/ParticleFit.cpp
+        src/Parameters.cpp
+        src/Getter.cpp
+        #        src/Container.cpp
+        )
+
+string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")
+list(APPEND HEADERS src/Constants.h)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
+
 
 set(DICT_FILE_NAME G__${PROJECT_NAME})
 set(PCM_FILE_NAME lib${PROJECT_NAME})
@@ -47,7 +57,7 @@ set(PCM_FILE_NAME lib${PROJECT_NAME})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ROOT_GENERATE_DICTIONARY(${DICT_FILE_NAME} ${HEADERS} LINKDEF src/PidLinkDef.h)
 add_library(Pid SHARED ${SOURCES} ${HEADERS} ${DICT_FILE_NAME})
-foreach(_HEADER ${HEADERS})
+foreach (_HEADER ${HEADERS})
     get_filename_component(_HEADER_FILENAME ${_HEADER} NAME)
     get_filename_component(_HEADER_PATH ${_HEADER} REALPATH)
     set(_INCLUDE_BINARY_DIR ${CMAKE_BINARY_DIR}/include/pid)
@@ -56,14 +66,14 @@ foreach(_HEADER ${HEADERS})
             COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${_INCLUDE_BINARY_DIR}
             COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${_HEADER_PATH} ${_HEADER_SYMLINK_PATH}
             )
-endforeach()
+endforeach ()
 
 target_link_libraries(Pid ${ROOT_LIBRARIES})
 target_include_directories(Pid
         PRIVATE ${CMAKE_SOURCE_DIR}/src
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include/pid>
-            $<INSTALL_INTERFACE:include/pid>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include/pid>
+        $<INSTALL_INTERFACE:include/pid>
         )
 
 # Create a main program using the library
@@ -153,9 +163,5 @@ install(FILES
         Devel
         )
 
-install (TARGETS pid RUNTIME DESTINATION bin)
-add_subdirectory(core)
-add_subdirectory(bb)
-add_subdirectory(model)
-add_subdirectory(examples/shine)
+install(TARGETS pid RUNTIME DESTINATION bin)
 

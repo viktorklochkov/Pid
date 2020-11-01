@@ -5,7 +5,7 @@
 #include <TFile.h>
 #include <TH2D.h>
 
-#include <core/FitterHelper.h>
+#include <pid_new/core/FitterHelper.h>
 #include <RooWorkspace.h>
 #include <RooDataHist.h>
 #include <TCanvas.h>
@@ -15,10 +15,10 @@
 
 #include <TMath.h>
 #include <TPaveText.h>
-#include <core/FitParameter.h>
+#include <pid_new/core/FitParameter.h>
 
-#include <model/AsymmetricGaussianPDF.h>
-#include <core/ParticleFitModel.h>
+#include <pid_new/model/AsymmetricGaussianPDF.h>
+#include <pid_new/core/ParticleFitModel.h>
 
 double poly(const std::vector<double> &pv, double x) {
     double result = 0.;

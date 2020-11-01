@@ -27,8 +27,8 @@
 
 #include <ROOT/RDataFrame.hxx>
 
-#include <bb/BetheBlochShine.h>
-#include <model/AsymmetricGaussianPDF.h>
+#include <pid_new/bb/BetheBlochShine.h>
+#include <pid_new/model/AsymmetricGaussianPDF.h>
 #include <RooConstVar.h>
 
 using namespace std;
