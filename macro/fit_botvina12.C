@@ -44,8 +44,8 @@ void fit_botvina12 () {
   gROOT -> SetEscape (true);
   ROOT::EnableImplicitMT(2);    
   
-  TString inputFileName = "~/desktop/analysis/mc/sim_qa/oct19/botv_12agev_default.root";
-  TString cutsFileName = "~/desktop/analysis/mc/sim_qa/oct19/cuts.root";
+  TString inputFileName = "../input/botv_12agev_default.root";
+  TString cutsFileName = "../input/cuts.root";
   std::unique_ptr <TFile> fIn { TFile::Open(inputFileName, "read")};
   std::unique_ptr <TFile> fCuts { TFile::Open(cutsFileName, "read")};
 

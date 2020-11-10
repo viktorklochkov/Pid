@@ -12,11 +12,12 @@
 ## Examples and short description 
 
 ### Fitting
-To modify fitting algorithm, functions, etc change file main.cpp (follow documentation inside)
+To modify fitting algorithm, functions, etc change file macro/fit_botvina12.C (follow documentation inside)
 
     cd build
     make
-    ./main
+    cd ../macro
+    root fit_botvina12.C
 
 ### Getter
 Example how to use output file:
