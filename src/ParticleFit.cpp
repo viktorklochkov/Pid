@@ -12,21 +12,26 @@ ParticleFit::ParticleFit() = default;
 * @param p track momentum
 * @return vector of parameters
 */
-std::vector<double> ParticleFit::GetFunctionParams(double p) const {
-  std::vector<double> params;
-  const uint npar = function_.GetNpar();
+std::vector <double> ParticleFit::GetFunctionParams(float p) const
+{
+    std::vector <double> params;
+    const uint npar = function_.GetNpar();        
 
-  if (parametrization_.size() != npar)
-    exit(1);
+    if ( parametrization_.size() != npar )
+    {
+	std::cout << "\n\nNumber of parameters is not equal to number of parameter functions!\nExiting...\n"; 
+        exit(0);        
+    }
 
-  if (!isfitted_)
+    if (!isfitted_)
+        return std::move(params);
+    
+    for ( uint i=0; i<npar; ++i )
+    {
+        params.push_back( parametrization_.at(i).Eval(p) );
+    }
+
     return params;
-
-  for (uint i = 0; i < npar; ++i) {
-    params.push_back(parametrization_.at(i).Eval(p));
-  }
-
-  return params;
 }
 
 /**
@@ -36,22 +41,22 @@ std::vector<double> ParticleFit::GetFunctionParams(double p) const {
 * @return vector of parameters
 */
 double ParticleFit::Eval(double p, double m2) {
-//  if (p > maxx_ || p < minx_) return 0.;
+    if (p > maxx_ || p < minx_) return 0.;
 
-  const uint npar = function_.GetNpar();
-  if (parametrization_.size() != npar)
-    exit(1);
+    const uint npar = function_.GetNpar();
+    if (parametrization_.size() != npar)
+      exit(1);
 
 //  TF1* f2 = (TF1*) function_.Clone();
 //  f2->SetParameters(&(GetFunctionParams(p)[0]));
 //  double ret = f2->Eval(m2);
 //  delete f2;
 
-  function_.SetParameters(&(GetFunctionParams(p)[0]));
-  const double ret = function_.Eval(m2);
+    function_.SetParameters(&(GetFunctionParams(p)[0]));
+    const double ret = function_.Eval(m2);
 
 
-  return ret;
+    return ret;
 }
 
 }

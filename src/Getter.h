@@ -47,13 +47,13 @@ class Getter : public TObject, public BaseGetter {
   std::map<int, double> GetBayesianProbability(double p, double m2) ;
   void SetRange(double min, double max) { minx_ = min, maxx_ = max; }
 
-  std::map<uint, double> GetSigma(double p, double m2) const {
+  std::map<uint, double> GetSigma(double p, double m2) {
     std::map<uint, double> sigma{};
 
     if (p > maxx_ || p < minx_)
       return sigma;
 
-    for (const auto &specie : species_) {
+    for (auto &specie : species_) {
       sigma[specie.first] = abs(m2 - specie.second.GetMean(p)) / specie.second.GetSigma(p);
     }
     return sigma;
