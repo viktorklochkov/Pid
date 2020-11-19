@@ -19,11 +19,16 @@ To modify fitting algorithm, functions, etc change file macro/fit_botvina12.C (f
     cd ../macro
     root fit_botvina12.C
 
-### Getter
-Example how to use output file:
+Example of fit visualization (NB! should be trimmed according to the set of fit functions)
 
     cd macro
-    root -l RunGetter.C
+    root drawFits.C
+
+### Getter
+Example of output file usage in the analysis:
+
+    cd macro
+    root RunGetter.C
 
 ### Doxygen documentation
     doxygen docs/Doxyfile

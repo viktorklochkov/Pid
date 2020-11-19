@@ -17,14 +17,14 @@ void drawFits (TString inputFileName, TString outputFileName);
 
 int main(int argc, char**argv) {
   if (argc == 3) drawFits (argv [1], argv [2]);
-  if (argc == 2) drawFits (argv [1], "fit.root");
-  else drawFits("allpos.root", "fit.root");
+  if (argc == 2) drawFits (argv [1]);
+  else drawFits();
   return 1;
 }
 
 #endif // __CLING__
 
-void drawFits(TString inputFileName = "allpos.root", TString outputFileName = "fit.root") {
+void drawFits(TString inputFileName = "allpos.root", TString outputFileName = "fits.root") {
   gROOT -> SetBatch (true);
   ROOT::EnableImplicitMT(2);    
   
