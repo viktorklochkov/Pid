@@ -26,5 +26,5 @@ Example how to use output file:
     root -l RunGetter.C
 
 ### Doxygen documentation
-    doxygen Doxyfile
+    doxygen docs/Doxyfile
 File Doxygen/html/index.html with documentation will be created
