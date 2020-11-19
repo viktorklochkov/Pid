@@ -22,7 +22,7 @@ ClassImp(Pid::ParticleFit)
     }
 
     if (!isfitted_)
-      return std::move(params);
+      return params;
 
     for (uint i = 0; i < npar; ++i) {
       params.push_back(parametrization_.at(i).Eval(p));

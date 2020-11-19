@@ -20,13 +20,13 @@ class ParticleFit {
  public:
   /**   Default constructor   **/
   ParticleFit();
-  ParticleFit(int type) : particle_type_(type){};
+  explicit ParticleFit(int type) : particle_type_(type){};
 
   std::vector<double> GetFunctionParams(float p) const;
   double Eval(double p, double m2);
 
   void SetParametrization(const std::vector<TF1>& parametrization) { parametrization_ = parametrization; }
-  void SetParametrizationFunction(uint ivar, TF1 func) { parametrization_.at(ivar) = func; }
+  void SetParametrizationFunction(uint ivar, const TF1& func) { parametrization_.at(ivar) = func; }
   void SetFitFunction(const TF1& function) { function_ = function; }
   void SetRange(float min, float max) { minx_ = min, maxx_ = max; }
   void SetIsFitted(bool is = true) { isfitted_ = is; }

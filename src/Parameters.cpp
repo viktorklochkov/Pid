@@ -33,7 +33,7 @@ void Parameters::Parametrize(std::vector<ParticleFit>& particles) {
       }
 
       TF1& fit = particles.at(ipart).GetParametrizationFunction(ivar);
-      TGraphErrors* par = new TGraphErrors(params_.size(), &(x_[0]), &(y[0]), 0, &(dy[0]));
+      auto* par = new TGraphErrors(params_.size(), &(x_[0]), &(y[0]), nullptr, &(dy[0]));
       par->SetName(fit.GetName());
       par->SetTitle(Form("%s;p (GeV/#it{c});%s", fit.GetName(), fit.GetName()));
 
