@@ -17,11 +17,10 @@ namespace Pid {
 class Container {
 
  public:
-
   Container() = default;
 
-  void SetBayesianProbability(std::map<uint, double> &&prob) { prob_ = prob; }
-  void SetSigma(std::map<uint, double> &&sigma) { sigma_ = sigma; }
+  void SetBayesianProbability(std::map<uint, double>&& prob) { prob_ = prob; }
+  void SetSigma(std::map<uint, double>&& sigma) { sigma_ = sigma; }
 
   double GetBayesianProbability(uint num) const {
     auto find = prob_.find(num);
@@ -34,13 +33,11 @@ class Container {
   }
 
  private:
-
   std::map<uint, double> prob_;
   std::map<uint, double> sigma_;
 
-//     ClassDef(Container, 1);
-
+  //     ClassDef(Container, 1);
 };
-}
+}// namespace Pid
 
-#endif //CENTRALITY_CONTAINER_H
+#endif//CENTRALITY_CONTAINER_H

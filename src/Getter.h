@@ -8,12 +8,12 @@
 #ifndef PidGetter_H
 #define PidGetter_H 1
 
-#include <vector>
-#include <TCutG.h>
-#include <TText.h>
-#include <TMultiGraph.h>
 #include "ParticleFit.h"
 #include "TObject.h"
+#include <TCutG.h>
+#include <TMultiGraph.h>
+#include <TText.h>
+#include <vector>
 
 namespace Pid {
 
@@ -23,7 +23,6 @@ namespace Pid {
 class BaseGetter {
 
  public:
-
   virtual ~BaseGetter() = default;
 
   virtual double GetWeight(double var1, double var2, int pid) = 0;
@@ -32,7 +31,7 @@ class BaseGetter {
 
   virtual int GetPid(double var1, double var2, double purity) = 0;
 
-  virtual void Streamer(TBuffer &) {};
+  virtual void Streamer(TBuffer&){};
 };
 
 /**
@@ -40,11 +39,10 @@ class BaseGetter {
  */
 class Getter : public TObject, public BaseGetter {
  public:
+  void AddParticle(const ParticleFit& particle, uint id) { species_[id] = particle; }
+  void AddParticles(std::map<int, ParticleFit>&& species) { species_ = species; }
 
-  void AddParticle(const ParticleFit &particle, uint id) { species_[id] = particle; }
-  void AddParticles(std::map<int, ParticleFit> &&species) { species_ = species; }
-
-  std::map<int, double> GetBayesianProbability(double p, double m2) ;
+  std::map<int, double> GetBayesianProbability(double p, double m2);
   void SetRange(double min, double max) { minx_ = min, maxx_ = max; }
 
   std::map<uint, double> GetSigma(double p, double m2) {
@@ -53,7 +51,7 @@ class Getter : public TObject, public BaseGetter {
     if (p > maxx_ || p < minx_)
       return sigma;
 
-    for (auto &specie : species_) {
+    for (auto& specie : species_) {
       sigma[specie.first] = abs(m2 - specie.second.GetMean(p)) / specie.second.GetSigma(p);
     }
     return sigma;
@@ -61,7 +59,7 @@ class Getter : public TObject, public BaseGetter {
 
   int GetPid(double p, double m2, double purity) override {
     auto prob = GetBayesianProbability(p, m2);
-    for (auto &pid_prob : prob)
+    for (auto& pid_prob : prob)
       if (pid_prob.second >= purity) return pid_prob.first;
     return -1;
   }
@@ -70,18 +68,16 @@ class Getter : public TObject, public BaseGetter {
     // not yet implemented
     return 1.0;
   }
-  std::map<int, double> GetWeights(double var1, double var2)  override {
+  std::map<int, double> GetWeights(double var1, double var2) override {
     return GetBayesianProbability(var1, var2);
   }
 
  private:
-
   std::map<int, ParticleFit> species_{};
   double minx_{-100000.};
   double maxx_{100000.};
 
- ClassDefOverride(Getter, 1);
-
+  ClassDefOverride(Getter, 1);
 };
 
 /**
@@ -90,7 +86,7 @@ class Getter : public TObject, public BaseGetter {
 class CutGGetter : public TObject, public BaseGetter {
 
  public:
-  void AddParticle(TCutG *cut, int pdgId) {
+  void AddParticle(TCutG* cut, int pdgId) {
     if (cut) {
       auto insert_result = species_.insert({pdgId, {cut}});
       if (!insert_result.second) {
@@ -104,7 +100,7 @@ class CutGGetter : public TObject, public BaseGetter {
 
   int GetPid(double var1, double var2, double) override {
 
-    for (const auto &specie : species_) {
+    for (const auto& specie : species_) {
       int pdgId = specie.first;
       auto specieCuts = specie.second;
 
@@ -118,34 +114,34 @@ class CutGGetter : public TObject, public BaseGetter {
     return -1;
   }
 
-  double GetWeight(double var1, double var2, int pid)  override {
+  double GetWeight(double var1, double var2, int pid) override {
     return 1.0 * (GetPid(var1, var2, 1) == pid);
   }
 
-  std::map<int, double> GetWeights(double var1, double var2)  override {
+  std::map<int, double> GetWeights(double var1, double var2) override {
     std::map<int, double> result;
 
-    for (const auto &specie : species_) {
+    for (const auto& specie : species_) {
       result.insert({specie.first, GetWeight(var1, var2, specie.first)});
     }
 
     return std::map<int, double>();
   }
 
-  void Draw(Option_t *option = "") override {
+  void Draw(Option_t* option = "") override {
     TObject::Draw(option);
 
     TMultiGraph mg("mg", "");
     TText pdgLabel;
 
-    for (const auto &specie : species_) {
+    for (const auto& specie : species_) {
       auto specieCuts = specie.second;
       for (auto cut : specieCuts) mg.Add(cut);
     }
 
     mg.DrawClone(option);
 
-    for (const auto &specie : species_) {
+    for (const auto& specie : species_) {
       int pdgId = specie.first;
       auto specieCuts = specie.second;
 
@@ -158,10 +154,10 @@ class CutGGetter : public TObject, public BaseGetter {
   }
 
  protected:
-  std::map<int, std::vector<TCutG *>> species_{};
+  std::map<int, std::vector<TCutG*>> species_{};
 
- ClassDefOverride(Pid::CutGGetter, 1)
+  ClassDefOverride(Pid::CutGGetter, 1)
 };
 
-}
-#endif // PidGetter_H
+}// namespace Pid
+#endif// PidGetter_H

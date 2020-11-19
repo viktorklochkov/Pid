@@ -5,16 +5,15 @@
     @brief  Class to fit 2D histograms
 */
 
-
 #ifndef PidFitter_H
 #define PidFitter_H 1
 
 #include <utility>
 #include <vector>
 
-#include "TString.h"
-#include "TH2.h"
 #include "TH1.h"
+#include "TH2.h"
+#include "TString.h"
 
 #include "ParticleFit.h"
 
@@ -23,16 +22,16 @@ namespace Pid {
 class Fitter {
 
  public:
-
-//     Fitter( std::vector <ParticleFit> &&particles ) : particles_(particles) {};
-  Fitter() = default;;
+  //     Fitter( std::vector <ParticleFit> &&particles ) : particles_(particles) {};
+  Fitter() = default;
+  ;
 
   void Fit();
-  TF1 *ConstructFit1DFunction(double p);
-  double Fit1D(std::unique_ptr<TH1D> &h, std::vector<double> &par, std::vector<double> &par_err, double p);
+  TF1* ConstructFit1DFunction(double p);
+  double Fit1D(std::unique_ptr<TH1D>& h, std::vector<double>& par, std::vector<double>& par_err, double p);
   void Clear();
 
-  void AddParticle(ParticleFit &particle, uint id) {
+  void AddParticle(ParticleFit& particle, uint id) {
     particles_.push_back(particle);
     particles_id_.push_back(id);
   }
@@ -49,7 +48,6 @@ class Fitter {
   void SetChi2Max(double chi2) { chi2_max_ = chi2; }
 
  private:
-
   std::vector<ParticleFit> particles_;
   std::vector<uint> particles_id_;
   std::unique_ptr<TH2D> histo2D_{nullptr};
@@ -64,10 +62,8 @@ class Fitter {
 
   double chi2_max_{100.};
 
-//     ClassDef(Fitter, 2);
-
-
+  //     ClassDef(Fitter, 2);
 };
 
-}
-#endif // PidFitter_H
+}// namespace Pid
+#endif// PidFitter_H
