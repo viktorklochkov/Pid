@@ -9,14 +9,12 @@ PidFiller::PidFiller(const std::string& file, const std::string& getter) {
   auto pid_file = std::unique_ptr<TFile>( TFile::Open(file.c_str(), "read"));
 
   if ((!pid_file) || (pid_file->IsZombie())) {
-    std::cout << "No file or file is zombie. Exit here: PidFiller::PidFiller" << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("No file or file is zombie: " + file);
   }
 
-  getter_ = (::Pid::Getter*) pid_file->Get(getter.c_str());
+  getter_ = pid_file->Get<Pid::Getter>(getter.c_str());
   if (getter_ == nullptr) {
-    std::cout << "ERROR: PidFiller::PidFiller - PID Getter is nullptr" << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("PID Getter is nullptr: " + getter);
   }
 }
 
