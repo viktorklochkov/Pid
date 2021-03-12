@@ -4,6 +4,14 @@ set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_cpp_STANDARD 11)
 set(PROJECT_VERSION 1.0)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
+
+#
+# Options
+#
+set(PID_BUNDLED_AT OFF CACHE BOOL "Get and build AnalysisTree")
+set(PID_BUNDLED_AT_VERSION "master" CACHE STRING "Bundled AnalysisTree version")
+
 # Telling CMake where to find the ROOT installation.
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib")
@@ -36,57 +44,17 @@ if (Pid_BUILD_NEW)
 endif ()
 
 message(STATUS "Using CXX flags for ${CMAKE_BUILD_TYPE}: ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
-
-set(SOURCES
-        src/Fitter.cpp
-        src/ParticleFit.cpp
-        src/Parameters.cpp
-        src/Getter.cpp
-        #        src/Container.cpp
-        )
-
-string(REPLACE ".cpp" ".h" HEADERS "${SOURCES}")
-list(APPEND HEADERS src/Constants.h)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
 
-
-set(DICT_FILE_NAME G__${PROJECT_NAME})
-set(PCM_FILE_NAME lib${PROJECT_NAME})
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-ROOT_GENERATE_DICTIONARY(${DICT_FILE_NAME} ${HEADERS} LINKDEF src/PidLinkDef.h)
-add_library(Pid SHARED ${SOURCES} ${HEADERS} ${DICT_FILE_NAME})
-foreach (_HEADER ${HEADERS})
-    get_filename_component(_HEADER_FILENAME ${_HEADER} NAME)
-    get_filename_component(_HEADER_PATH ${_HEADER} REALPATH)
-    set(_INCLUDE_BINARY_DIR ${CMAKE_BINARY_DIR}/include/pid)
-    set(_HEADER_SYMLINK_PATH ${_INCLUDE_BINARY_DIR}/${_HEADER_FILENAME})
-    add_custom_command(TARGET Pid PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${_INCLUDE_BINARY_DIR}
-            COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${_HEADER_PATH} ${_HEADER_SYMLINK_PATH}
-            )
-endforeach ()
-
-target_link_libraries(Pid ${ROOT_LIBRARIES})
-target_include_directories(Pid
-        PRIVATE ${CMAKE_SOURCE_DIR}/src
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include/pid>
-        $<INSTALL_INTERFACE:include/pid>
-        )
-
-# Create a main program using the library
-#add_executable(main main.cpp)
-#target_link_libraries(main Pid ${ROOT_LIBRARIES})
-#target_include_directories(main PUBLIC src)
+add_subdirectory(src)
+add_subdirectory(at_interface)
 
 # Create a main program using the library
 add_executable(pid macro/pid.cpp)
 target_link_libraries(pid Pid ${ROOT_LIBRARIES})
 target_include_directories(pid PUBLIC src)
 
-# Packaging routine
+ # Packaging routine
 # For complete explanation
 # @see https://cmake.org/cmake/help/git-master/manual/cmake-packages.7.html#creating-packages
 include(GenerateExportHeader)
