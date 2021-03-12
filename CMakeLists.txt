@@ -5,7 +5,6 @@ set(CMAKE_cpp_STANDARD 11)
 set(PROJECT_VERSION 1.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
-
 #
 # Options
 #
@@ -18,6 +17,8 @@ list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib")
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED COMPONENTS Core MathCore RIO Hist Tree)
+
+include(cmake_modules/AnalysisTree.cmake)
 
 # Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
 include(${ROOT_USE_FILE})
