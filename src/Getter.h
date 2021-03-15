@@ -72,6 +72,14 @@ class Getter : public TObject, public BaseGetter {
     return GetBayesianProbability(var1, var2);
   }
 
+  const ParticleFit& GetParticleFit(int pid) {
+    auto it = species_.find(pid);
+    if(it != species_.end()){
+      return it->second;
+    }
+    throw std::runtime_error("Particle " + std::to_string(pid) + " is not found!");
+  }
+
  private:
   std::map<int, ParticleFit> species_{};
   double minx_{-100000.};
