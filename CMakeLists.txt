@@ -49,11 +49,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
 
 add_subdirectory(src)
 add_subdirectory(at_interface)
-
-# Create a main program using the library
-add_executable(pid macro/pid.cpp)
-target_link_libraries(pid Pid ${ROOT_LIBRARIES})
-target_include_directories(pid PUBLIC src)
+add_subdirectory(tasks)
 
  # Packaging routine
 # For complete explanation
@@ -131,6 +127,3 @@ install(FILES
         COMPONENT
         Devel
         )
-
-install(TARGETS pid RUNTIME DESTINATION bin)
-
