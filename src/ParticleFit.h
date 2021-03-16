@@ -41,9 +41,9 @@ class ParticleFit {
     return isfixed_.at(ipar);
   }
 
-  float GetSigma(float p) { return parametrization_.at(PidFunction::kSigma).Eval(p); }
-  float GetMean(float p) { return parametrization_.at(PidFunction::kMean).Eval(p); }
-  float GetIntegral(float p) { return parametrization_.at(PidFunction::kA).Eval(p)/sqrt(2*TMath::Pi()/GetSigma(p)) ; }
+  float GetSigma(float p) const { return parametrization_.at(PidFunction::kSigma).Eval(p); }
+  float GetMean(float p) const  { return parametrization_.at(PidFunction::kMean).Eval(p); }
+  float GetIntegral(float p) const { return parametrization_.at(PidFunction::kA).Eval(p)/sqrt(2*TMath::Pi()/GetSigma(p)) ; }
 
   void GetRange(float& min, float& max) const { min = minx_, max = maxx_; }
 
