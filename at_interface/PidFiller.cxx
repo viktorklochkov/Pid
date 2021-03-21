@@ -1,7 +1,6 @@
 #include <TaskManager.hpp>
 #include "PidFiller.h"
 
-namespace AnalysisTree{
 
 PidFiller::PidFiller(const std::string& file, const std::string& getter) {
 
@@ -28,9 +27,9 @@ void PidFiller::Init() {
 
   pid_match_ = chain->GetMatchPointers().find(config_->GetMatchName(tracks_name_, tof_name_))->second;
 
-  auto rec_part_config = BranchConfig(rec_particles_name_, AnalysisTree::DetType::kParticle);
+  auto rec_part_config = AnalysisTree::BranchConfig(rec_particles_name_, AnalysisTree::DetType::kParticle);
 
-  rec_particles_ = new Particles;
+//  rec_particles_ = new AnalysisTree::Particles;
 
   man->AddBranch(rec_particles_name_, rec_particles_, rec_part_config);
 }
@@ -43,7 +42,9 @@ void PidFiller::Exec() {
   }
 
   rec_particles_->ClearChannels();
-  const auto& particles_config = AnalysisTree::TaskManager::GetInstance()->GetConfig()->GetBranchConfig(rec_particles_name_);
+  auto* man = AnalysisTree::TaskManager::GetInstance();
+  const auto* conf = man->GetOutConfig();
+  const auto& particles_config = conf->GetBranchConfig(rec_particles_name_);
 
   for(const auto& track : *tracks_) {
     auto& particle = rec_particles_->AddChannel(particles_config);
@@ -95,5 +96,4 @@ void PidFillerMC::Exec() {
 //      particle->SetPid(-999);
 //    }
 //  }
-}
 }

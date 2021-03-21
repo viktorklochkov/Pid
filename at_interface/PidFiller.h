@@ -13,15 +13,15 @@
 #include "AnalysisTree/Matching.hpp"
 #include "AnalysisTree/Task.hpp"
 
-namespace AnalysisTree{
 
-class PidFiller : public Task {
+class PidFiller : public AnalysisTree::Task {
  public:
 
-  PidFiller(const std::string& file, const std::string& getter);;
+  PidFiller(const std::string& file, const std::string& getter);
   void Init() override;
   void Exec() override;
   void Finish() override {};
+  ~PidFiller() override = default;
 
  protected:
 
@@ -37,13 +37,15 @@ class PidFiller : public Task {
   ::Pid::Getter* getter_{nullptr};
 };
 
-class PidFillerMC : public Task {
+class PidFillerMC : public AnalysisTree::Task {
  public:
 
   PidFillerMC() = default;
   void Init() override;
   void Exec() override;
   void Finish() override {}
+  ~PidFillerMC() override = default;
+
 
  protected:
 
@@ -52,10 +54,9 @@ class PidFillerMC : public Task {
   AnalysisTree::Particles* mc_tracks_{nullptr};
   AnalysisTree::Matching* mc_match_{nullptr};
 
+  std::string rec_particles_name_{"RecParticlesMcPid"};
+
 };
 
 
-
-
-}
 #endif //ANALYSISTREECENTRALITY_SRC_PIDFILLER_H_
