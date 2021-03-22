@@ -4,18 +4,17 @@
 
 using namespace AnalysisTree;
 
-
 void fill_at_pid(const std::string& filelist, const std::string& pid_file){
 
   auto* man = TaskManager::GetInstance();
   man->SetOutputName("pid.root", "pTree");
 
   auto* pid_task = new PidFiller(pid_file, "pid_getter");
-  pid_task->SetInputBranchNames({"VtxTracks", "TofHits"});
+  pid_task->SetTracksName("VtxTracks");
+  pid_task->SetTofName("TofHits");
 
 //  auto* mc_pid_task = new PidFillerMC();
 //  mc_pid_task->SetInputBranchNames({"VtxTracks", "SimParticles"});
-
 
   man->AddTask(pid_task);
 

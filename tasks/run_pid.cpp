@@ -69,13 +69,6 @@ void run_pid(){
   pionpos = tof.GetParticle(0);
   tof.Clear();
 
-
-
-
-
-
-
-
   std::cout << "\n\nkaonpos\n";
   xmin = 0.4, xmax = 10.5, ymin = -2., ymax = 2.;
   tof.SetChi2Max(1000);
@@ -246,109 +239,109 @@ void run_pid(){
 
   tof.Clear();
 
-//
-//  std::cout << "\n\npionneg\n";
-//  xmin = -12., xmax = -0.25, ymin = -2., ymax = 2.;
-//  tof.SetChi2Max(10000);
-//  std::shared_ptr<TH2D> hpionneg {(TH2D*) fIn->Get("reco_vs_sim_info/h2TofM2_piminus")};
-//  std::shared_ptr <TH2D> hpionneg_cut {(TH2D*) cutTH2 (hpionneg, (TCutG*) fCuts->Get("piminus"))};
-//  hpionneg_cut->Rebin2D(10,1);
-//  TF1 fit_pionneg ("fit_pionneg", "gaus", ymin, ymax);
-//  fit_pionneg.SetParNames ("p0", "p1", "p2");
-//  fit_pionneg.SetParLimits (0, 0., 5.e6);
-//  fit_pionneg.SetParLimits (1, -.3, 0.05);
-//  fit_pionneg.SetParLimits (2, 0., 2.);
-//  TF1 pionneg_0 ("pionneg_0", "0", xmin, xmax);
-//  TF1 pionneg_1 ("pionneg_1", "pol14", -11.7, xmax);
-//  TF1 pionneg_2 ("pionneg_2", "pol12", -11.7, xmax);
-//
-//  Pid::ParticleFit pionneg( PidParticles::kPionNeg );
-//  pionneg.SetParametrization({ pionneg_0, pionneg_1, pionneg_2 });
-//  pionneg.SetFitFunction(fit_pionneg);
-//  pionneg.SetRange( xmin, xmax );
-//  pionneg.SetIsFitted();
-//
-//  tof.AddParticle(pionneg, PidParticles::kPionNeg);
-//  tof.SetHisto2D( std::move(hpionneg_cut) );
-//  tof.SetRangeX( xmin, xmax );
-//  tof.SetRangeY( ymin, ymax );
-//  tof.SetOutputFileName("pionneg.root");
-//  tof.Fit();
-//  pionneg = tof.GetParticle(0);
-//  tof.Clear();
-//
-//
-//  std::cout << "\n\nkaonneg\n";
-//  xmin = -10., xmax = -0.25, ymin = -1., ymax = 1.5;
-//  tof.SetChi2Max(100);
-//  std::shared_ptr <TH2D> hkaonneg {(TH2D*) fIn->Get("reco_vs_sim_info/h2TofM2_kminus")};
-//  std::shared_ptr <TH2D> hkaonneg_cut {(TH2D*) cutTH2 (hkaonneg, (TCutG*) fCuts->Get("kminus"))};
-//  hkaonneg_cut->Rebin2D(10,2);
-//  TF1 fit_kaonneg ("fit_kaonneg", "gaus", ymin, ymax);
-//  fit_kaonneg.SetParNames ("p3", "p4", "p5");
-//  fit_kaonneg.SetParLimits (0, 0., 4.e4);
-//  fit_kaonneg.SetParLimits (1, 0.05, 0.3);
-//  fit_kaonneg.SetParLimits (2, 0., 1.7);
-//  TF1 kaonneg_0 ("kaonneg_0", "0", xmin, xmax);
-//  TF1 kaonneg_1 ("kaonneg_1", "pol11", xmin, xmax);
-//  TF1 kaonneg_2 ("kaonneg_2", "pol8", xmin, xmax);
-//
-//  Pid::ParticleFit kaonneg( PidParticles::kKaonNeg );
-//  kaonneg.SetParametrization({ kaonneg_0, kaonneg_1, kaonneg_2 });
-//  kaonneg.SetFitFunction(fit_kaonneg);
-//  kaonneg.SetRange( xmin, xmax );
-//  kaonneg.SetIsFitted();
-//
-//  tof.AddParticle(kaonneg, PidParticles::kKaonNeg);
-//  tof.SetHisto2D( std::move(hkaonneg_cut) );
-//  tof.SetRangeX( xmin, xmax );
-//  tof.SetRangeY( ymin, ymax );
-//  tof.SetOutputFileName("kaonneg.root");
-//  tof.Fit();
-//  kaonneg = tof.GetParticle(0);
-//  tof.Clear();
-//
-//
-//  std::cout << "\n\nbgneg\n";
-//  xmin = -10., xmax = -0.25, ymin = -1., ymax = 2.;
-//  Pid::ParticleFit bgneg( PidParticles::kBgNeg );
-//  TF1 bgneg_0 ("bgneg_0", "pol3", xmin, xmax);  //bgneg_0.SetParameters(100, 0, 0);
-//  TF1 bgneg_1 ("bgneg_1", "pol5", xmin, xmax);  //bgneg_1.SetParameters(0, 0, 0);
-//  TF1 bgneg_2 ("bgneg_2", "pol5", xmin, xmax);  //bgneg_2.SetParameters(0.0, 0.0, 0);
-//
-//  TF1 bgneg_fit ("fit_bgneg", "pol2", ymin, ymax);
-//  //TF1 bgneg_fit ("fit_bgneg", "[0]+[2]*(x-[1])*(x-[1])", ymin, ymax);
-//  //bgneg_fit.SetParLimits(0, 80., 150.);
-//  //bgneg_fit.SetParLimits(1, -.1, .1);
-//  //bgneg_fit.SetParLimits(2, -2000., 0.);
-//  bgneg_fit.SetParNames("p6", "p7", "p8");
-//  bgneg.SetParametrization({ bgneg_0, bgneg_1, bgneg_2 });
-//  bgneg.SetFitFunction( bgneg_fit );
-//  bgneg.SetRange( xmin, xmax );
-//  bgneg.SetIsFitted();
-//
-//  std::cout << "\n\nallneg\n";
-//  xmin = -12, xmax = -0.25, ymin = -2., ymax = 6.;
-//  std::unique_ptr <TH2D> hneg {(TH2D*) fIn->Get("reco_info/h2TofM2")};
-//  hneg->Rebin2D(10,1);
-//  tof.SetChi2Max(1e6);
-//  pionneg.SetIsFixed( {false, true, true} );
-//  kaonneg.SetIsFixed( {false, true, true} );
-//  tof.AddParticle(pionneg, PidParticles::kPionNeg);
-//  tof.AddParticle(kaonneg, PidParticles::kKaonNeg);
-//  tof.AddParticle(bgneg, PidParticles::kBgNeg);
-//
-//  tof.SetHisto2D( std::move(hneg) );
-//  tof.SetRangeX( xmin, xmax );
-//  tof.SetRangeY( ymin, ymax );
-//  tof.SetOutputFileName("allneg.root");
-//  tof.Fit();
-//
-//  getter.AddParticle(tof.GetParticleSpecie(PidParticles::kPionNeg), PidParticles::kPionNeg);
-//  getter.AddParticle(tof.GetParticleSpecie(PidParticles::kKaonNeg), PidParticles::kKaonNeg);
-//  getter.AddParticle(tof.GetParticleSpecie(PidParticles::kBgNeg), PidParticles::kBgNeg);
-//
-//  tof.Clear();
+
+  std::cout << "\n\npionneg\n";
+  xmin = -12., xmax = -0.25, ymin = -2., ymax = 2.;
+  tof.SetChi2Max(10000);
+  std::shared_ptr<TH2D> hpionneg {(TH2D*) fIn->Get("reco_vs_sim_info/h2TofM2_piminus")};
+  std::shared_ptr <TH2D> hpionneg_cut {(TH2D*) cutTH2 (hpionneg, (TCutG*) fCuts->Get("piminus"))};
+  hpionneg_cut->Rebin2D(10,1);
+  TF1 fit_pionneg ("fit_pionneg", "gaus", ymin, ymax);
+  fit_pionneg.SetParNames ("p0", "p1", "p2");
+  fit_pionneg.SetParLimits (0, 0., 5.e6);
+  fit_pionneg.SetParLimits (1, -.3, 0.05);
+  fit_pionneg.SetParLimits (2, 0., 2.);
+  TF1 pionneg_0 ("pionneg_0", "0", xmin, xmax);
+  TF1 pionneg_1 ("pionneg_1", "pol14", -11.7, xmax);
+  TF1 pionneg_2 ("pionneg_2", "pol12", -11.7, xmax);
+
+  Pid::ParticleFit pionneg( PidParticles::kPionNeg );
+  pionneg.SetParametrization({ pionneg_0, pionneg_1, pionneg_2 });
+  pionneg.SetFitFunction(fit_pionneg);
+  pionneg.SetRange( xmin, xmax );
+  pionneg.SetIsFitted();
+
+  tof.AddParticle(pionneg, PidParticles::kPionNeg);
+  tof.SetHisto2D( std::move(hpionneg_cut) );
+  tof.SetRangeX( xmin, xmax );
+  tof.SetRangeY( ymin, ymax );
+  tof.SetOutputFileName("pionneg.root");
+  tof.Fit();
+  pionneg = tof.GetParticle(0);
+  tof.Clear();
+
+
+  std::cout << "\n\nkaonneg\n";
+  xmin = -10., xmax = -0.25, ymin = -1., ymax = 1.5;
+  tof.SetChi2Max(100);
+  std::shared_ptr <TH2D> hkaonneg {(TH2D*) fIn->Get("reco_vs_sim_info/h2TofM2_kminus")};
+  std::shared_ptr <TH2D> hkaonneg_cut {(TH2D*) cutTH2 (hkaonneg, (TCutG*) fCuts->Get("kminus"))};
+  hkaonneg_cut->Rebin2D(10,2);
+  TF1 fit_kaonneg ("fit_kaonneg", "gaus", ymin, ymax);
+  fit_kaonneg.SetParNames ("p3", "p4", "p5");
+  fit_kaonneg.SetParLimits (0, 0., 4.e4);
+  fit_kaonneg.SetParLimits (1, 0.05, 0.3);
+  fit_kaonneg.SetParLimits (2, 0., 1.7);
+  TF1 kaonneg_0 ("kaonneg_0", "0", xmin, xmax);
+  TF1 kaonneg_1 ("kaonneg_1", "pol11", xmin, xmax);
+  TF1 kaonneg_2 ("kaonneg_2", "pol8", xmin, xmax);
+
+  Pid::ParticleFit kaonneg( PidParticles::kKaonNeg );
+  kaonneg.SetParametrization({ kaonneg_0, kaonneg_1, kaonneg_2 });
+  kaonneg.SetFitFunction(fit_kaonneg);
+  kaonneg.SetRange( xmin, xmax );
+  kaonneg.SetIsFitted();
+
+  tof.AddParticle(kaonneg, PidParticles::kKaonNeg);
+  tof.SetHisto2D( std::move(hkaonneg_cut) );
+  tof.SetRangeX( xmin, xmax );
+  tof.SetRangeY( ymin, ymax );
+  tof.SetOutputFileName("kaonneg.root");
+  tof.Fit();
+  kaonneg = tof.GetParticle(0);
+  tof.Clear();
+
+
+  std::cout << "\n\nbgneg\n";
+  xmin = -10., xmax = -0.25, ymin = -1., ymax = 2.;
+  Pid::ParticleFit bgneg( PidParticles::kBgNeg );
+  TF1 bgneg_0 ("bgneg_0", "pol3", xmin, xmax);  //bgneg_0.SetParameters(100, 0, 0);
+  TF1 bgneg_1 ("bgneg_1", "pol5", xmin, xmax);  //bgneg_1.SetParameters(0, 0, 0);
+  TF1 bgneg_2 ("bgneg_2", "pol5", xmin, xmax);  //bgneg_2.SetParameters(0.0, 0.0, 0);
+
+  TF1 bgneg_fit ("fit_bgneg", "pol2", ymin, ymax);
+  //TF1 bgneg_fit ("fit_bgneg", "[0]+[2]*(x-[1])*(x-[1])", ymin, ymax);
+  //bgneg_fit.SetParLimits(0, 80., 150.);
+  //bgneg_fit.SetParLimits(1, -.1, .1);
+  //bgneg_fit.SetParLimits(2, -2000., 0.);
+  bgneg_fit.SetParNames("p6", "p7", "p8");
+  bgneg.SetParametrization({ bgneg_0, bgneg_1, bgneg_2 });
+  bgneg.SetFitFunction( bgneg_fit );
+  bgneg.SetRange( xmin, xmax );
+  bgneg.SetIsFitted();
+
+  std::cout << "\n\nallneg\n";
+  xmin = -12, xmax = -0.25, ymin = -2., ymax = 6.;
+  std::unique_ptr <TH2D> hneg {(TH2D*) fIn->Get("reco_info/h2TofM2")};
+  hneg->Rebin2D(10,1);
+  tof.SetChi2Max(1e6);
+  pionneg.SetIsFixed( {false, true, true} );
+  kaonneg.SetIsFixed( {false, true, true} );
+  tof.AddParticle(pionneg, PidParticles::kPionNeg);
+  tof.AddParticle(kaonneg, PidParticles::kKaonNeg);
+  tof.AddParticle(bgneg, PidParticles::kBgNeg);
+
+  tof.SetHisto2D( std::move(hneg) );
+  tof.SetRangeX( xmin, xmax );
+  tof.SetRangeY( ymin, ymax );
+  tof.SetOutputFileName("allneg.root");
+  tof.Fit();
+
+  getter.AddParticle(tof.GetParticleSpecie(PidParticles::kPionNeg), PidParticles::kPionNeg);
+  getter.AddParticle(tof.GetParticleSpecie(PidParticles::kKaonNeg), PidParticles::kKaonNeg);
+  getter.AddParticle(tof.GetParticleSpecie(PidParticles::kBgNeg), PidParticles::kBgNeg);
+
+  tof.Clear();
 
   std::unique_ptr <TFile> outfile{TFile::Open("pid_getter.root", "recreate")};
   getter.Write("pid_getter");

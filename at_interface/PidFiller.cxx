@@ -27,9 +27,10 @@ void PidFiller::Init() {
 
   pid_match_ = chain->GetMatchPointers().find(config_->GetMatchName(tracks_name_, tof_name_))->second;
 
-  auto rec_part_config = AnalysisTree::BranchConfig(rec_particles_name_, AnalysisTree::DetType::kParticle);
+  const auto& rec_tracks_conf = chain->GetConfiguration()->GetBranchConfig(tracks_name_);
+  auto rec_part_config = rec_tracks_conf.Clone(rec_particles_name_, AnalysisTree::DetType::kParticle);
 
-//  rec_particles_ = new AnalysisTree::Particles;
+  rec_part_config.AddFields<float>({"prob_p", "prob_pi", "prob_K", "prob_bg"}, "probability to be proton, pion or kaon");
 
   man->AddBranch(rec_particles_name_, rec_particles_, rec_part_config);
 }
@@ -42,58 +43,82 @@ void PidFiller::Exec() {
   }
 
   rec_particles_->ClearChannels();
-  auto* man = AnalysisTree::TaskManager::GetInstance();
-  const auto* conf = man->GetOutConfig();
+
+  const auto* conf = AnalysisTree::TaskManager::GetInstance()->GetOutConfig();
   const auto& particles_config = conf->GetBranchConfig(rec_particles_name_);
+  const int prob_id = particles_config.GetFieldId("prob_p");
+  const int q_id = particles_config.GetFieldId("q");
+  constexpr int Nspecies{4};
+  const std::array<int, Nspecies> pid_codes = {2212, 211, 321, 1};
 
   for(const auto& track : *tracks_) {
     auto& particle = rec_particles_->AddChannel(particles_config);
+    particle = AnalysisTree::Particle(track);
+    particle.Init(particles_config);
 
-    particle.SetMomentum3(track.GetMomentum3());
-    const float mom = track.GetP();
+    const float qp = track.GetP()*track.GetField<int>(q_id);
     const int tof_id = pid_match_->GetMatch(track.GetId());
     if ( tof_id >= 0) {
       const auto m2 = tof_->GetChannel(tof_id).GetField<float>(0);  //TODO
-      particle.SetPid(track.GetField<int>(1) * getter_->GetPid(mom, m2, 0.8));
+      particle.SetPid(track.GetField<int>(1) * getter_->GetPid(qp, m2, 0.5));
+
+      const auto& prob = getter_->GetBayesianProbability(qp, m2);
+
+      const int q = qp > 0 ? 1 : -1;
+      for(int i=0; i<Nspecies; ++i){
+        auto prob_i = prob.find(q*pid_codes[i]);
+//        if(prob_i == prob.end()){
+//          throw std::runtime_error("Pid code " + std::to_string(q*pid_codes[i]) + " is not found in the getter!"); //TODO uncomment later
+//        }
+        particle.SetField(float(prob_i->second), prob_id+i);
+      }
+
+      for(int i=0; i<Nspecies; ++i){
+      }
     }
     else{
       particle.SetPid(-1);
+      for(int i=0; i<Nspecies; ++i){
+        particle.SetField(-1.f, prob_id+1);
+      }
     }
   }
 }
 
 void PidFillerMC::Init() {
 
-//  tracks_ = (AnalysisTree::TrackDetector*) branches.find(in_branches_[0])->second;
-//  mc_tracks_ = (AnalysisTree::Particles*) branches.find(in_branches_[1])->second;
-//  mc_match_ = (AnalysisTree::Matching*) branches.find(config_->GetMatchName(in_branches_[0], in_branches_[1]))->second;
-//
-//  auto rec_part_config = BranchConfig(out_branch_, AnalysisTree::DetType::kParticle);
-//  out_config_->AddBranchConfig(rec_part_config);
-//  rec_particles_ = new Particles;
-//  out_tree_ -> Branch(out_branch_.c_str(), "AnalysisTree::Particles", &rec_particles_);
-//  branches.emplace(out_branch_, rec_particles_);
+  auto* man = AnalysisTree::TaskManager::GetInstance();
+  auto* chain = man->GetChain();
+
+  tracks_ =ANALYSISTREE_UTILS_GET<AnalysisTree::TrackDetector*>(chain->GetPointerToBranch(tracks_name_));
+  mc_tracks_ =ANALYSISTREE_UTILS_GET<AnalysisTree::Particles *>(chain->GetPointerToBranch(mc_name_));
+  mc_match_ = chain->GetMatchPointers().find(config_->GetMatchName(tracks_name_, mc_name_))->second;
+
+  const auto& rec_tracks_conf = chain->GetConfiguration()->GetBranchConfig(tracks_name_);
+  auto rec_part_config = rec_tracks_conf.Clone(rec_particles_name_, AnalysisTree::DetType::kParticle);
+  man->AddBranch(rec_particles_name_, rec_particles_, rec_part_config);
 }
 
 void PidFillerMC::Exec() {
 
-//  if(tracks_ == nullptr || mc_match_ == nullptr || mc_tracks_ == nullptr){
-//    std::cout << "PidFillerMC::Exec() input branch is nullptr! " << std::endl;
-//    exit(1);
-//  }
-//  rec_particles_->ClearChannels();
-//  const auto& particles_config = out_config_->GetBranchConfig(out_branch_);
-//
-//  for (const auto& track : *tracks_->GetChannels()) {
-//    auto* particle = rec_particles_->AddChannel();
-//    particle->Init(particles_config);
-//    particle->SetMomentum3(track.GetMomentum3());
-//    const int mc_id = mc_match_->GetMatch(track.GetId());
-//    if(mc_id >= 0) {
-//      particle->SetPid(mc_tracks_->GetChannel(mc_id).GetPid());
-//    }
-//    else{
-//      particle->SetPid(-999);
-//    }
-//  }
+  if(tracks_ == nullptr || mc_match_ == nullptr || mc_tracks_ == nullptr){
+    throw std::runtime_error("input branch is nullptr! ");
+  }
+  rec_particles_->ClearChannels();
+
+  const auto* conf = AnalysisTree::TaskManager::GetInstance()->GetOutConfig();
+  const auto& particles_config = conf->GetBranchConfig(rec_particles_name_);
+
+  for (const auto& track : *tracks_) {
+    auto& particle = rec_particles_->AddChannel(particles_config);
+
+    particle = AnalysisTree::Particle(track);
+    const int mc_id = mc_match_->GetMatch(track.GetId());
+    if(mc_id >= 0) {
+      particle.SetPid(mc_tracks_->GetChannel(mc_id).GetPid());
+    }
+    else{
+      particle.SetPid(-999);
+    }
+  }
 }
