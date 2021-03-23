@@ -37,11 +37,16 @@ class PidFiller : public AnalysisTree::Task {
     rec_particles_name_ = rec_particles_name;
   }
 
+  void SetPidCodes(const std::vector <std::pair<long long, std::string>>& pid_codes) {
+    pid_codes_ = pid_codes;
+  }
  protected:
 
   std::string tracks_name_{"VtxTracks"};
   std::string tof_name_{"TofHits"};
   std::string rec_particles_name_{"RecParticles"};
+  std::vector <std::pair<long long, std::string>> pid_codes_{
+    {{2212, "p"}, {211, "pi"}, {321, "K"}, {1, "bg"}}};
 
   AnalysisTree::TrackDetector* tracks_{nullptr};
   AnalysisTree::HitDetector* tof_{nullptr};

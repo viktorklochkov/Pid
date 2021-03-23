@@ -12,6 +12,7 @@ void fill_at_pid(const std::string& filelist, const std::string& pid_file){
   auto* pid_task = new PidFiller(pid_file, "pid_getter");
   pid_task->SetTracksName("VtxTracks");
   pid_task->SetTofName("TofHits");
+  pid_task->SetPidCodes({{2212, "p"}, {211, "pi"}, {321, "K"}, {1, "bg"}});
 
 //  auto* mc_pid_task = new PidFillerMC();
 //  mc_pid_task->SetInputBranchNames({"VtxTracks", "SimParticles"});

@@ -30,7 +30,12 @@ void PidFiller::Init() {
   const auto& rec_tracks_conf = chain->GetConfiguration()->GetBranchConfig(tracks_name_);
   auto rec_part_config = rec_tracks_conf.Clone(rec_particles_name_, AnalysisTree::DetType::kParticle);
 
-  rec_part_config.AddFields<float>({"prob_p", "prob_pi", "prob_K", "prob_bg"}, "probability to be proton, pion or kaon");
+  std::vector<std::string> names{};
+  for(const auto& pid : pid_codes_){
+    names.push_back( "prob_" + pid.second);
+  }
+
+  rec_part_config.AddFields<float>(names, "probability to be proton, pion, kaon etc");
 
   man->AddBranch(rec_particles_name_, rec_particles_, rec_part_config);
 }
@@ -49,7 +54,6 @@ void PidFiller::Exec() {
   const int prob_id = particles_config.GetFieldId("prob_p");
   const int q_id = particles_config.GetFieldId("q");
   constexpr int Nspecies{4};
-  const std::array<int, Nspecies> pid_codes = {2212, 211, 321, 1};
 
   for(const auto& track : *tracks_) {
     auto& particle = rec_particles_->AddChannel(particles_config);
@@ -65,10 +69,10 @@ void PidFiller::Exec() {
       const auto& prob = getter_->GetBayesianProbability(qp, m2);
 
       const int q = qp > 0 ? 1 : -1;
-      for(int i=0; i<Nspecies; ++i){
-        auto prob_i = prob.find(q*pid_codes[i]);
+      for(size_t i=0; i<pid_codes_.size(); ++i){
+        auto prob_i = prob.find(q*pid_codes_[i].first);
 //        if(prob_i == prob.end()){
-//          throw std::runtime_error("Pid code " + std::to_string(q*pid_codes[i]) + " is not found in the getter!"); //TODO uncomment later
+//          throw std::runtime_error("Pid code " + std::to_string(q*pid_codes[i].first) + " is not found in the getter!"); //TODO uncomment later
 //        }
         particle.SetField(float(prob_i->second), prob_id+i);
       }
@@ -84,6 +88,7 @@ void PidFiller::Exec() {
     }
   }
 }
+
 
 void PidFillerMC::Init() {
 
