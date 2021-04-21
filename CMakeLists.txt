@@ -18,8 +18,6 @@ list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib")
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED COMPONENTS Core MathCore RIO Hist Tree)
 
-include(cmake_modules/AnalysisTree.cmake)
-
 # Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
 include(${ROOT_USE_FILE})
 add_definitions(${ROOT_CXX_FLAGS})
@@ -32,7 +30,7 @@ set(Pid_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # by default build optimized code with debug symbols
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+    set(CMAKE_BUILD_TYPE RELEASE)
 endif ()
 
 # in DEBUG mode make verbose Makefile
@@ -44,11 +42,14 @@ if (Pid_BUILD_NEW)
     add_subdirectory(pid_new)
 endif ()
 
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb -g -DDEBUG -D__DEBUG -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ftree-vectorize -ffast-math -DNODEBUG")
 message(STATUS "Using CXX flags for ${CMAKE_BUILD_TYPE}: ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
 
 add_subdirectory(src)
-add_subdirectory(at_interface)
+if(${PID_BUNDLED_AT})
+    add_subdirectory(at_interface)
+endif()
 add_subdirectory(tasks)
 
  # Packaging routine

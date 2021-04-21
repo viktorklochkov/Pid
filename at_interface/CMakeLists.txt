@@ -1,3 +1,5 @@
+include(AnalysisTree)
+
 set(SOURCES
   PidFiller.cxx
   )

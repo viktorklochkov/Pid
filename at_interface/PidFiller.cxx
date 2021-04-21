@@ -26,6 +26,7 @@ void PidFiller::Init() {
   tof_ =ANALYSISTREE_UTILS_GET<AnalysisTree::HitDetector*>(chain->GetPointerToBranch(tof_name_));
 
   pid_match_ = chain->GetMatchPointers().find(config_->GetMatchName(tracks_name_, tof_name_))->second;
+  mc_match_ = chain->GetMatchPointers().find(config_->GetMatchName(tracks_name_, mc_name_))->second;
 
   const auto& rec_tracks_conf = chain->GetConfiguration()->GetBranchConfig(tracks_name_);
   auto rec_part_config = rec_tracks_conf.Clone(rec_particles_name_, AnalysisTree::DetType::kParticle);
@@ -38,6 +39,7 @@ void PidFiller::Init() {
   rec_part_config.AddFields<float>(names, "probability to be proton, pion, kaon etc");
 
   man->AddBranch(rec_particles_name_, rec_particles_, rec_part_config);
+  man->AddMatching(rec_particles_name_, mc_name_, mc_match_out_);
 }
 
 void PidFiller::Exec() {
@@ -87,8 +89,8 @@ void PidFiller::Exec() {
       }
     }
   }
+  mc_match_out_->SetMatches(mc_match_->GetMatches(false), mc_match_->GetMatches(true));
 }
-
 
 void PidFillerMC::Init() {
 
