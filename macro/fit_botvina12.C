@@ -58,7 +58,8 @@ void fit_botvina12 () {
   cout << "\n\npionpos\n";
   xmin = 0.25, xmax = 10.5, ymin = -2., ymax = 2.;
   tof.SetChi2Max(10000);
-  std::unique_ptr <TH2D> hpionpos {(TH2D*) fIn->Get("reco_vs_sim_info/h2TofM2_piplus")};
+  //std::unique_ptr <TH2D> hpionpos {(TH2D*) fIn->Get("reco_vs_sim_info/h2TofM2_piplus")};
+  std::unique_ptr <TH2D> hpionpos {(TH2D*) new TH2D}; 
   std::unique_ptr <TH2D> hpionpos_cut {(TH2D*) cutTH2 (hpionpos, (TCutG*) fCuts->Get("piplus"))};
   hpionpos_cut->Rebin2D(10,1);
   TF1 fit_pionpos ("fit_pionpos", "gaus", ymin, ymax);   
@@ -223,6 +224,22 @@ void fit_botvina12 () {
   bgpos.SetRange( xmin, xmax );
   bgpos.SetIsFitted();
   
+
+/*
+Fitting procedure:
+
+Step 1:
+
+Individual prticles with TCutG + known pdg
+Parameters: mean & sigma
+
+Step 2:
+
+Full distribution.
+Mean & sigma are fixed
+All particles + bg
+
+*/
 
   cout << "\n\nallpos\n";
   xmin = 0.3, xmax = 20., ymin = -6., ymax = 6.;
