@@ -10,9 +10,7 @@ class PidFiller : public AnalysisTree::Task {
 
  public:
   PidFiller(const std::string& file, const std::string& getter);
-  ~PidFiller() override {
-    delete getter_;
-  }
+  ~PidFiller() override { delete getter_; }
 
   void Init() override;
   void Exec() override;
@@ -29,8 +27,8 @@ class PidFiller : public AnalysisTree::Task {
   std::string out_branch_name_{"RecParticles"};
 
   Pid::Getter* getter_{nullptr};
-  std::vector <std::pair<long long, std::string>> pid_codes_{
-    {{2212, "p"}, {211, "pi"}, {321, "K"}, {1, "bg"}}};
+  std::vector<std::pair<long long, std::string>> pid_codes_{
+      {{2212, "p"}, {211, "pi"}, {321, "K"}, {1, "bg"}}};
 };
 
-#endif //PID_AT_INTERFACE_PIDFILLER_HPP_
+#endif// PID_AT_INTERFACE_PIDFILLER_HPP_
