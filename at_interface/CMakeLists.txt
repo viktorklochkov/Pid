@@ -1,10 +1,10 @@
 include(AnalysisTree)
 
 set(SOURCES
-  PidFiller.cxx
+        PidFiller.cpp
   )
 
-string(REPLACE ".cxx" ".h" HEADERS "${SOURCES}")
+string(REPLACE ".cpp" ".hpp" HEADERS "${SOURCES}")
 add_library(PidAT SHARED ${SOURCES} G__PidAT.cxx)
 
 message(${PROJECT_INCLUDE_DIRECTORIES})

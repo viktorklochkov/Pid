@@ -1,4 +1,4 @@
-#include "PidFiller.h"
+#include "PidFiller.hpp"
 
 #include "AnalysisTree/TaskManager.hpp"
 
@@ -7,18 +7,19 @@ using namespace AnalysisTree;
 void fill_pid(const std::string& filelist, const std::string& pid_file, const std::string& output){
 
   auto* man = TaskManager::GetInstance();
-  man->SetOutputName(output, "pTree");
+  man->SetOutputName(output, "aTree");
+  man->SetOutputMode(eBranchWriteMode::kCopyTree);
 
   auto* pid_task = new PidFiller(pid_file, "pid_getter");
-  pid_task->SetTracksName("VtxTracks");
-  pid_task->SetTofName("TofHits");
-  pid_task->SetMcParticlesName("SimParticles");
-  pid_task->SetPidCodes({{2212, "p"}, {211, "pi"}, {321, "K"}, {1, "bg"}});
+//  pid_task->SetTracksName("VtxTracks");
+//  pid_task->SetTofName("TofHits");
+//  pid_task->SetMcParticlesName("SimParticles");
+//  pid_task->SetPidCodes({{2212, "p"}, {211, "pi"}, {321, "K"}, {1, "bg"}});
 
   man->AddTask(pid_task);
 
   man->Init({filelist}, {"rTree"});
-  man->Run(-1);
+  man->Run(10);
   man->Finish();
 }
 
