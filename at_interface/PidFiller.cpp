@@ -35,6 +35,10 @@ void PidFiller::Init() {
 
   ana_tracks_ = Branch(conf);
   ana_tracks_.SetMutable();
+
+  ana_tracks_.Freeze();
+  rec_tracks_.Freeze();
+
   man->AddBranch(&ana_tracks_);
 }
 
@@ -49,12 +53,13 @@ void PidFiller::Exec() {
     fields_prob.push_back(ana_tracks_.GetField("prob_" + pid.second));
   }
 
+//  ana_tracks_.CopyContents(&rec_tracks_);
+
   for (int i = 0; i < rec_tracks_.size(); ++i) {
     const auto& track = rec_tracks_[i];
-
+//    auto particle = ana_tracks_[i];
     auto particle = ana_tracks_.NewChannel();
-    auto raw_track = *(track.Data<Track>());
-    *(particle.Data<Particle>()) = Particle(raw_track);
+    particle.CopyContent(track);
 
     auto hit_id = pid_match_->GetMatch(i);
     if (hit_id >= 0) {
