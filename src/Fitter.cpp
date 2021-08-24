@@ -63,7 +63,7 @@ void Fitter::Fit() {
 /**
 * Constructs fit function as a sum of individual particle species. Parameters are also propagated
 * @param h pointer to input histo
-* @param par output: fit parameters 
+* @param par output: fit parameters
 * @param par_err output: fit parameters erorrs
 * @param p track momentum
 * @return chi2/NDF of the fit
@@ -71,7 +71,7 @@ void Fitter::Fit() {
 double Fitter::Fit1D(std::unique_ptr<TH1D>& h, std::vector<double>& par, std::vector<double>& par_err, double p) {
   auto f = ConstructFit1DFunction(p);//particles_.at(0).GetFunction(0.);
 
-  h->Fit(f, "Q,M", "", miny_, maxy_);
+  h->Fit(f, "WW", "", miny_, maxy_);
 
   par = std::vector<double>(f->GetParameters(), f->GetParameters() + f->GetNpar());
   par_err = std::vector<double>(f->GetParErrors(), f->GetParErrors() + f->GetNpar());

@@ -16,39 +16,39 @@ void WeightFit()
 	TH1F * h1 = (TH1F*)f->Get("h_5.875000"); // get certain histogram
 	//h1->Draw();
 	//h1->GetFunction(partNames[0])->Draw();
-	
+
 	double mmin = -1.5;
-	double mmax =  6.0; //Min and max value of m^2 
-	double mbin = 1000; //number of bins 
+	double mmax =  6.0; //Min and max value of m^2
+	double mbin = 1000; //number of bins
 	double mbinsize = (mmax-mmin)/mbin;
-	
-	
+
+
 	TH1F **partHist= new TH1F*[N];
 	TF1 **partFits= new TF1*[N];
 	double sVal[N];
-	double sSum; 
+	double sSum;
 	double sMax;
-	
+
 	for(int j=0;j<N;j++)
 	{
 		partHist[j]= new TH1F(partNames[j],partNames[j],mbin,mmin,mmax);	//histograms to store values
 		partFits[j]=h1->GetFunction(partNames[j]);	//stored fits
-				
-	}
-	
 
-	for(int i=1;i<mbin+1;i++) //iterate by number of bins 
+	}
+
+
+	for(int i=1;i<mbin+1;i++) //iterate by number of bins
 	{
 		sMax=0;
-		
+
 		for(int j=0;j<N;j++) //iterate for every particle
 		{
 			sVal[j]=partFits[j]->Eval(mmin+(i*mbinsize));
-			
+
 			//cout<< partFits[j]->Eval(mmin+(i*mbinsize))<<'\n';
 			//cout<<j<<endl;
 		}
-		for(int j=0;j<5;j++) //iterate for every real particle !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+		for(int j=0;j<5;j++) //iterate for every real particle !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		{
 			partHist[j]->SetBinContent(i,sVal[j]/sVal[6]);
 			if(sVal[j]>sMax)
@@ -59,8 +59,8 @@ void WeightFit()
 			//cout<<j<<endl;
 		}
 		partHist[6]->SetBinContent(i,sMax/sVal[6]);
-	
+
 	}
-	
+
 
 }
