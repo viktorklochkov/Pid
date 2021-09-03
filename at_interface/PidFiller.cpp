@@ -35,11 +35,21 @@ void PidFiller::Init() {
 
   ana_tracks_ = Branch(conf);
   ana_tracks_.SetMutable();
-
   ana_tracks_.Freeze();
+
   rec_tracks_.Freeze();
 
   man->AddBranch(&ana_tracks_);
+
+  int i{0};
+  auto match_br = {"SimParticles", "RichRings", "TofHits", "TrdTracks"};
+  out_matches_.assign(match_br.size(), nullptr);
+
+  for(const auto& br : match_br){
+    in_matches_.emplace_back(chain->GetMatchPointers().find({rec_tracks_name_ + "2" + br})->second);
+    man->AddMatching(out_branch_name_, br, out_matches_.at(i));
+    i++;
+  }
 }
 
 void PidFiller::Exec() {
@@ -52,8 +62,6 @@ void PidFiller::Exec() {
   for (const auto& pid : pid_codes_) {
     fields_prob.push_back(ana_tracks_.GetField("prob_" + pid.second));
   }
-
-//  ana_tracks_.CopyContents(&rec_tracks_);
 
   for (int i = 0; i < rec_tracks_.size(); ++i) {
     const auto& track = rec_tracks_[i];
@@ -71,6 +79,8 @@ void PidFiller::Exec() {
       particle.SetValue(field_pid, pid);
       auto prob = getter_->GetBayesianProbability(p, m2);
 
+      particle.Print();
+
       int specie{0};
       for (const auto& pdg : pid_codes_) {
         particle.SetValue(fields_prob[specie++], prob[pdg.first]);
@@ -79,5 +89,11 @@ void PidFiller::Exec() {
       particle.SetValue(field_pid, -1);
     }
   }
-  //    mc_match_out_->SetMatches(mc_match_->GetMatches(false), mc_match_->GetMatches(true));
+  int i{0};
+  for (auto& match : out_matches_){
+    auto m1 = in_matches_[i]->GetMatches(false);
+    auto m2 = in_matches_[i]->GetMatches(true);
+    match->SetMatches(m1, m2);
+    i++;
+  }
 }

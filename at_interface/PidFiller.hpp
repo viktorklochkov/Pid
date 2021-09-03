@@ -14,13 +14,19 @@ class PidFiller : public AnalysisTree::Task {
 
   void Init() override;
   void Exec() override;
-  void Finish() override {}
+  void Finish() override {
+    auto* man = AnalysisTree::TaskManager::GetInstance();
+//    man->RemoveBranch(rec_tracks_name_);
+  }
 
  protected:
   AnalysisTree::Branch rec_tracks_;
   AnalysisTree::Branch tof_hits_;
   AnalysisTree::Branch ana_tracks_;
   AnalysisTree::Matching* pid_match_{nullptr};
+
+  std::vector <AnalysisTree::Matching*> in_matches_{};
+  std::vector <AnalysisTree::Matching*> out_matches_{};
 
   std::string rec_tracks_name_{"VtxTracks"};
   std::string tof_hits_name_{"TofHits"};

@@ -8,7 +8,8 @@ void fill_pid(const std::string& filelist, const std::string& pid_file, const st
 
   auto* man = TaskManager::GetInstance();
   man->SetOutputName(output, "aTree");
-  man->SetOutputMode(eBranchWriteMode::kCopyTree);
+  man->SetOutputTreeConfig(OutputTreeConfig(eBranchWriteMode::kCopyTree));
+//  man->SetOutputTreeConfig(OutputTreeConfig(eBranchWriteMode::kCopyTree));
 
   auto* pid_task = new PidFiller(pid_file, "pid_getter");
 //  pid_task->SetTracksName("VtxTracks");
