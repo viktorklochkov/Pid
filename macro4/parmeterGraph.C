@@ -1,37 +1,7 @@
-#ifndef __CLING__
 
-#include <iostream>
-#include <vector>
-#include <random>
-#include <array>
-#include <iomanip>
-#include <string>
+void parmeterGraph() {
 
-#include <TSystem.h>
-#include <TROOT.h>
-#include "TH2.h"
-#include "TFile.h"
-#include "TMath.h"
-
-void drawFits (TString inputFileName, TString outputFileName);
-
-int main(int argc, char**argv) {
-  if (argc == 3) drawFits (argv [1], argv [2]);
-  if (argc == 2) drawFits (argv [1]);
-  else drawFits();
-  return 1;
-}
-
-#endif // __CLING__
-
-void drawFits(TString inputFileName = "allpos.root", TString outputFileName = "fits.root") {
-TString infoFileName = "ConfigurationFile.txt";
-
-  gROOT -> SetBatch (true);
-  ROOT::EnableImplicitMT(2);
-
-  int colors [] = {kBlack,kGreen+2,kViolet,kOrange+2, kCyan, kYellow+3};
-
+  TString infoFileName = "ConfigurationFile.txt";
 
   int dim=2;
   ifstream optionFile;
@@ -77,7 +47,15 @@ TString infoFileName = "ConfigurationFile.txt";
     LoopN=LoopN*sl[i]; //total number of histograms
   }
 
+  TF1   *par0;
+  TF1   *par1;
+  TF1   *par2;
+  TString outputFileName = "parameterGraph.root";
+  TString inputFileName = "allpos.root";
+  int colors [] = {kBlack,kGreen+2,kViolet,kOrange+2, kCyan, kYellow+3};
 
+  TH2F* hPar;
+  hPar=new TH2F("hPar", "Single parameter; timeBins; p*q ;",15,-0.5,14.5,20,0,20);
 
 
 
@@ -91,10 +69,12 @@ TString infoFileName = "ConfigurationFile.txt";
       StringA = (Form("%d",holder%sl[i]));
       holder=holder/sl[i];
       FullName=FullName+parName[i]+StringA+"/";
+
     }
     FullName="exp2/"+FullName;
+    cout<<FullName<<endl;
     TFile *fIn = TFile::Open(FullName+inputFileName, "read");
-    TFile *fOut = TFile::Open(FullName+outputFileName, "recreate");
+
     TList *list = fIn -> GetListOfKeys();
     vector <TGraphErrors*> parList [3];
     vector <TH1D*> histList;
@@ -147,6 +127,7 @@ TString infoFileName = "ConfigurationFile.txt";
       }
     }
 
+/*
     for (auto hist : histList)
     {
       hist -> Draw ();
@@ -171,7 +152,22 @@ TString infoFileName = "ConfigurationFile.txt";
       c.Write("c_" + sMom);
       hist->Write();
     }
-  //cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-    fOut -> Close();
+*/
+  if(a%sl[0]==0)
+  {
+    int j=(a/sl[0])%sl[1];
+
+    for(int l=0;l<20;l++)
+    {
+      hPar->SetBinContent(j,l,f[0][0]->Eval(l));
+      //hPar->SetBinContent(j,l,j*l);
+    }
+
   }
+  fIn->Close();
+
+  }
+  TFile *fOut = TFile::Open(outputFileName, "recreate");
+  hPar->Write();
+
 }

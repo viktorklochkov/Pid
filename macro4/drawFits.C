@@ -112,9 +112,9 @@ TString infoFileName = "ConfigurationFile.txt";
       if(className.BeginsWith("TG"))
       {
         if (name == "chi2") continue;
-        if (name.Contains("0")) ind = 0;
-        else if (name.Contains("1")) ind = 1;
-        else if (name.Contains("2")) ind = 2;
+        if (name.Contains("_0")) ind = 0;
+        else if (name.Contains("_1")) ind = 1;
+        else if (name.Contains("_2")) ind = 2;
         parList [ind].push_back ((TGraphErrors*) obj);
         parList [ind].back()->SetName(name);
         parList [ind].back()->SetTitle(name);

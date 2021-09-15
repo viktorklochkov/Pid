@@ -77,6 +77,7 @@ void fit_botvina14 () {
   }
   TString StringA;
   TString StringB;
+  TString StringC;
   TString FullName="";
   TString FullNameOut;
   int multi[dim]; //information of diference in indexing
@@ -112,6 +113,33 @@ void fit_botvina14 () {
     }
     FullNameOut="exp2/"+FullName;
 
+    holder=a;
+    TString FullName2="";
+    for(int i=0;i<dim;i++)
+    {
+      if(holder%sl[i]==0)
+      {
+        StringA = "--";
+      }
+      else
+      {
+        StringA = (Form("%f",edge[i][holder%sl[i]-1]));
+      }
+      if(holder%sl[i]==sl[i]-1)
+      {
+        StringB= "++";
+      }
+      else
+      {
+        StringB = (Form("%f",edge[i][holder%sl[i]]));
+      }
+      StringC=(Form("%d",holder%sl[i]));
+
+      holder=holder/sl[i];
+      FullName2=FullName2+parName[i]+StringA+"|"+StringB+"Bin"+StringC;
+    }
+
+
     gSystem->Exec("mkdir -p "+FullNameOut);
     Pid::Fitter tof;
     Pid::Getter getter;
@@ -131,9 +159,9 @@ void fit_botvina14 () {
     fit_pionpos.SetParLimits (0, 0., 4.e6);
     fit_pionpos.SetParLimits (1, -.25, 0.25);
     fit_pionpos.SetParLimits (2, 0., 3.7);
-    TF1 pionpos_0 ("pionpos_0", "0", xmin, xmax);
-    TF1 pionpos_1 ("pionpos_1", "pol9", xmin, xmax);
-    TF1 pionpos_2 ("pionpos_2", "pol9", xmin, xmax);
+    TF1 pionpos_0 (FullName2 + "pionpos_0", "0", xmin, xmax);
+    TF1 pionpos_1 (FullName2 +"pionpos_1", "pol9", xmin, xmax);
+    TF1 pionpos_2 (FullName2 +"pionpos_2", "pol9", xmin, xmax);
 
     Pid::ParticleFit pionpos( PidParticles::kPionPos );
     pionpos.SetParametrization({ pionpos_0, pionpos_1, pionpos_2 });
@@ -163,9 +191,9 @@ void fit_botvina14 () {
     fit_kaonpos.SetParLimits (0, 0., 1.e5);
     fit_kaonpos.SetParLimits (1, -0.05, 0.3);
     fit_kaonpos.SetParLimits (2, 0., 3.);
-    TF1 kaonpos_0 ("kaonpos_0", "0", xmin, xmax);
-    TF1 kaonpos_1 ("kaonpos_1", "pol9", xmin, xmax);
-    TF1 kaonpos_2 ("kaonpos_2", "pol8", xmin, xmax);
+    TF1 kaonpos_0 (FullName2 +"kaonpos_0", "0", xmin, xmax);
+    TF1 kaonpos_1 (FullName2 +"kaonpos_1", "pol9", xmin, xmax);
+    TF1 kaonpos_2 (FullName2 +"kaonpos_2", "pol8", xmin, xmax);
 
     Pid::ParticleFit kaonpos( PidParticles::kKaonPos );
     kaonpos.SetParametrization({ kaonpos_0, kaonpos_1, kaonpos_2 });
@@ -195,9 +223,9 @@ void fit_botvina14 () {
     fit_proton.SetParLimits (0, 0., 2.e6);
     fit_proton.SetParLimits (1, 0.4, 1.1);
     fit_proton.SetParLimits (2, 0., 2.2);
-    TF1 proton_0 ("proton_0", "0", xmin, xmax);
-    TF1 proton_1 ("proton_1", "pol10", 1.5, 19.);
-    TF1 proton_2 ("proton_2", "pol12", 1., 20.);
+    TF1 proton_0 (FullName2 +"proton_0", "0", xmin, xmax);
+    TF1 proton_1 (FullName2 +"proton_1", "pol9", 1.5, 12.);
+    TF1 proton_2 (FullName2 +"proton_2", "pol12", 1., 12.);
 
     Pid::ParticleFit proton( PidParticles::kProton );
     proton.SetParametrization({ proton_0, proton_1, proton_2 });
@@ -220,7 +248,7 @@ void fit_botvina14 () {
     //std::unique_ptr <TH2D> hhe3 {(TH2D*) new TH2D};
     std::unique_ptr <TH2D> hhe3_cut {(TH2D*) cutTH2 (hhe3, (TCutG*) fCuts->Get("he3"))};
     hhe3_cut->Rebin2D(1,5);
-    xmin =-0.5, xmax = 12, ymin = 0.5, ymax = 6;
+    xmin =1.5, xmax = 12, ymin = 0.5, ymax = 6;
     tof.SetChi2Max(1000000);
     Pid::ParticleFit he3( PidParticles::kHe3);
     TF1 he3_fit ("fit_he3", "gaus", ymin, ymax);
@@ -228,9 +256,9 @@ void fit_botvina14 () {
     he3_fit.SetParLimits(0, 0., 5.e2);
     he3_fit.SetParLimits(1, 1.7, 2.1);
     he3_fit.SetParLimits(2, 0.08, 0.6);
-    TF1 he3_0 ("he3_0", "0", xmin, xmax);
-    TF1 he3_1 ("he3_1", "pol6", xmin, xmax);
-    TF1 he3_2 ("he3_2", "pol9", xmin, xmax);
+    TF1 he3_0 (FullName2 +"he3_0", "0", xmin, xmax);
+    TF1 he3_1 (FullName2 +"he3_1", "pol6", xmin, xmax);
+    TF1 he3_2 (FullName2 +"he3_2", "pol9", xmin, xmax);
 
     he3.SetParametrization({ he3_0, he3_1, he3_2 });
     he3.SetFitFunction( he3_fit );
@@ -247,7 +275,7 @@ void fit_botvina14 () {
 
 
     cout << "\n\ndeutron\n";
-    xmin = -0.5, xmax = 12., ymin = -3., ymax = 6.;
+    xmin = 2.0, xmax = 12., ymin = -3., ymax = 6.;
     tof.SetChi2Max(100000);
     std::unique_ptr <TH2D> hdeutron {(TH2D*) fIn->Get(FullName+"hDeutron")};
     //std::unique_ptr <TH2D> hdeutron {(TH2D*) new TH2D};
@@ -258,9 +286,9 @@ void fit_botvina14 () {
     fit_deutron.SetParLimits (0, 0., 6.e4);
     fit_deutron.SetParLimits (1, 2.5, 3.6);
     fit_deutron.SetParLimits (2, 0., 2.5);
-    TF1 deutron_0 ("deutron_0", "0", xmin, xmax);
-    TF1 deutron_1 ("deutron_1", "pol9", xmin, xmax);
-    TF1 deutron_2 ("deutron_2", "pol10", xmin, xmax);
+    TF1 deutron_0 (FullName2 +"deutron_0", "0", xmin, xmax);
+    TF1 deutron_1 (FullName2 +"deutron_1", "pol9", xmin, xmax);
+    TF1 deutron_2 (FullName2 +"deutron_2", "pol10", xmin, xmax);
 
     Pid::ParticleFit deutron( PidParticles::kProton );
     deutron.SetParametrization({ deutron_0, deutron_1, deutron_2 });
@@ -285,9 +313,9 @@ void fit_botvina14 () {
     bgpos_fit.SetParNames("p15", "p16", "p17");
 
 
-    TF1 bgpos_0 ("bgpos_0", "pol6", xmin, xmax);
-    TF1 bgpos_1 ("bgpos_1", "pol6", xmin, xmax);
-    TF1 bgpos_2 ("bgpos_2", "pol6", xmin, xmax);
+    TF1 bgpos_0 (FullName2 +"bgpos_0", "pol6", xmin, xmax);
+    TF1 bgpos_1 (FullName2 +"bgpos_1", "pol6", xmin, xmax);
+    TF1 bgpos_2 (FullName2 +"bgpos_2", "pol6", xmin, xmax);
 
 
 
@@ -371,9 +399,9 @@ void fit_botvina14 () {
     fit_pionneg.SetParLimits (0, 0., 5.e6);
     fit_pionneg.SetParLimits (1, -.3, 0.1);
     fit_pionneg.SetParLimits (2, 0., 2.);
-    TF1 pionneg_0 ("pionneg_0", "0", xmin, xmax);
-    TF1 pionneg_1 ("pionneg_1", "pol14", -11.7, xmax);
-    TF1 pionneg_2 ("pionneg_2", "pol12", -11.7, xmax);
+    TF1 pionneg_0 (FullName2 +"pionneg_0", "0", xmin, xmax);
+    TF1 pionneg_1 (FullName2 +"pionneg_1", "pol14", -11.7, xmax);
+    TF1 pionneg_2 (FullName2 +"pionneg_2", "pol12", -11.7, xmax);
 
     Pid::ParticleFit pionneg( PidParticles::kPionNeg );
     pionneg.SetParametrization({ pionneg_0, pionneg_1, pionneg_2 });
@@ -403,9 +431,9 @@ void fit_botvina14 () {
     fit_kaonneg.SetParLimits (0, 0., 4.e4);
     fit_kaonneg.SetParLimits (1, -0.5, 0.5);
     fit_kaonneg.SetParLimits (2, 0., 1.7);
-    TF1 kaonneg_0 ("kaonneg_0", "0", xmin, xmax);
-    TF1 kaonneg_1 ("kaonneg_1", "pol11", xmin, xmax);
-    TF1 kaonneg_2 ("kaonneg_2", "pol8", xmin, xmax);
+    TF1 kaonneg_0 (FullName2 +"kaonneg_0", "0", xmin, xmax);
+    TF1 kaonneg_1 (FullName2 +"kaonneg_1", "pol11", xmin, xmax);
+    TF1 kaonneg_2 (FullName2 +"kaonneg_2", "pol8", xmin, xmax);
 
     Pid::ParticleFit kaonneg( PidParticles::kKaonNeg );
     kaonneg.SetParametrization({ kaonneg_0, kaonneg_1, kaonneg_2 });
@@ -426,9 +454,9 @@ void fit_botvina14 () {
     cout << "\n\nbgneg\n";
     xmin = -10., xmax = -0.25, ymin = -2., ymax = 2.;
     Pid::ParticleFit bgneg( PidParticles::kBgNeg );
-    TF1 bgneg_0 ("bgneg_0", "pol3", xmin, xmax);  //bgneg_0.SetParameters(100, 0, 0);
-    TF1 bgneg_1 ("bgneg_1", "pol5", xmin, xmax);  //bgneg_1.SetParameters(0, 0, 0);
-    TF1 bgneg_2 ("bgneg_2", "pol5", xmin, xmax);  //bgneg_2.SetParameters(0.0, 0.0, 0);
+    TF1 bgneg_0 (FullName2 +"bgneg_0", "pol3", xmin, xmax);  //bgneg_0.SetParameters(100, 0, 0);
+    TF1 bgneg_1 (FullName2 +"bgneg_1", "pol5", xmin, xmax);  //bgneg_1.SetParameters(0, 0, 0);
+    TF1 bgneg_2 (FullName2 +"bgneg_2", "pol5", xmin, xmax);  //bgneg_2.SetParameters(0.0, 0.0, 0);
 
     TF1 bgneg_fit ("fit_bgneg", "pol2", ymin, ymax);
     //TF1 bgneg_fit ("fit_bgneg", "[0]+[2]*(x-[1])*(x-[1])", ymin, ymax);

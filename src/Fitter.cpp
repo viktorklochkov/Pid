@@ -32,6 +32,8 @@ void Fitter::Fit() {
     std::vector<double> par_err;
 
     const float mom = histo2D_->GetXaxis()->GetBinCenter(ibin);
+    if (h1fit->GetEntries()<10) continue; //////////////////// Arbitrary value for minimum amount of entries for useful plot
+
     float chi2 = Fit1D(h1fit, par, par_err, mom);
 
     std::cout << mom << "  " << chi2 << std::endl;
@@ -42,6 +44,9 @@ void Fitter::Fit() {
     chi2_y.push_back(chi2);
 
     if (chi2 < 0. || chi2 > chi2_max_) continue;
+
+
+
 
     params.push_back(par);
     params_errors.push_back(par_err);
@@ -71,7 +76,7 @@ void Fitter::Fit() {
 double Fitter::Fit1D(std::unique_ptr<TH1D>& h, std::vector<double>& par, std::vector<double>& par_err, double p) {
   auto f = ConstructFit1DFunction(p);//particles_.at(0).GetFunction(0.);
 
-  h->Fit(f, "WW", "", miny_, maxy_);
+  h->Fit(f, "Q,M", "", miny_, maxy_);
 
   par = std::vector<double>(f->GetParameters(), f->GetParameters() + f->GetNpar());
   par_err = std::vector<double>(f->GetParErrors(), f->GetParErrors() + f->GetNpar());
@@ -85,6 +90,7 @@ double Fitter::Fit1D(std::unique_ptr<TH1D>& h, std::vector<double>& par, std::ve
   //    }
   //
   h->Write(Form("h_%f", p));
+
 
   return f->GetChisquare() / f->GetNDF();
 }

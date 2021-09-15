@@ -119,8 +119,8 @@ void fit_botvina14 () {
 
 
     cout << "\n\npionpos\n";
-    xmin = -0.5, xmax = 12, ymin = -2., ymax = 2.;
-    tof.SetChi2Max(10000000);
+    xmin = -0.5, xmax = 20, ymin = -2., ymax = 2.;
+    tof.SetChi2Max(10000);
     cout<<FullName;
     std::unique_ptr <TH2D> hpionpos {(TH2D*) fIn->Get(FullName+"hPipos")};
     //std::unique_ptr <TH2D> hpionpos {(TH2D*) new TH2D};
@@ -152,8 +152,8 @@ void fit_botvina14 () {
 
 
     cout << "\n\nkaonpos\n";
-    xmin = -0.5, xmax = 12, ymin = -2., ymax = 2.;
-    tof.SetChi2Max(10000000);
+    xmin = -0.5, xmax = 20, ymin = -2., ymax = 2.;
+    tof.SetChi2Max(1000);
     std::unique_ptr <TH2D> hkaonpos {(TH2D*) fIn->Get(FullName+"hKapos")};
     //std::unique_ptr <TH2D> hkaonpos {(TH2D*) new TH2D};
     std::unique_ptr <TH2D> hkaonpos_cut {(TH2D*) cutTH2 (hkaonpos, (TCutG*) fCuts->Get("kplus"))};
@@ -184,8 +184,8 @@ void fit_botvina14 () {
 
 
     cout << "\n\nproton\n";
-    xmin = -0.5, xmax = 12., ymin = -6., ymax = 6.;
-    tof.SetChi2Max(20000000);
+    xmin = -0.5, xmax = 20., ymin = -6., ymax = 6.;
+    tof.SetChi2Max(2000);
     std::unique_ptr <TH2D> hproton {(TH2D*) fIn->Get(FullName+"hProton")};
     //std::unique_ptr <TH2D> hproton {(TH2D*) new TH2D};
     std::unique_ptr <TH2D> hproton_cut {(TH2D*) cutTH2 (hproton, (TCutG*) fCuts->Get("proton"))};
@@ -196,7 +196,7 @@ void fit_botvina14 () {
     fit_proton.SetParLimits (1, 0.4, 1.1);
     fit_proton.SetParLimits (2, 0., 2.2);
     TF1 proton_0 ("proton_0", "0", xmin, xmax);
-    TF1 proton_1 ("proton_1", "pol10", 1.5, 19.);
+    TF1 proton_1 ("proton_1", "pol9", 1.5, 19.);
     TF1 proton_2 ("proton_2", "pol12", 1., 20.);
 
     Pid::ParticleFit proton( PidParticles::kProton );
@@ -221,7 +221,7 @@ void fit_botvina14 () {
     std::unique_ptr <TH2D> hhe3_cut {(TH2D*) cutTH2 (hhe3, (TCutG*) fCuts->Get("he3"))};
     hhe3_cut->Rebin2D(1,5);
     xmin =-0.5, xmax = 12, ymin = 0.5, ymax = 6;
-    tof.SetChi2Max(1000000);
+    tof.SetChi2Max(10);
     Pid::ParticleFit he3( PidParticles::kHe3);
     TF1 he3_fit ("fit_he3", "gaus", ymin, ymax);
     he3_fit.SetParNames("p9", "p10", "p11");
@@ -229,8 +229,8 @@ void fit_botvina14 () {
     he3_fit.SetParLimits(1, 1.7, 2.1);
     he3_fit.SetParLimits(2, 0.08, 0.6);
     TF1 he3_0 ("he3_0", "0", xmin, xmax);
-    TF1 he3_1 ("he3_1", "pol6", xmin, xmax);
-    TF1 he3_2 ("he3_2", "pol9", xmin, xmax);
+    TF1 he3_1 ("he3_1", "pol3", xmin, xmax);
+    TF1 he3_2 ("he3_2", "pol6", xmin, xmax);
 
     he3.SetParametrization({ he3_0, he3_1, he3_2 });
     he3.SetFitFunction( he3_fit );
@@ -247,8 +247,8 @@ void fit_botvina14 () {
 
 
     cout << "\n\ndeutron\n";
-    xmin = -0.5, xmax = 12., ymin = -3., ymax = 6.;
-    tof.SetChi2Max(100000);
+    xmin = -0.5, xmax = 20., ymin = -3., ymax = 6.;
+    tof.SetChi2Max(1000);
     std::unique_ptr <TH2D> hdeutron {(TH2D*) fIn->Get(FullName+"hDeutron")};
     //std::unique_ptr <TH2D> hdeutron {(TH2D*) new TH2D};
     std::unique_ptr <TH2D> hdeutron_cut {(TH2D*) cutTH2 (hdeutron, (TCutG*) fCuts->Get("deutron"))};
@@ -259,7 +259,7 @@ void fit_botvina14 () {
     fit_deutron.SetParLimits (1, 2.5, 3.6);
     fit_deutron.SetParLimits (2, 0., 2.5);
     TF1 deutron_0 ("deutron_0", "0", xmin, xmax);
-    TF1 deutron_1 ("deutron_1", "pol9", xmin, xmax);
+    TF1 deutron_1 ("deutron_1", "pol6", xmin, xmax);
     TF1 deutron_2 ("deutron_2", "pol10", xmin, xmax);
 
     Pid::ParticleFit deutron( PidParticles::kProton );
@@ -279,15 +279,15 @@ void fit_botvina14 () {
 
 
     cout << "\n\nbgpos\n";
-    xmin = -0.5, xmax = 12., ymin = -6., ymax = 6.;
+    xmin = -0.5, xmax = 20., ymin = -6., ymax = 6.;
     Pid::ParticleFit bgpos( PidParticles::kBgPos );
     TF1 bgpos_fit ("fit_bgpos", "pol2", ymin, ymax);
     bgpos_fit.SetParNames("p15", "p16", "p17");
 
 
-    TF1 bgpos_0 ("bgpos_0", "pol6", xmin, xmax);
-    TF1 bgpos_1 ("bgpos_1", "pol6", xmin, xmax);
-    TF1 bgpos_2 ("bgpos_2", "pol6", xmin, xmax);
+    TF1 bgpos_0 ("bgpos_0", "pol5", xmin, xmax);
+    TF1 bgpos_1 ("bgpos_1", "pol5", xmin, xmax);
+    TF1 bgpos_2 ("bgpos_2", "pol5", xmin, xmax);
 
 
 
@@ -314,10 +314,10 @@ void fit_botvina14 () {
     */
 
     cout << "\n\nallpos\n";
-    xmin =-0.5, xmax = 12., ymin = -6., ymax = 6.;
+    xmin =-0.5, xmax = 20., ymin = -6., ymax = 6.;
     std::unique_ptr <TH2D> hpos {(TH2D*) fIn->Get(FullName+"hAll")};
     hpos->Rebin2D(1,1);
-    tof.SetChi2Max(1000000000);
+    tof.SetChi2Max(10000);
     pionpos.SetIsFixed( {false, true, true} );
     kaonpos.SetIsFixed( {false, true, true} );
     proton.SetIsFixed ( {false, true, true} );
@@ -341,7 +341,7 @@ void fit_botvina14 () {
     tof.AddParticle(proton, PidParticles::kProton);
     tof.AddParticle(deutron, PidParticles::kDeutron);
     tof.AddParticle(he3, PidParticles::kHe3);
-    tof.AddParticle(bgpos, PidParticles::kBgPos);// !!!!!!!!!!!!!!!!!!!!!!
+    tof.AddParticle(bgpos, PidParticles::kBgPos);
 
     tof.SetHisto2D( std::move(hpos) );
     tof.SetRangeX( xmin, xmax );
@@ -354,14 +354,14 @@ void fit_botvina14 () {
     getter.AddParticle(tof.GetParticleSpecie(PidParticles::kProton ), PidParticles::kProton );
     getter.AddParticle(tof.GetParticleSpecie(PidParticles::kHe3    ), PidParticles::kHe3    );
     getter.AddParticle(tof.GetParticleSpecie(PidParticles::kDeutron), PidParticles::kDeutron);
-    getter.AddParticle(tof.GetParticleSpecie(PidParticles::kBgPos  ), PidParticles::kBgPos  );//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    getter.AddParticle(tof.GetParticleSpecie(PidParticles::kBgPos  ), PidParticles::kBgPos  );
 
     tof.Clear();
 
 
     cout << "\n\npionneg\n";
     xmin = -12., xmax = 0.25, ymin = -2., ymax = 2.;
-    tof.SetChi2Max(1000000);
+    tof.SetChi2Max(10000);
     std::unique_ptr <TH2D> hpionneg {(TH2D*) fIn->Get(FullName+"hPineg")};
     //std::unique_ptr <TH2D> hpionneg {(TH2D*) new TH2D};
     std::unique_ptr <TH2D> hpionneg_cut {(TH2D*) cutTH2 (hpionneg, (TCutG*) fCuts->Get("piminus"))};
@@ -393,7 +393,7 @@ void fit_botvina14 () {
 
     cout << "\n\nkaonneg\n";
     xmin = -10., xmax = 0.25, ymin = -1., ymax = 1.5;
-    tof.SetChi2Max(100000);
+    tof.SetChi2Max(100);
     std::unique_ptr <TH2D> hkaonneg {(TH2D*) fIn->Get(FullName+"hKaneg")};
     //std::unique_ptr <TH2D> hkaonneg {(TH2D*) new TH2D};
     std::unique_ptr <TH2D> hkaonneg_cut {(TH2D*) cutTH2 (hkaonneg, (TCutG*) fCuts->Get("kminus"))};

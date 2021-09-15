@@ -1,38 +1,8 @@
-#ifndef __CLING__
 
-#include <iostream>
-#include <vector>
-#include <random>
-#include <array>
-#include <iomanip>
-#include <string>
+void parmeterGraph2() {
 
-#include <TSystem.h>
-#include <TROOT.h>
-#include "TH2.h"
-#include "TFile.h"
-#include "TMath.h"
-
-void drawFits (TString inputFileName, TString outputFileName);
-
-int main(int argc, char**argv) {
-  if (argc == 3) drawFits (argv [1], argv [2]);
-  if (argc == 2) drawFits (argv [1]);
-  else drawFits();
-  return 1;
-}
-
-#endif // __CLING__
-
-void drawFits(TString inputFileName = "allpos.root", TString outputFileName = "fits.root") {
-TString infoFileName = "ConfigurationFile.txt";
-
-  gROOT -> SetBatch (true);
-  ROOT::EnableImplicitMT(2);
-
-  int colors [] = {kBlack,kGreen+2,kViolet,kOrange+2, kCyan, kYellow+3};
-
-
+  TString infoFileName = "ConfigurationFile.txt";
+  int parNumber=6;
   int dim=2;
   ifstream optionFile;
   optionFile.open(infoFileName);
@@ -77,8 +47,26 @@ TString infoFileName = "ConfigurationFile.txt";
     LoopN=LoopN*sl[i]; //total number of histograms
   }
 
+  TF1   *par0;
+  TF1   *par1;
+  TF1   *par2;
+  TString outputFileName = "parameterGraph.root";
+  TString inputFileName = "allpos.root";
+  int colors [] = {kBlack,kGreen+2,kViolet,kOrange+2, kCyan, kYellow+3};
 
+  TH2F* hPar[3][6];
+  TH2F* hVal[6];
 
+  int sll = 200;
+
+  for(int g=0;g<6;g++)
+  {
+    for(int h=0;h<3;h++)
+    {
+      hPar[h][g]=new TH2F("hPar", "Single parameter; "+ parName[0]+"Bins; p (GeV/c);",15,-0.5,14.5,sll,0,12);
+    }
+    hVal[g]=new TH2F("hVal", "value; "+ parName[0]+"Bins; mass (GeV/c^{2})^{2} ;",15,-0.5,14.5,sll,0,6);
+  }
 
 
 
@@ -91,10 +79,12 @@ TString infoFileName = "ConfigurationFile.txt";
       StringA = (Form("%d",holder%sl[i]));
       holder=holder/sl[i];
       FullName=FullName+parName[i]+StringA+"/";
+
     }
     FullName="exp2/"+FullName;
+    cout<<FullName<<endl;
     TFile *fIn = TFile::Open(FullName+inputFileName, "read");
-    TFile *fOut = TFile::Open(FullName+outputFileName, "recreate");
+
     TList *list = fIn -> GetListOfKeys();
     vector <TGraphErrors*> parList [3];
     vector <TH1D*> histList;
@@ -124,6 +114,7 @@ TString infoFileName = "ConfigurationFile.txt";
         histList.push_back ((TH1D*) obj);
         histList.back()->SetName(name);
         histList.back()->SetTitle(name);
+
       }
     }
 
@@ -147,6 +138,8 @@ TString infoFileName = "ConfigurationFile.txt";
       }
     }
 
+
+/*
     for (auto hist : histList)
     {
       hist -> Draw ();
@@ -171,7 +164,124 @@ TString infoFileName = "ConfigurationFile.txt";
       c.Write("c_" + sMom);
       hist->Write();
     }
-  //cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-    fOut -> Close();
+*/
+  if(1)
+  {
+    int j=a;
+
+
+      for(int g=0;g<parNumber;g++)
+      {
+        for(int h=0;h<3;h++)
+        {
+
+          for(int l=0;l<sll;l++)
+          {
+            hPar[h][g]->SetBinContent(j+1,l+1,f[h][g]->Eval((20./sll)*(l+1)));
+          }
+          hPar[h][g]->SetTitle(f[h][g]->GetName());
+        }
+      }
+      for(int g=0;g<parNumber;g++)
+      {
+
+
+          for(int l=0;l<sll;l++)
+          {
+            func [g].SetParameters(f [0][g]->Eval(4), f [1][g]->Eval(4), f [2][g]->Eval(4));
+            hVal[g]->SetBinContent(j+1,l+1,func[g].Eval((6./sll)*(l+1)));
+          }
+          hVal[g]->SetTitle(func[g].GetName());
+      }
+      //hPar->SetBinContent(j,l,j*l);
+
+
   }
+  fIn->Close();
+
+
+  }
+
+
+
+
+  TFile *fOut = TFile::Open(outputFileName, "recreate");
+
+  fOut->mkdir("parameterHsitogram");
+  fOut->mkdir("ValueHsitogram");
+  for(int g=0;g<6;g++)
+  {
+    for(int h=0;h<3;h++)
+    {
+
+      fOut->cd("parameterHsitogram");
+      hPar[h][g]->Write();
+    }
+
+    fOut->cd("ValueHsitogram");
+    hVal[g]->Write();
+
+  }
+  double suma;
+  for(int j=0;j<15;j++)
+  {
+
+
+      for(int l=0;l<sll;l++)
+      {
+          suma=0;
+
+          for(int g=0;g<5;g++)
+          {
+            suma=suma+hPar[0][g]->GetBinContent(j+1,l+1);
+          }
+          for(int g=0;g<6;g++)
+          {
+            hPar[0][g]->SetBinContent(j+1,l+1,hPar[0][g]->GetBinContent(j+1,l+1)/suma);
+          }
+
+      }
+
+
+  }
+  for(int j=0;j<15;j++)
+  {
+
+
+      for(int l=0;l<sll;l++)
+      {
+          suma=0;
+          for(int g=0;g<5;g++)
+          {
+            suma=suma+ hVal[g]->GetBinContent(j+1,l+1);
+          }
+          for(int g=0;g<6;g++)
+          {
+            hVal[g]->SetBinContent(j+1,l+1,hVal[g]->GetBinContent(j+1,l+1)/suma);
+
+          }
+
+      }
+
+
+  }
+
+
+  fOut->mkdir("parameterHsitogramPur");
+  fOut->mkdir("ValueHsitogramPur");
+  for(int g=0;g<6;g++)
+  {
+    for(int h=0;h<3;h++)
+    {
+
+      fOut->cd("parameterHsitogramPur");
+      hPar[h][g]->Write();
+    }
+
+    fOut->cd("ValueHsitogramPur");
+    hVal[g]->Write();
+
+  }
+
+
 }
