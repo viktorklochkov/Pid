@@ -32,3 +32,12 @@ target_include_directories(Pid
         $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include/pid>
         $<INSTALL_INTERFACE:include/pid>
         )
+
+install(
+        FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/${PCM_FILE_NAME}_rdict.pcm"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PCM_FILE_NAME}.rootmap"
+        DESTINATION
+        lib
+        OPTIONAL
+)
