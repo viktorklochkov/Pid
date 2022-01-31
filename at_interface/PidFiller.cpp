@@ -86,6 +86,7 @@ void PidFiller::Exec() {
         particle.SetValue(fields_prob[specie++], prob[pdg.first]);
       }
     } else {
+      int specie{0};
       for (const auto& pdg : pid_codes_) {
         particle.SetValue(fields_prob[specie++], -1.f);
       }
