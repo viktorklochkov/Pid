@@ -29,7 +29,7 @@ install(
        Devel
 )
 
-set(PCM_FILE_NAME libAnalysisTreeFiller)
+set(PCM_FILE_NAME libPidAT)
 
 install(
        FILES
