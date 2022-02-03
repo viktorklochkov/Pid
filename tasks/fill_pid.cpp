@@ -20,7 +20,7 @@ void fill_pid(const std::string& filelist, const std::string& pid_file, const st
   man->AddTask(pid_task);
 
   man->Init({filelist}, {"rTree"});
-  man->Run(10);
+  man->Run(-1);
   man->Finish();
 }
 

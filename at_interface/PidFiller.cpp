@@ -15,6 +15,15 @@ PidFiller::PidFiller(const std::string& file, const std::string& getter) {
   }
 }
 
+int PidFiller::signum(int x) const {
+  if(x>0)
+    return 1;
+  else if (x==0)
+    return 0;
+  else
+    return -1;
+}
+
 void PidFiller::Init() {
   auto man = TaskManager::GetInstance();
   auto chain = man->GetChain();
@@ -50,47 +59,52 @@ void PidFiller::Init() {
     man->AddMatching(out_branch_name_, br, out_matches_.at(i));
     i++;
   }
+  
+  qp_tof_field_ = tof_hits_.GetField("qp_tof");
+  q_field_ = rec_tracks_.GetField("q");
+  mass2_field_ = tof_hits_.GetField("mass2");
+  pid_field_ = ana_tracks_.GetField("pid");
+  
+  for (const auto& pid : pid_codes_) {
+    prob_field_.push_back(ana_tracks_.GetField("prob_" + pid.second));
+  }  
 }
 
 void PidFiller::Exec() {
   ana_tracks_.ClearChannels();
 
-  auto field_p = rec_tracks_.GetField("p");
-  auto field_m2 = tof_hits_.GetField("mass2");
-  auto field_pid = ana_tracks_.GetField("pid");
-  std::vector<Field> fields_prob{};
-  for (const auto& pid : pid_codes_) {
-    fields_prob.push_back(ana_tracks_.GetField("prob_" + pid.second));
-  }
-
   for (int i = 0; i < rec_tracks_.size(); ++i) {
     const auto& track = rec_tracks_[i];
-//    auto particle = ana_tracks_[i];
     auto particle = ana_tracks_.NewChannel();
     particle.CopyContent(track);
+    auto q = track[q_field_];
 
     auto hit_id = pid_match_->GetMatch(i);
     if (hit_id >= 0) {
       const auto& tof_hit = tof_hits_[hit_id];
-      auto p = track[field_p];
-      auto m2 = tof_hit[field_m2];
+      auto pq = tof_hit[qp_tof_field_];
+      auto m2 = tof_hit[mass2_field_];
 
-      auto pid = getter_->GetPid(p, m2, 0.5);
-      particle.SetValue(field_pid, pid);
-      auto prob = getter_->GetBayesianProbability(p, m2);
+      auto pid = getter_->GetPid(pq, m2, 0.5);
+      if(pid == 1 && q < 0) {
+        pid = -1;
+      }
+      
+      particle.SetValue(pid_field_, pid);
+      auto prob = getter_->GetBayesianProbability(pq, m2);
 
       particle.Print();
 
       int specie{0};
       for (const auto& pdg : pid_codes_) {
-        particle.SetValue(fields_prob[specie++], prob[pdg.first]);
+        particle.SetValue(prob_field_.at(specie++), prob[pdg.first*signum(q)]);  // Think what to do in case of electrons and muons
       }
     } else {
       int specie{0};
       for (const auto& pdg : pid_codes_) {
-        particle.SetValue(fields_prob[specie++], -1.f);
+        particle.SetValue(prob_field_.at(specie++), -1.f);
       }
-      particle.SetValue(field_pid, -1);
+      particle.SetValue(pid_field_, 2*signum(q));
     }
   }
   int i{0};
