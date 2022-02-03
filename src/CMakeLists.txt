@@ -41,3 +41,5 @@ install(
         lib
         OPTIONAL
 )
+
+install(FILES ${HEADERS} DESTINATION include)
