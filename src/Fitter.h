@@ -28,14 +28,14 @@ class Fitter {
 
   void Fit();
   TF1* ConstructFit1DFunction(double p);
-  double Fit1D(std::unique_ptr<TH1D>& h, std::vector<double>& par, std::vector<double>& par_err, double p);
+  double Fit1D(const std::shared_ptr<TH1>& h, std::vector<double>& par, std::vector<double>& par_err, double p);
   void Clear();
 
-  void AddParticle(ParticleFit& particle, uint id) {
+  void AddParticle(const ParticleFit& particle, uint id) {
     particles_.push_back(particle);
     particles_id_.push_back(id);
   }
-  void SetHisto2D(std::unique_ptr<TH2D> histo2D) { histo2D_ = std::move(histo2D); }
+  void SetHisto2D(std::shared_ptr<TH2> histo2D) { histo2D_ = std::move(histo2D); }
   void SetRangeX(double min, double max) { minx_ = min, maxx_ = max; }
   void SetRangeY(double min, double max) { miny_ = min, maxy_ = max; }
   void SetOutputFileName(TString name) { outfilename_ = std::move(name); }
@@ -50,7 +50,7 @@ class Fitter {
  private:
   std::vector<ParticleFit> particles_;
   std::vector<uint> particles_id_;
-  std::unique_ptr<TH2D> histo2D_{nullptr};
+  std::shared_ptr<TH2> histo2D_{nullptr};
 
   TString outfilename_{"out.root"};
 

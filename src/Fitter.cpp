@@ -26,7 +26,7 @@ void Fitter::Fit() {
   std::unique_ptr<TFile> f{TFile::Open(outfilename_, "recreate")};
 
   for (uint ibin = firstbin; ibin < lastbin; ++ibin) {
-    std::unique_ptr<TH1D> h1fit{histo2D_->ProjectionY(Form("py_%d", ibin), ibin, ibin)};
+    std::shared_ptr<TH1> h1fit{histo2D_->ProjectionY(Form("py_%d", ibin), ibin, ibin)};
 
     std::vector<double> par;
     std::vector<double> par_err;
@@ -68,7 +68,7 @@ void Fitter::Fit() {
 * @param p track momentum
 * @return chi2/NDF of the fit
 */
-double Fitter::Fit1D(std::unique_ptr<TH1D>& h, std::vector<double>& par, std::vector<double>& par_err, double p) {
+double Fitter::Fit1D(const std::shared_ptr<TH1>& h, std::vector<double>& par, std::vector<double>& par_err, double p) {
   auto f = ConstructFit1DFunction(p);//particles_.at(0).GetFunction(0.);
 
   h->Fit(f, "Q,M", "", miny_, maxy_);

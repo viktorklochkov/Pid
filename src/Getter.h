@@ -61,7 +61,7 @@ class Getter : public TObject, public BaseGetter {
     auto prob = GetBayesianProbability(p, m2);
     for (auto& pid_prob : prob)
       if (pid_prob.second >= purity) return pid_prob.first;
-    return -1;
+    return 1;
   }
 
   double GetWeight(double var1, double var2, int pid) override {
