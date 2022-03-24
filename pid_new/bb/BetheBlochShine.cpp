@@ -1,5 +1,5 @@
-#include <cmath>
 #include "BetheBlochShine.h"
+#include <cmath>
 
 double BetheBlochAntoniMod(const double betaGamma) {
   const double lnbg = std::log(betaGamma);
@@ -36,8 +36,7 @@ double BetheBlochAntoniMod(const double betaGamma) {
       1.5665, 1.5670, 1.5675, 1.5680, 1.5685, 1.5690, 1.5694, 1.5699,
       1.5703, 1.5706, 1.5710, 1.5714, 1.5717, 1.5720, 1.5723, 1.5726,
       1.5729, 1.5732, 1.5734, 1.5737, 1.5739, 1.5741, 1.5743, 1.5745,
-      1.5746, 1.5748, 1.5750, 1.5751, 1.5752, 1.5754, 1.5755, 1.5756
-  };
+      1.5746, 1.5748, 1.5750, 1.5751, 1.5752, 1.5754, 1.5755, 1.5756};
 
   const int N = 256;
   const double lnbgMin = -1.011739;
@@ -46,15 +45,14 @@ double BetheBlochAntoniMod(const double betaGamma) {
   int j = (lnbg - lnbgMin) / lnbgStep;
 
   if (j > 0) {
-    if (j >= N-1)
-      j = N-2;
+    if (j >= N - 1)
+      j = N - 2;
 
     const double dx = (lnbg - (j * lnbgStep + lnbgMin));
 
-    return dx * (table[j+1] - table[j]) / lnbgStep + table[j];
-  }
-  else {
-    const double lnDedx = -1.8*(lnbg - lnbgMin) + std::log(table[0]);
+    return dx * (table[j + 1] - table[j]) / lnbgStep + table[j];
+  } else {
+    const double lnDedx = -1.8 * (lnbg - lnbgMin) + std::log(table[0]);
     return std::exp(lnDedx);
   }
 }
@@ -94,8 +92,7 @@ double BetheBlochAntoni(const double betaGamma) {
                                  1.5665, 1.5670, 1.5675, 1.5680, 1.5685, 1.5690, 1.5694, 1.5699,
                                  1.5703, 1.5706, 1.5710, 1.5714, 1.5717, 1.5720, 1.5723, 1.5726,
                                  1.5729, 1.5732, 1.5734, 1.5737, 1.5739, 1.5741, 1.5743, 1.5745,
-                                 1.5746, 1.5748, 1.5750, 1.5751, 1.5752, 1.5754, 1.5755, 1.5756
-  };
+                                 1.5746, 1.5748, 1.5750, 1.5751, 1.5752, 1.5754, 1.5755, 1.5756};
 
   const int N = 257;
   const double lnbgMin = -1.049822;
@@ -104,12 +101,12 @@ double BetheBlochAntoni(const double betaGamma) {
   int j = (lnbg - lnbgMin) / lnbgStep;
   if (j < 0)
     j = 0;
-  if (j >= N-1)
-    j = N-2;
+  if (j >= N - 1)
+    j = N - 2;
 
   const double dx = (lnbg - (j * lnbgStep + lnbgMin));
 
-  return dx * (table[j+1] - table[j]) / lnbgStep + table[j];
+  return dx * (table[j + 1] - table[j]) / lnbgStep + table[j];
 }
 
 double BetheBlochShine(const double betaGamma) {
@@ -150,8 +147,7 @@ double BetheBlochShine(const double betaGamma) {
       1.5665, 1.5670, 1.5675, 1.5680, 1.5685, 1.5690, 1.5694, 1.5699,
       1.5703, 1.5706, 1.5710, 1.5714, 1.5717, 1.5720, 1.5723, 1.5726,
       1.5729, 1.5732, 1.5734, 1.5737, 1.5739, 1.5741, 1.5743, 1.5745,
-      1.5746, 1.5748, 1.5750, 1.5751, 1.5752, 1.5754, 1.5755, 1.5756
-  };
+      1.5746, 1.5748, 1.5750, 1.5751, 1.5752, 1.5754, 1.5755, 1.5756};
 
   const int N = 256;
   const double lnbgMin = -1.011739;
@@ -160,10 +156,10 @@ double BetheBlochShine(const double betaGamma) {
   int j = (lnbg - lnbgMin) / lnbgStep;
   if (j < 0)
     j = 0;
-  if (j >= N-1)
-    j = N-2;
+  if (j >= N - 1)
+    j = N - 2;
 
   const double dx = lnbg - (j * lnbgStep + lnbgMin);
 
-  return dx * (table[j+1] - table[j]) / lnbgStep + table[j];
+  return dx * (table[j + 1] - table[j]) / lnbgStep + table[j];
 }

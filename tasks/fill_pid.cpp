@@ -4,18 +4,18 @@
 
 using namespace AnalysisTree;
 
-void fill_pid(const std::string& filelist, const std::string& pid_file, const std::string& output){
+void fill_pid(const std::string& filelist, const std::string& pid_file, const std::string& output) {
 
   auto* man = TaskManager::GetInstance();
   man->SetOutputName(output, "aTree");
   man->SetOutputTreeConfig(OutputTreeConfig(eBranchWriteMode::kCopyTree));
-//  man->SetOutputTreeConfig(OutputTreeConfig(eBranchWriteMode::kCopyTree));
+  //  man->SetOutputTreeConfig(OutputTreeConfig(eBranchWriteMode::kCopyTree));
 
   auto* pid_task = new PidFiller(pid_file, "pid_getter");
-//  pid_task->SetTracksName("VtxTracks");
-//  pid_task->SetTofName("TofHits");
-//  pid_task->SetMcParticlesName("SimParticles");
-//  pid_task->SetPidCodes({{2212, "p"}, {211, "pi"}, {321, "K"}, {1, "bg"}});
+  //  pid_task->SetTracksName("VtxTracks");
+  //  pid_task->SetTofName("TofHits");
+  //  pid_task->SetMcParticlesName("SimParticles");
+  //  pid_task->SetPidCodes({{2212, "p"}, {211, "pi"}, {321, "K"}, {1, "bg"}});
 
   man->AddTask(pid_task);
 
@@ -24,8 +24,8 @@ void fill_pid(const std::string& filelist, const std::string& pid_file, const st
   man->Finish();
 }
 
-int main(int argc, char **argv) {
-  if(argc <= 2) {
+int main(int argc, char** argv) {
+  if (argc <= 2) {
     std::cout << "Not enough arguments! Please use:" << std::endl;
     std::cout << "   ./fill_pid filelist pid_file" << std::endl;
     return EXIT_FAILURE;

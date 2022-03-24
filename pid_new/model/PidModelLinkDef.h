@@ -11,4 +11,4 @@
 #pragma link C++ class AsymmetricGaussianPDF;
 #pragma link C++ function AsymmetricGaussianFCT;
 
-#endif //__CINT__
+#endif//__CINT__

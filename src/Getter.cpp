@@ -1,9 +1,9 @@
 #include "Getter.h"
 
 ClassImp(Pid::Getter)
-ClassImp(Pid::CutGGetter)
+    ClassImp(Pid::CutGGetter)
 
-namespace Pid {
+        namespace Pid {
 
   /**
 * Constructs fit function as a sum of individual particle species. Parameters are also propagated

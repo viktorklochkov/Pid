@@ -74,7 +74,7 @@ class Getter : public TObject, public BaseGetter {
 
   const ParticleFit& GetParticleFit(int pid) {
     auto it = species_.find(pid);
-    if(it != species_.end()){
+    if (it != species_.end()) {
       return it->second;
     }
     throw std::runtime_error("Particle " + std::to_string(pid) + " is not found!");
@@ -133,7 +133,7 @@ class CutGGetter : public TObject, public BaseGetter {
       result.insert({specie.first, GetWeight(var1, var2, specie.first)});
     }
 
-    return std::map<int, double>();
+    return {};
   }
 
   void Draw(Option_t* option = "") override {

@@ -30,4 +30,4 @@ BetheBlochAntoni(double betaGamma);
 double
 BetheBlochShine(double betaGamma);
 
-#endif //PID_BB_SHINE_H_
+#endif//PID_BB_SHINE_H_

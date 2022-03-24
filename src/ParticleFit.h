@@ -21,8 +21,9 @@ class ParticleFit {
   /**   Default constructor   **/
   ParticleFit();
   explicit ParticleFit(int type) : particle_type_(type){};
+  virtual ~ParticleFit() = default;
 
-  std::vector<double> GetFunctionParams(float p) const;
+  [[nodiscard]] std::vector<double> GetFunctionParams(float p) const;
   double Eval(double p, double m2);
 
   void SetParametrization(const std::vector<TF1>& parametrization) { parametrization_ = parametrization; }
@@ -32,18 +33,18 @@ class ParticleFit {
   void SetIsFitted(bool is = true) { isfitted_ = is; }
   void SetIsFixed(const std::vector<bool>& is) { isfixed_ = is; }
 
-  const TF1& GetFunction() const { return function_; }
-  uint GetNpar() const { return function_.GetNpar(); }
+  [[nodiscard]] const TF1& GetFunction() const { return function_; }
+  [[nodiscard]] uint GetNpar() const { return function_.GetNpar(); }
   TF1& GetParametrizationFunction(int ipar) { return parametrization_.at(ipar); }
-  bool GetIsFixed(uint ipar) const {
+  [[nodiscard]] bool GetIsFixed(uint ipar) const {
     if (ipar >= isfixed_.size())
       return false;
     return isfixed_.at(ipar);
   }
 
-  float GetSigma(float p) const { return parametrization_.at(PidFunction::kSigma).Eval(p); }
-  float GetMean(float p) const  { return parametrization_.at(PidFunction::kMean).Eval(p); }
-  float GetIntegral(float p) const { return parametrization_.at(PidFunction::kA).Eval(p)/sqrt(2*TMath::Pi()/GetSigma(p)) ; }
+  [[nodiscard]] double GetSigma(float p) const { return parametrization_.at(PidFunction::kSigma).Eval(p); }
+  [[nodiscard]] double GetMean(float p) const { return parametrization_.at(PidFunction::kMean).Eval(p); }
+  [[nodiscard]] double GetIntegral(float p) const { return parametrization_.at(PidFunction::kA).Eval(p) / sqrt(2 * TMath::Pi() / GetSigma(p)); }
 
   void GetRange(float& min, float& max) const { min = minx_, max = maxx_; }
 

@@ -10,5 +10,4 @@
 
 #pragma link C++ function BetheBloch*;
 
-
-#endif //__CINT__
+#endif//__CINT__
