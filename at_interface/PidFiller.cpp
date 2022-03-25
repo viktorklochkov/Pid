@@ -27,8 +27,8 @@ int PidFiller::signum(int x) const {
 void PidFiller::Init() {
   auto man = TaskManager::GetInstance();
   auto chain = man->GetChain();
-  rec_tracks_ = chain->GetBranch(rec_tracks_name_);
-  tof_hits_ = chain->GetBranch(tof_hits_name_);
+  rec_tracks_ = chain->GetBranchObject(rec_tracks_name_);
+  tof_hits_ = chain->GetBranchObject(tof_hits_name_);
   pid_match_ = chain->GetMatchPointers().find({rec_tracks_name_ + "2" + tof_hits_name_})->second;
 
   in_branches_.emplace(rec_tracks_name_);
@@ -73,7 +73,7 @@ void PidFiller::Init() {
 void PidFiller::Exec() {
   ana_tracks_.ClearChannels();
 
-  for (int i = 0; i < rec_tracks_.size(); ++i) {
+  for (size_t i = 0; i < rec_tracks_.size(); ++i) {
     const auto& track = rec_tracks_[i];
     auto particle = ana_tracks_.NewChannel();
     particle.CopyContent(track);
